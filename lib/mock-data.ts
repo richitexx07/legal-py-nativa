@@ -62,6 +62,38 @@ export interface Categoria {
   icono?: string;
 }
 
+export interface Plan {
+  id: string;
+  nombre: string;
+  precio: number;
+  moneda: "PYG" | "USD";
+  periodo: "mensual" | "anual";
+  descripcion: string;
+  features: string[];
+  destacado?: boolean;
+}
+
+export interface MetodoPago {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  tipo: "paraguay" | "internacional";
+  icono: string;
+  disponible: boolean;
+}
+
+export interface ProfesionalSuscripcion {
+  id: string;
+  email: string;
+  nombre: string;
+  tipo: string;
+  ciudad: string;
+  planId: string;
+  metodoPagoId: string;
+  fechaAlta: string;
+  estado: "activo" | "pendiente" | "suspendido";
+}
+
 // Datos mock
 
 export const mockProfesionales: Profesional[] = [
@@ -232,10 +264,10 @@ export const mockCategorias: Categoria[] = [
   },
   {
     id: "5",
-    titulo: "Ujieres",
+    titulo: "Oficial de Justicia",
     descripcion: "Notificaciones, diligencias y constancias",
     href: "/ujieres",
-    icono: "/avatars/icono_ujieres_-removebg-preview.png",
+    icono: "/avatars/icono_oficialdejusticia_removedbackground.png",
   },
   {
     id: "6",
@@ -255,5 +287,145 @@ export const mockCategorias: Categoria[] = [
     titulo: "Mensajes",
     descripcion: "Chat, archivos y bot de asistencia",
     href: "/chat",
+  },
+];
+
+// Datos mock para planes
+export const mockPlanes: Plan[] = [
+  {
+    id: "1",
+    nombre: "Básico",
+    precio: 100000,
+    moneda: "PYG",
+    periodo: "mensual",
+    descripcion: "Plan ideal para profesionales que recién comienzan",
+    features: [
+      "Perfil público visible",
+      "Hasta 5 casos activos",
+      "Notificaciones básicas",
+      "Soporte por email",
+    ],
+  },
+  {
+    id: "2",
+    nombre: "Pro + IA",
+    precio: 250000,
+    moneda: "PYG",
+    periodo: "mensual",
+    descripcion: "Potenciado con IA para mayor visibilidad y eficiencia",
+    features: [
+      "Todo lo del plan Básico",
+      "Casos ilimitados",
+      "Asistente IA para consultas",
+      "Análisis de casos con IA",
+      "Prioridad en búsquedas",
+      "Soporte prioritario 24/7",
+      "Estadísticas avanzadas",
+    ],
+    destacado: true,
+  },
+];
+
+// Datos mock para métodos de pago
+export const mockMetodosPago: MetodoPago[] = [
+  // Paraguay
+  {
+    id: "bancard",
+    nombre: "Tarjeta/QR (Bancard/TPago)",
+    descripcion: "Pago con tarjeta de crédito/débito o código QR",
+    tipo: "paraguay",
+    icono: "💳",
+    disponible: true,
+  },
+  {
+    id: "transferencia",
+    nombre: "Transferencia Bancaria",
+    descripcion: "Transferencia directa desde tu banco",
+    tipo: "paraguay",
+    icono: "🏦",
+    disponible: true,
+  },
+  {
+    id: "tigo-money",
+    nombre: "Tigo Money",
+    descripcion: "Pago a través de tu billetera Tigo Money",
+    tipo: "paraguay",
+    icono: "📱",
+    disponible: true,
+  },
+  {
+    id: "personal-pay",
+    nombre: "Personal Pay",
+    descripcion: "Pago con tu billetera Personal Pay",
+    tipo: "paraguay",
+    icono: "📲",
+    disponible: true,
+  },
+  {
+    id: "zimple",
+    nombre: "Zimple",
+    descripcion: "Pago rápido con Zimple",
+    tipo: "paraguay",
+    icono: "💸",
+    disponible: true,
+  },
+  {
+    id: "pagopar",
+    nombre: "Pagopar",
+    descripcion: "Suscripción recurrente con Pagopar",
+    tipo: "paraguay",
+    icono: "🔁",
+    disponible: true,
+  },
+  // Internacional
+  {
+    id: "tarjeta-int",
+    nombre: "Tarjeta Internacional",
+    descripcion: "Visa, Mastercard, American Express",
+    tipo: "internacional",
+    icono: "🌍",
+    disponible: true,
+  },
+  {
+    id: "stripe",
+    nombre: "Stripe",
+    descripcion: "Pago seguro con Stripe",
+    tipo: "internacional",
+    icono: "💳",
+    disponible: true,
+  },
+  {
+    id: "paypal",
+    nombre: "PayPal",
+    descripcion: "Pago con tu cuenta PayPal",
+    tipo: "internacional",
+    icono: "🅿️",
+    disponible: true,
+  },
+];
+
+// Ejemplos de profesionales recién inscritos (para demo)
+export const mockProfesionalesRecienInscritos: ProfesionalSuscripcion[] = [
+  {
+    id: "prof-new-1",
+    email: "nuevo1@example.com",
+    nombre: "Dr. Carlos Mendoza",
+    tipo: "Abogado",
+    ciudad: "Asunción",
+    planId: "2",
+    metodoPagoId: "bancard",
+    fechaAlta: "2024-05-15",
+    estado: "activo",
+  },
+  {
+    id: "prof-new-2",
+    email: "nuevo2@example.com",
+    nombre: "Esc. Ana Torres",
+    tipo: "Escribana",
+    ciudad: "Ciudad del Este",
+    planId: "1",
+    metodoPagoId: "tigo-money",
+    fechaAlta: "2024-05-14",
+    estado: "activo",
   },
 ];

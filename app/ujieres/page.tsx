@@ -167,7 +167,7 @@ export default function Ujieres() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white">Ujieres / Notificadores</h1>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-white">Oficiales de Justicia / Notificadores</h1>
         <p className="mt-2 text-white/70">
           Envío y diligenciamiento con evidencia: acuse de recibo, geolocalización y registro de
           entrega.
@@ -354,7 +354,7 @@ export default function Ujieres() {
 
       {/* Listado de Ujieres */}
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white">Ujieres Disponibles</h2>
+        <h2 className="text-xl font-bold text-white">Oficiales de Justicia Disponibles</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {ujieresExtendidos.map((ujier) => (
             <Card key={ujier.id} hover>
@@ -450,7 +450,7 @@ export default function Ujieres() {
               <div>
                 <h2 className="text-xl font-bold text-white">Integración con Courier</h2>
                 <p className="text-sm text-white/70 mt-1">
-                  Conecta el servicio de ujiería con courier para envío/retiro de documentos
+                  Conecta el servicio de oficialía de justicia con courier para envío/retiro de documentos
                 </p>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setShowCourier(false)}>
@@ -468,7 +468,7 @@ export default function Ujieres() {
                       1
                     </div>
                     <p>
-                      El ujier realiza la diligencia y genera evidencia (acuse, foto, geotag)
+                      El oficial de justicia realiza la diligencia y genera evidencia (acuse, foto, geotag)
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
@@ -484,7 +484,7 @@ export default function Ujieres() {
                       3
                     </div>
                     <p>
-                      El courier retira los documentos del ujier y los entrega al destinatario
+                      El courier retira los documentos del oficial de justicia y los entrega al destinatario
                     </p>
                   </div>
                   <div className="flex items-start gap-3">

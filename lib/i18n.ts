@@ -87,6 +87,39 @@ export interface Diccionario {
     inCall: string;
     callEnded: string;
   };
+  profesional: {
+    suscribirme: string;
+    wizard: {
+      titulo: string;
+      subtitulo: string;
+      paso1: string;
+      paso2: string;
+      paso3: string;
+      paso4: string;
+      paso5: string;
+      paso6: string;
+      siguiente: string;
+      anterior: string;
+      finalizar: string;
+    };
+    alta: {
+      tipoProfesional: string;
+      ubicacion: string;
+      idiomas: string;
+      crearCuenta: string;
+      email: string;
+      password: string;
+      verificarCredenciales: string;
+      perfilPublico: string;
+      seleccionarPlan: string;
+      metodoPago: string;
+      aceptarTerminos: string;
+    };
+    panel: {
+      titulo: string;
+      bienvenido: string;
+    };
+  };
 }
 
 const diccionarios: Record<Idioma, Diccionario> = {
@@ -95,7 +128,7 @@ const diccionarios: Record<Idioma, Diccionario> = {
       inicio: "Inicio",
       profesionales: "Profesionales",
       gestores: "Gestores",
-      ujieres: "Ujieres",
+      ujieres: "Oficial de Justicia",
       casos: "Casos",
       migraciones: "Migraciones",
       mensajes: "Mensajes",
@@ -128,7 +161,7 @@ const diccionarios: Record<Idioma, Diccionario> = {
       heroTitlePrefix: "Encuentra el profesional legal que",
       heroTitleHighlight: "necesitas",
       heroSubtitle:
-        "Encontrá profesionales verificados, gestores y ujieres. Publicá tu caso, subí documentos, recibí notificaciones y hacé seguimiento en un solo lugar.",
+        "Encontrá profesionales verificados, gestores y oficiales de justicia. Publicá tu caso, subí documentos, recibí notificaciones y hacé seguimiento en un solo lugar.",
       searchPlaceholder: "¿Qué servicio legal necesitas?",
       locationPlaceholder: "Ubicación",
       servicesTitle: "Servicios principales",
@@ -179,13 +212,46 @@ const diccionarios: Record<Idioma, Diccionario> = {
       inCall: "En videollamada",
       callEnded: "La llamada finalizó.",
     },
+    profesional: {
+      suscribirme: "Suscribirme",
+      wizard: {
+        titulo: "Únete como Profesional",
+        subtitulo: "Completa tu perfil en pocos pasos",
+        paso1: "Información Básica",
+        paso2: "Cuenta",
+        paso3: "Verificación",
+        paso4: "Perfil",
+        paso5: "Plan",
+        paso6: "Pago",
+        siguiente: "Siguiente",
+        anterior: "Anterior",
+        finalizar: "Finalizar y Suscribirme",
+      },
+      alta: {
+        tipoProfesional: "Tipo de profesional",
+        ubicacion: "Ubicación",
+        idiomas: "Idiomas",
+        crearCuenta: "Crear cuenta",
+        email: "Correo electrónico",
+        password: "Contraseña",
+        verificarCredenciales: "Verificar credenciales",
+        perfilPublico: "Perfil público",
+        seleccionarPlan: "Seleccionar plan",
+        metodoPago: "Método de pago",
+        aceptarTerminos: "Aceptar términos",
+      },
+      panel: {
+        titulo: "Panel Profesional",
+        bienvenido: "Bienvenido a tu panel",
+      },
+    },
   },
   gn: {
     nav: {
       inicio: "Ñepyrũ",
       profesionales: "Mba'apohára",
       gestores: "Ñangarekohára",
-      ujieres: "Ujieres",
+      ujieres: "Oficial de Justicia",
       casos: "Mba'e",
       migraciones: "Jeguata",
       mensajes: "Ñe'ẽmondo",
@@ -268,6 +334,39 @@ const diccionarios: Record<Idioma, Diccionario> = {
       connecting: "Oñembojuaju hína sala rehe...",
       inCall: "Oĩ videollamada-pe",
       callEnded: "Opáma llamada.",
+    },
+    profesional: {
+      suscribirme: "Eñemboheraguapy",
+      wizard: {
+        titulo: "Ejuaju mba'apohára ramo",
+        subtitulo: "Ehenyhẽ ne perfil pokõi jepo'a rupi",
+        paso1: "Marandu ypykue",
+        paso2: "Mba'etaita",
+        paso3: "Oñemoneĩ",
+        paso4: "Perfil",
+        paso5: "Plan",
+        paso6: "Pago",
+        siguiente: "Upeigua",
+        anterior: "Mboyvegua",
+        finalizar: "Eñemboheraguapy ha emoĩpyrũ",
+      },
+      alta: {
+        tipoProfesional: "Mba'apohára pehẽ",
+        ubicacion: "Tenda",
+        idiomas: "Ñe'ẽnguéra",
+        crearCuenta: "Emoheñói mba'etaita",
+        email: "Ñanduti veve",
+        password: "Ñe'ẽñemi",
+        verificarCredenciales: "Oñemoneĩ kredencial",
+        perfilPublico: "Perfil ojekuaáva",
+        seleccionarPlan: "Eiporavo plan",
+        metodoPago: "Pago rekove",
+        aceptarTerminos: "Eñemoneĩ témino kuéra",
+      },
+      panel: {
+        titulo: "Mba'apohára panel",
+        bienvenido: "Eg̃uahẽ porãite ne panel-pe",
+      },
     },
   },
   en: {
@@ -359,13 +458,46 @@ const diccionarios: Record<Idioma, Diccionario> = {
       inCall: "In video call",
       callEnded: "The call has ended.",
     },
+    profesional: {
+      suscribirme: "Subscribe",
+      wizard: {
+        titulo: "Join as Professional",
+        subtitulo: "Complete your profile in a few steps",
+        paso1: "Basic Information",
+        paso2: "Account",
+        paso3: "Verification",
+        paso4: "Profile",
+        paso5: "Plan",
+        paso6: "Payment",
+        siguiente: "Next",
+        anterior: "Previous",
+        finalizar: "Finish and Subscribe",
+      },
+      alta: {
+        tipoProfesional: "Professional type",
+        ubicacion: "Location",
+        idiomas: "Languages",
+        crearCuenta: "Create account",
+        email: "Email",
+        password: "Password",
+        verificarCredenciales: "Verify credentials",
+        perfilPublico: "Public profile",
+        seleccionarPlan: "Select plan",
+        metodoPago: "Payment method",
+        aceptarTerminos: "Accept terms",
+      },
+      panel: {
+        titulo: "Professional Panel",
+        bienvenido: "Welcome to your panel",
+      },
+    },
   },
   pt: {
     nav: {
       inicio: "Início",
       profesionales: "Profissionais",
       gestores: "Gestores",
-      ujieres: "Ujieres",
+      ujieres: "Oficial de Justicia",
       casos: "Casos",
       migraciones: "Migrações",
       mensajes: "Mensagens",
@@ -448,6 +580,39 @@ const diccionarios: Record<Idioma, Diccionario> = {
       connecting: "Conectando à sala...",
       inCall: "Em chamada de vídeo",
       callEnded: "A chamada foi encerrada.",
+    },
+    profesional: {
+      suscribirme: "Inscrever-se",
+      wizard: {
+        titulo: "Junte-se como Profissional",
+        subtitulo: "Complete seu perfil em poucos passos",
+        paso1: "Informação Básica",
+        paso2: "Conta",
+        paso3: "Verificação",
+        paso4: "Perfil",
+        paso5: "Plano",
+        paso6: "Pagamento",
+        siguiente: "Próximo",
+        anterior: "Anterior",
+        finalizar: "Finalizar e Inscrever-se",
+      },
+      alta: {
+        tipoProfesional: "Tipo de profissional",
+        ubicacion: "Localização",
+        idiomas: "Idiomas",
+        crearCuenta: "Criar conta",
+        email: "E-mail",
+        password: "Senha",
+        verificarCredenciales: "Verificar credenciais",
+        perfilPublico: "Perfil público",
+        seleccionarPlan: "Selecionar plano",
+        metodoPago: "Método de pagamento",
+        aceptarTerminos: "Aceitar termos",
+      },
+      panel: {
+        titulo: "Painel Profissional",
+        bienvenido: "Bem-vindo ao seu painel",
+      },
     },
   },
 };

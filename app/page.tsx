@@ -20,7 +20,7 @@ export default function Home() {
       cat.titulo === "Escribanos" ||
       cat.titulo === "Despachantes" ||
       cat.titulo === "Gestores" ||
-      cat.titulo === "Ujieres" ||
+      cat.titulo === "Oficial de Justicia" ||
       cat.titulo === "Migraciones"
       
   );

@@ -6,9 +6,11 @@ import { useState } from "react";
 import Button from "./Button";
 import { useI18n } from "./I18nProvider";
 import LanguageSelector from "./LanguageSelector";
+import LoginModal from "./LoginModal";
 
 export default function NavbarTop() {
   const [notifications, setNotifications] = useState(3); // Demo: 3 notificaciones
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const { t, idioma, setIdioma } = useI18n();
 
   const navItems = [
@@ -87,14 +89,16 @@ export default function NavbarTop() {
 
           {/* Desktop CTAs */}
           <div className="hidden sm:flex items-center gap-2">
-            <Link href="/profesionales/registro">
-              <Button variant="ghost" size="sm">
-                {t.nav.soyProfesional}
-              </Button>
-            </Link>
-            <Link href="/casos/nuevo">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsLoginModalOpen(true)}
+            >
+              {t.nav.soyProfesional}
+            </Button>
+            <Link href="/profesional/alta">
               <Button variant="primary" size="sm">
-                {t.nav.publicarCaso}
+                {t.profesional.suscribirme}
               </Button>
             </Link>
           </div>
@@ -112,6 +116,12 @@ export default function NavbarTop() {
           </button>
         </div>
       </div>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </header>
   );
 }
