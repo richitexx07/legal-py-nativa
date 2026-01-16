@@ -1,53 +1,122 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/components/I18nProvider";
 import Link from "next/link";
+import Card from "@/components/Card";
+import Button from "@/components/Button";
+import Image from "next/image";
+import { mockProfesionales, mockCategorias } from "@/lib/mock-data";
 
-const people = [
-    { name: "Dra. Sofía Benítez", role: "Abogada (Civil & Familia)", city: "Asunción", rating: 4.9, price: "desde Gs. 150.000" },
-    { name: "Dr. Marcos Ríos", role: "Abogado Penal", city: "Luque", rating: 4.7, price: "desde Gs. 200.000" },
-    { name: "Esc. Laura Aquino", role: "Escribana", city: "San Lorenzo", rating: 4.8, price: "desde Gs. 250.000" },
-    { name: "Lic. Diego Amarilla", role: "Despachante de Aduana", city: "CDE", rating: 4.6, price: "desde Gs. 300.000" },
-  ];
-  
-  export default function Profesionales() {
-    const { t } = useI18n();
-    
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl md:text-3xl font-extrabold">{t.professionals.listTitle}</h1>
-        <p className="text-white/70">{t.professionals.listSubtitle}</p>
-  
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {people.map((p) => (
-            <div key={p.name} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold text-[#C9A24D]">{p.name}</h3>
-                  <p className="text-sm text-white/70">{p.role}</p>
-                  <p className="text-xs text-white/60 mt-1">{p.city}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm">⭐ {p.rating}</p>
-                  <p className="text-xs text-white/60">{p.price}</p>
+export default function Profesionales() {
+  const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const categoriaParam = searchParams.get("categoria");
+
+  // Filtrar profesionales por categoría
+  const profesionalesFiltrados = categoriaParam
+    ? mockProfesionales.filter((p) => p.categoria === categoriaParam)
+    : mockProfesionales;
+
+  // Obtener título de categoría
+  const categoriaInfo = categoriaParam
+    ? mockCategorias.find((c) => c.titulo === categoriaParam)
+    : null;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white">
+            {categoriaInfo ? categoriaInfo.titulo : t.professionals.listTitle}
+          </h1>
+          <p className="text-white/70 mt-1">
+            {categoriaInfo
+              ? categoriaInfo.descripcion
+              : t.professionals.listSubtitle}
+          </p>
+        </div>
+        {categoriaParam && (
+          <Link href="/profesionales">
+            <Button variant="outline" size="sm">
+              Ver Todos
+            </Button>
+          </Link>
+        )}
+      </div>
+
+      {profesionalesFiltrados.length === 0 ? (
+        <Card>
+          <div className="text-center py-8">
+            <p className="text-white/70">
+              No se encontraron profesionales en esta categoría.
+            </p>
+            <Link href="/profesionales">
+              <Button variant="primary" className="mt-4">
+                Ver Todos los Profesionales
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {profesionalesFiltrados.map((pro) => (
+            <Card key={pro.id} hover>
+              <div className="flex items-start gap-4">
+                {pro.avatar ? (
+                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full">
+                    <Image
+                      src={pro.avatar}
+                      alt={pro.nombre}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#C9A24D] to-[#C08457] text-lg font-bold text-black">
+                    {pro.nombre
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-[#C9A24D] truncate">
+                    {pro.nombre}
+                  </h3>
+                  <p className="text-sm text-white/70">{pro.titulo}</p>
+                  <p className="text-xs text-white/60 mt-1">{pro.ciudad}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-sm text-[#C9A24D]">⭐ {pro.rating}</span>
+                    <span className="text-xs text-white/50">•</span>
+                    <span className="text-xs text-white/60">{pro.precio}</span>
+                  </div>
                 </div>
               </div>
-  
-              <div className="mt-4 flex gap-2">
-                <button className="rounded-xl bg-[#C9A24D] px-4 py-2 text-sm font-semibold text-black hover:bg-[#b8943f]">
-                  {t.professionals.actionsChat}
-                </button>
-                <Link href="/profesionales/1" className="rounded-xl border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/5">
-                  {t.professionals.actionsViewProfile}
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href={`/profesionales/${pro.id}/chat`}>
+                  <Button variant="primary" size="sm" className="flex-1 min-w-0">
+                    {t.professionals.actionsChat}
+                  </Button>
                 </Link>
-                <button className="rounded-xl border border-[#C9A24D]/40 px-4 py-2 text-sm hover:bg-[#C9A24D]/10">
-                  {t.professionals.actionsBook}
-                </button>
+                <Link href={`/profesionales/${pro.id}`}>
+                  <Button variant="outline" size="sm" className="flex-1 min-w-0">
+                    {t.professionals.actionsViewProfile}
+                  </Button>
+                </Link>
+                <Link href={`/profesionales/${pro.id}/reservar`}>
+                  <Button variant="ghost" size="sm" className="flex-1 min-w-0">
+                    {t.professionals.actionsBook}
+                  </Button>
+                </Link>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
-      </div>
-    );
-  }
-  
+      )}
+    </div>
+  );
+}

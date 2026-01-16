@@ -96,7 +96,10 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {categoriasPrincipales.map((cat) => (
-            <Link key={cat.id} href={cat.href}>
+            <Link
+              key={cat.id}
+              href={cat.href === "/profesionales" ? `/profesionales?categoria=${cat.titulo}` : cat.href}
+            >
               <Card hover className="h-full">
                 <div className="flex flex-col items-center text-center">
                   {cat.icono ? (
