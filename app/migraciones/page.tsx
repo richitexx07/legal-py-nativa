@@ -19,58 +19,88 @@ interface Gestion {
 
 const gestionesCompletas: Gestion[] = [
   {
-    id: "residencia-temporaria",
-    titulo: "Residencia Temporaria",
-    descripcion: "Residencia temporal para extranjeros con estadía definida",
+    id: "asesoramiento-residencia-temporaria",
+    titulo: "Asesoramiento para Residencia Temporal",
+    descripcion: "Orientación y acompañamiento para obtener residencia temporal",
     icono: "📅",
   },
   {
-    id: "residencia-permanente",
-    titulo: "Residencia Permanente",
-    descripcion: "Residencia permanente para establecerse en Paraguay",
+    id: "asesoramiento-residencia-permanente",
+    titulo: "Asesoramiento para Residencia Permanente",
+    descripcion: "Orientación y acompañamiento para residencia permanente",
     icono: "🏠",
   },
   {
-    id: "cedula-extranjeros",
-    titulo: "Cédula para Extranjeros",
-    descripcion: "Documento de identidad para extranjeros con residencia",
-    icono: "🆔",
-  },
-  {
-    id: "regularizacion",
-    titulo: "Regularización",
-    descripcion: "Regularización de situación migratoria",
-    icono: "✅",
-  },
-  {
-    id: "renovacion",
-    titulo: "Renovación de Documentos",
-    descripcion: "Renovación de residencia, cédula y otros documentos",
+    id: "renovacion-actualizacion-residencia",
+    titulo: "Renovación / Actualización de Residencia",
+    descripcion: "Gestión para renovar o actualizar tu residencia vigente",
     icono: "🔄",
   },
   {
-    id: "turnos",
-    titulo: "Gestión de Turnos",
-    descripcion: "Agendamiento de turnos en instituciones oficiales",
-    icono: "📋",
+    id: "cedula-extranjeros",
+    titulo: "Cédula de Identidad para Extranjeros",
+    descripcion: "Tramitación y acompañamiento para obtener cédula paraguaya",
+    icono: "🆔",
   },
   {
-    id: "preparacion-carpetas",
-    titulo: "Preparación de Carpetas",
-    descripcion: "Asistencia en preparación y organización de documentación",
+    id: "cambio-categoria-migratoria",
+    titulo: "Cambios de Categoría Migratoria",
+    descripcion: "Orientación y gestión para cambios de categoría migratoria",
+    icono: "🔄",
+  },
+  {
+    id: "regularizacion-migratoria",
+    titulo: "Regularización Migratoria",
+    descripcion: "Orientación, preparación y acompañamiento para regularizar tu situación",
+    icono: "✅",
+  },
+  {
+    id: "reagrupacion-familiar",
+    titulo: "Reagrupación Familiar",
+    descripcion: "Orientación y preparación de documentos para reagrupación familiar",
+    icono: "👨‍👩‍👧‍👦",
+  },
+  {
+    id: "preparacion-revision-carpeta",
+    titulo: "Preparación y Revisión de Carpeta",
+    descripcion: "Checklist, validación y armado completo de documentación",
     icono: "📁",
   },
   {
-    id: "seguimiento",
-    titulo: "Seguimiento de Expedientes",
-    descripcion: "Monitoreo y actualizaciones del estado de trámites",
+    id: "gestion-antecedentes-apostillas",
+    titulo: "Gestión de Antecedentes, Legalizaciones y Apostillas",
+    descripcion: "Orientación y coordinación para obtener y legalizar documentos",
+    icono: "📄",
+  },
+  {
+    id: "turnos-acompanamiento",
+    titulo: "Turnos y Acompañamiento en Trámites",
+    descripcion: "Gestión de turnos y acompañamiento presencial u online",
+    icono: "📋",
+  },
+  {
+    id: "seguimiento-expediente",
+    titulo: "Seguimiento de Expediente / Estado de Trámite",
+    descripcion: "Actualizaciones dentro del sitio sobre el estado de tu trámite",
     icono: "📊",
   },
   {
-    id: "asesoramiento",
-    titulo: "Asesoramiento Legal",
-    descripcion: "Consulta y asesoría sobre requisitos y procedimientos",
-    icono: "💼",
+    id: "atencion-soporte",
+    titulo: "Atención y Soporte durante el Proceso",
+    descripcion: "Chat, recordatorios y guía sobre próximos pasos",
+    icono: "💬",
+  },
+  {
+    id: "actualizacion-datos",
+    titulo: "Actualización de Datos del Solicitante",
+    descripcion: "Gestión para actualizar datos según requisitos del trámite",
+    icono: "✏️",
+  },
+  {
+    id: "orientacion-ingreso-permanencia",
+    titulo: "Orientación para Ingreso y Permanencia Legal",
+    descripcion: "Información completa y pasos para ingreso y permanencia legal en Paraguay",
+    icono: "🗺️",
   },
 ];
 
@@ -81,9 +111,11 @@ export default function GestionesMigratorias() {
 
   // Estados para filtros
   const [ciudadFiltro, setCiudadFiltro] = useState<string>("");
+  const [idiomaFiltro, setIdiomaFiltro] = useState<string>("");
   const [precioFiltro, setPrecioFiltro] = useState<string>("");
   const [ratingFiltro, setRatingFiltro] = useState<string>("");
   const [modalidadFiltro, setModalidadFiltro] = useState<string>("");
+  const [tipoGestionFiltro, setTipoGestionFiltro] = useState<string>("");
   const [busqueda, setBusqueda] = useState<string>("");
   const [mostrarTodasGestiones, setMostrarTodasGestiones] = useState(false);
 
@@ -104,10 +136,34 @@ export default function GestionesMigratorias() {
       // Filtro por ciudad
       if (ciudadFiltro && esp.ciudad !== ciudadFiltro) return false;
 
+      // Filtro por idioma
+      if (idiomaFiltro && esp.idiomas && !esp.idiomas.includes(idiomaFiltro)) {
+        return false;
+      }
+
       // Filtro por rating
       if (ratingFiltro) {
         const minRating = parseFloat(ratingFiltro);
         if (esp.rating < minRating) return false;
+      }
+
+      // Filtro por precio
+      if (precioFiltro) {
+        const precioNumero = parseInt(esp.precio.replace(/\D/g, ""));
+        const precioMin = parseInt(precioFiltro.replace(/\D/g, ""));
+        if (precioNumero < precioMin) return false;
+      }
+
+      // Filtro por tipo de gestión
+      if (tipoGestionFiltro) {
+        const gestion = gestionesCompletas.find((g) => g.id === tipoGestionFiltro);
+        if (gestion) {
+          const tieneGestion =
+            esp.especialidades?.some((e) =>
+              e.toLowerCase().includes(gestion.titulo.toLowerCase().split(" ")[0])
+            ) || false;
+          if (!tieneGestion) return false;
+        }
       }
 
       // Filtro por búsqueda
@@ -125,7 +181,7 @@ export default function GestionesMigratorias() {
       }
 
       // Filtro por gestión seleccionada (si viene de la URL)
-      if (gestionSeleccionadaParam) {
+      if (gestionSeleccionadaParam && !tipoGestionFiltro) {
         const gestion = gestionesCompletas.find(
           (g) => g.id === gestionSeleccionadaParam
         );
@@ -144,13 +200,20 @@ export default function GestionesMigratorias() {
   }, [
     especialistas,
     ciudadFiltro,
+    idiomaFiltro,
+    precioFiltro,
     ratingFiltro,
+    tipoGestionFiltro,
     busqueda,
     gestionSeleccionadaParam,
   ]);
 
   const ciudades = Array.from(
     new Set(especialistas.map((e) => e.ciudad))
+  ).sort();
+
+  const idiomasDisponibles = Array.from(
+    new Set(especialistas.flatMap((e) => e.idiomas || []))
   ).sort();
 
   const handleSeleccionarGestion = (gestionId: string) => {
@@ -182,7 +245,8 @@ export default function GestionesMigratorias() {
               <h3 className="font-semibold text-white mb-1">Aviso Importante</h3>
               <p className="text-sm text-white/80">
                 Servicio privado de gestoría y acompañamiento. No somos un organismo público ni
-                pertenecemos a la Dirección General de Migraciones.
+                pertenecemos a la Dirección General de Migraciones. La aprobación final y decisiones
+                dependen de las autoridades competentes.
               </p>
             </div>
           </div>
@@ -206,7 +270,7 @@ export default function GestionesMigratorias() {
           </div>
 
           {/* Filtros */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <select
               value={ciudadFiltro}
               onChange={(e) => setCiudadFiltro(e.target.value)}
@@ -221,14 +285,16 @@ export default function GestionesMigratorias() {
             </select>
 
             <select
-              value={ratingFiltro}
-              onChange={(e) => setRatingFiltro(e.target.value)}
+              value={idiomaFiltro}
+              onChange={(e) => setIdiomaFiltro(e.target.value)}
               className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
             >
-              <option value="">Todas las calificaciones</option>
-              <option value="4.5">⭐ 4.5+</option>
-              <option value="4.7">⭐ 4.7+</option>
-              <option value="4.8">⭐ 4.8+</option>
+              <option value="">Todos los idiomas</option>
+              {idiomasDisponibles.map((idioma) => (
+                <option key={idioma} value={idioma}>
+                  {idioma}
+                </option>
+              ))}
             </select>
 
             <select
@@ -242,19 +308,59 @@ export default function GestionesMigratorias() {
               <option value="ambas">Ambas</option>
             </select>
 
+            <select
+              value={tipoGestionFiltro}
+              onChange={(e) => setTipoGestionFiltro(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+            >
+              <option value="">Todos los tipos de gestión</option>
+              {gestionesCompletas.map((gestion) => (
+                <option key={gestion.id} value={gestion.id}>
+                  {gestion.titulo}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={precioFiltro}
+              onChange={(e) => setPrecioFiltro(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+            >
+              <option value="">Cualquier precio</option>
+              <option value="100000">Desde Gs. 100.000</option>
+              <option value="150000">Desde Gs. 150.000</option>
+              <option value="200000">Desde Gs. 200.000</option>
+              <option value="300000">Desde Gs. 300.000</option>
+            </select>
+
+            <select
+              value={ratingFiltro}
+              onChange={(e) => setRatingFiltro(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+            >
+              <option value="">Todas las calificaciones</option>
+              <option value="4.5">⭐ 4.5+</option>
+              <option value="4.7">⭐ 4.7+</option>
+              <option value="4.8">⭐ 4.8+</option>
+            </select>
+          </div>
+
+          {/* Botón limpiar filtros */}
+          <div className="pt-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
                 setCiudadFiltro("");
+                setIdiomaFiltro("");
                 setPrecioFiltro("");
                 setRatingFiltro("");
                 setModalidadFiltro("");
+                setTipoGestionFiltro("");
                 setBusqueda("");
               }}
-              className="w-full"
             >
-              Limpiar Filtros
+              Limpiar Todos los Filtros
             </Button>
           </div>
 
