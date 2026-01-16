@@ -540,38 +540,29 @@ export default function GestionesMigratorias() {
           <h2 className="text-xl md:text-2xl font-bold text-white">
             Seguimiento y Soporte
           </h2>
-          <div className="space-y-3 text-white/80">
-            <div className="flex items-start gap-3">
-              <span className="text-[#C9A24D] mt-1">✓</span>
-              <p>
-                Desde nuestra plataforma podés dar seguimiento a tus trámites migratorios en tiempo
-                real.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-[#C9A24D] mt-1">✓</span>
-              <p>
-                Recibí actualizaciones automáticas sobre el estado de tu expediente y próximos
-                pasos a seguir.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-[#C9A24D] mt-1">✓</span>
-              <p>
-                Comunicate directamente con tu especialista asignado a través del chat integrado.
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-[#C9A24D] mt-1">✓</span>
-              <p>
-                Accedé a todos tus documentos y comprobantes desde tu panel de usuario.
-              </p>
-            </div>
-          </div>
+          <p className="text-white/80 leading-relaxed">
+            Desde Legal PY podés cargar tus documentos, ver el checklist, recibir recordatorios,
+            chatear con tu especialista y hacer seguimiento del estado del trámite. El especialista
+            te informa avances, observaciones y próximos pasos.
+          </p>
           <div className="pt-4">
             <Link href="/profesional/alta">
               <Button variant="primary">Contratar Servicio</Button>
             </Link>
+          </div>
+        </div>
+      </Card>
+
+      {/* Disclaimer al pie */}
+      <Card className="bg-[#C08457]/10 border-[#C08457]/30">
+        <div className="flex items-start gap-3">
+          <div className="text-xl">ℹ️</div>
+          <div>
+            <p className="text-xs text-white/70 leading-relaxed">
+              <strong>Servicio privado de gestoría y acompañamiento.</strong> No somos un organismo
+              público ni pertenecemos a la Dirección General de Migraciones. La aprobación final y
+              decisiones dependen de las autoridades competentes.
+            </p>
           </div>
         </div>
       </Card>
