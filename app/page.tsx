@@ -69,8 +69,24 @@ export default function Home() {
   return (
     <div className="space-y-10">
       {/* HERO */}
-      <section className="rounded-2xl border border-white/10 bg-gradient-to-b from-[#13253A] to-transparent p-6 md:p-10">
-        <div className="max-w-3xl">
+      <section className="relative rounded-2xl border border-white/10 bg-gradient-to-b from-[#13253A] to-transparent p-6 md:p-10 overflow-hidden">
+        {/* Imagen de fondo - Libros, balanza, etc. */}
+        <div className="absolute inset-0 opacity-10 md:opacity-15">
+          <Image
+            src="/avatars/icono_abogados_-removebg-preview.png"
+            alt="Fondo legal"
+            fill
+            className="object-cover object-center"
+            priority
+            unoptimized
+          />
+        </div>
+
+        {/* Overlay para mejorar legibilidad */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#13253A]/90 via-[#13253A]/70 to-transparent" />
+
+        {/* Contenido */}
+        <div className="relative max-w-3xl z-10">
           <h1 className="text-3xl md:text-5xl font-extrabold leading-tight text-white">
             {t.home.heroTitlePrefix}{" "}
             <span className="text-[#C9A24D]">{t.home.heroTitleHighlight}</span>
