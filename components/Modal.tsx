@@ -8,9 +8,11 @@ interface ModalProps {
   children: ReactNode;
   title?: string;
   className?: string;
+  position?: "center" | "below-button";
+  buttonPosition?: { top: number; right: number };
 }
 
-export default function Modal({ isOpen, onClose, children, title, className = "" }: ModalProps) {
+export default function Modal({ isOpen, onClose, children, title, className = "", position = "center", buttonPosition }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -41,8 +43,19 @@ export default function Modal({ isOpen, onClose, children, title, className = ""
 
   if (!isOpen) return null;
 
+  const positionClasses = position === "below-button" 
+    ? "flex items-start justify-end"
+    : "flex items-center justify-center p-4";
+
+  const modalStyle = position === "below-button" && buttonPosition
+    ? {
+        top: `${buttonPosition.top}px`,
+        right: `${buttonPosition.right}px`,
+      }
+    : {};
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className={`fixed inset-0 z-50 ${positionClasses}`}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
@@ -51,7 +64,8 @@ export default function Modal({ isOpen, onClose, children, title, className = ""
 
       {/* Modal Content */}
       <div
-        className={`relative w-full max-w-md rounded-2xl border border-white/10 bg-[#13253A] shadow-2xl ${className}`}
+        className={`relative w-full max-w-md rounded-2xl border border-white/10 bg-[#13253A] shadow-2xl ${position === "below-button" ? "m-4 absolute" : ""} ${className}`}
+        style={modalStyle}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (

@@ -8,11 +8,12 @@ import { useRouter } from "next/navigation";
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  buttonPosition?: { top: number; right: number };
 }
 
 type View = "login" | "forgot" | "confirm" | "reset";
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, buttonPosition }: LoginModalProps) {
   const router = useRouter();
   const [view, setView] = useState<View>("login");
   const [email, setEmail] = useState("");
@@ -44,27 +45,68 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
     setLoading(true);
 
-    // Simular login (demo)
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Llamar a la API de OpenAI para validar y obtener respuesta
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: `Necesito iniciar sesión con email: ${email} y verificar si existe una cuenta profesional en LegalPy. Responde de forma amigable si la cuenta existe o si necesita crear una cuenta.`,
+            },
+          ],
+        }),
+      });
+
+      const data = await response.json();
+
       // Verificar si existe cuenta en localStorage
       const savedAccount = localStorage.getItem("mockProfessionalAccount");
       if (savedAccount) {
         const account = JSON.parse(savedAccount);
         if (account.email === email) {
           // Login exitoso - redirigir al panel
+          setLoading(false);
+          onClose();
+          router.push("/profesional/panel");
+          return;
+        }
+      }
+
+      // Si no hay cuenta, usar respuesta de OpenAI
+      setLoading(false);
+      if (data.text) {
+        setErrors({
+          general: data.text || "No existe una cuenta con este email. ¿Quieres crear una cuenta?",
+        });
+      } else {
+        setErrors({
+          general: "No existe una cuenta con este email. ¿Quieres crear una cuenta?",
+        });
+      }
+    } catch (error) {
+      console.error("Error en login:", error);
+      setLoading(false);
+      // Fallback a verificación local
+      const savedAccount = localStorage.getItem("mockProfessionalAccount");
+      if (savedAccount) {
+        const account = JSON.parse(savedAccount);
+        if (account.email === email) {
           onClose();
           router.push("/profesional/panel");
         } else {
           setErrors({ general: "Email o contraseña incorrectos" });
         }
       } else {
-        // No hay cuenta - mostrar mensaje o crear demo
         setErrors({
           general: "No existe una cuenta con este email. ¿Quieres crear una cuenta?",
         });
       }
-    }, 1000);
+    }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -158,7 +200,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Iniciar Sesión">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Iniciar Sesión"
+      position={buttonPosition ? "below-button" : "center"}
+      buttonPosition={buttonPosition}
+    >
       {view === "login" && (
         <form onSubmit={handleLogin} className="space-y-4">
           {errors.general && (

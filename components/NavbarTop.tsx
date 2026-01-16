@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Button from "./Button";
 import { useI18n } from "./I18nProvider";
 import LanguageSelector from "./LanguageSelector";
@@ -11,7 +11,19 @@ import LoginModal from "./LoginModal";
 export default function NavbarTop() {
   const [notifications, setNotifications] = useState(3); // Demo: 3 notificaciones
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [buttonPosition, setButtonPosition] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const { t, idioma, setIdioma } = useI18n();
+
+  useEffect(() => {
+    if (isLoginModalOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setButtonPosition({
+        top: rect.bottom + 10,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, [isLoginModalOpen]);
 
   const navItems = [
     { href: "/", label: t.nav.inicio },
@@ -89,13 +101,15 @@ export default function NavbarTop() {
 
           {/* Desktop CTAs */}
           <div className="hidden sm:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsLoginModalOpen(true)}
-            >
-              {t.nav.soyProfesional}
-            </Button>
+            <div className="relative" ref={buttonRef as any}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsLoginModalOpen(true)}
+              >
+                {t.nav.iniciarSesion}
+              </Button>
+            </div>
             <Link href="/profesional/alta">
               <Button variant="primary" size="sm">
                 {t.profesional.suscribirme}
@@ -117,10 +131,11 @@ export default function NavbarTop() {
         </div>
       </div>
 
-      {/* Login Modal */}
+      {/* Login Modal - Posicionado debajo del botón */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+        buttonPosition={buttonPosition}
       />
     </header>
   );

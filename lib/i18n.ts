@@ -13,6 +13,7 @@ export interface Diccionario {
     mensajes: string;
     traduccion: string;
     soyProfesional: string;
+    iniciarSesion: string;
     publicarCaso: string;
   };
   footer: {
@@ -134,6 +135,7 @@ const diccionarios: Record<Idioma, Diccionario> = {
       mensajes: "Mensajes",
       traduccion: "Traducción",
       soyProfesional: "Soy profesional",
+      iniciarSesion: "Iniciar sesión",
       publicarCaso: "Publicar caso",
     },
     footer: {
@@ -257,6 +259,7 @@ const diccionarios: Record<Idioma, Diccionario> = {
       mensajes: "Ñe'ẽmondo",
       traduccion: "Ñemongu'e",
       soyProfesional: "Che mba'apohára",
+      iniciarSesion: "Eñepyrũ",
       publicarCaso: "Mba'e ojehechaukáva",
     },
     footer: {
@@ -380,6 +383,7 @@ const diccionarios: Record<Idioma, Diccionario> = {
       mensajes: "Messages",
       traduccion: "Translation",
       soyProfesional: "I'm a professional",
+      iniciarSesion: "Sign in",
       publicarCaso: "Publish case",
     },
     footer: {
@@ -503,6 +507,7 @@ const diccionarios: Record<Idioma, Diccionario> = {
       mensajes: "Mensagens",
       traduccion: "Tradução",
       soyProfesional: "Sou profissional",
+      iniciarSesion: "Entrar",
       publicarCaso: "Publicar caso",
     },
     footer: {
