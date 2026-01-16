@@ -157,6 +157,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Especialista en derecho de familia y sucesiones.",
     especialidades: ["Familiar", "Civil"],
     idiomas: ["Español", "Guaraní"],
+    avatar: "/avatars/icono_abogada_avatar.jpeg",
   },
   {
     id: "6",
@@ -171,6 +172,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Especialista en derecho penal y procesal penal.",
     especialidades: ["Penal"],
     idiomas: ["Español"],
+    avatar: "/avatars/icono_abogado_avatar.jpeg",
   },
   // ESCRIBANOS
   {
@@ -186,6 +188,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Escribana pública con amplia experiencia en actas y escrituras.",
     especialidades: ["Notarial", "Registral"],
     idiomas: ["Español"],
+    avatar: "/avatars/icono_abogada_avatar.jpeg",
   },
   {
     id: "7",
@@ -200,6 +203,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Escribano público especializado en poderes y certificaciones.",
     especialidades: ["Notarial"],
     idiomas: ["Español", "Guaraní"],
+    avatar: "/avatars/icono_abogado_avatar.jpeg",
   },
   // DESPACHANTES
   {
@@ -215,6 +219,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Especialista en trámites aduaneros y comercio exterior.",
     especialidades: ["Aduanero", "Comercio Exterior"],
     idiomas: ["Español", "Portugués"],
+    avatar: "/avatars/icono_abogado_avatar.jpeg",
   },
   {
     id: "9",
@@ -229,6 +234,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Experta en importación y exportación.",
     especialidades: ["Aduanero"],
     idiomas: ["Español", "Inglés"],
+    avatar: "/avatars/icono_abogada_avatar.jpeg",
   },
   // GESTORES
   {
@@ -244,6 +250,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Gestor especializado en trámites administrativos.",
     especialidades: ["RUC", "Registro de Comercio"],
     idiomas: ["Español"],
+    avatar: "/avatars/icono_abogado_avatar.jpeg",
   },
   {
     id: "11",
@@ -258,6 +265,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Experta en trámites municipales y licencias.",
     especialidades: ["Licencias", "Trámites Municipales"],
     idiomas: ["Español"],
+    avatar: "/avatars/icono_abogada_avatar.jpeg",
   },
   // OFICIAL DE JUSTICIA
   {
@@ -273,6 +281,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Oficial de justicia especializado en notificaciones y diligencias.",
     especialidades: ["Notificaciones", "Diligencias"],
     idiomas: ["Español"],
+    avatar: "/avatars/icono_abogado_avatar.jpeg",
   },
   {
     id: "13",
@@ -287,6 +296,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Experta en notificaciones y constancias judiciales.",
     especialidades: ["Notificaciones", "Constancias"],
     idiomas: ["Español"],
+    avatar: "/avatars/icono_abogada_avatar.jpeg",
   },
   // GESTIONES MIGRATORIAS
   {
@@ -302,6 +312,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Especialista en trámites migratorios y residencias. Asesoramiento y gestión privada de documentos para extranjeros.",
     especialidades: ["Asesoramiento para residencia temporal", "Asesoramiento para residencia permanente", "Renovación / actualización de residencia", "Cédula de identidad para extranjeros", "Regularización migratoria", "Preparación y revisión de carpeta", "Turnos y acompañamiento", "Seguimiento de expediente"],
     idiomas: ["Español", "Inglés"],
+    avatar: "/avatars/icono_abogado_avatar.jpeg",
   },
   {
     id: "15",
@@ -316,6 +327,7 @@ export const mockProfesionales: Profesional[] = [
     descripcion: "Experta en trámites para extranjeros. Preparación de carpetas y seguimiento de expedientes.",
     especialidades: ["Asesoramiento para residencia permanente", "Regularización migratoria", "Reagrupación familiar", "Preparación y revisión de carpeta", "Gestión de antecedentes, legalizaciones y apostillas", "Atención y soporte durante el proceso"],
     idiomas: ["Español", "Portugués"],
+    avatar: "/avatars/icono_abogada_avatar.jpeg",
   },
 ];
 

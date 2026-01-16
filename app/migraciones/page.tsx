@@ -274,11 +274,12 @@ export default function GestionesMigratorias() {
             <select
               value={ciudadFiltro}
               onChange={(e) => setCiudadFiltro(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              className="px-4 py-2 rounded-xl bg-[#13253A] border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="">Todas las ciudades</option>
+              <option value="" className="bg-[#13253A] text-white">Todas las ciudades</option>
               {ciudades.map((ciudad) => (
-                <option key={ciudad} value={ciudad}>
+                <option key={ciudad} value={ciudad} className="bg-[#13253A] text-white">
                   {ciudad}
                 </option>
               ))}
@@ -287,11 +288,12 @@ export default function GestionesMigratorias() {
             <select
               value={idiomaFiltro}
               onChange={(e) => setIdiomaFiltro(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              className="px-4 py-2 rounded-xl bg-[#13253A] border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="">Todos los idiomas</option>
+              <option value="" className="bg-[#13253A] text-white">Todos los idiomas</option>
               {idiomasDisponibles.map((idioma) => (
-                <option key={idioma} value={idioma}>
+                <option key={idioma} value={idioma} className="bg-[#13253A] text-white">
                   {idioma}
                 </option>
               ))}
@@ -300,22 +302,24 @@ export default function GestionesMigratorias() {
             <select
               value={modalidadFiltro}
               onChange={(e) => setModalidadFiltro(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              className="px-4 py-2 rounded-xl bg-[#13253A] border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="">Todas las modalidades</option>
-              <option value="presencial">Presencial</option>
-              <option value="online">Online</option>
-              <option value="ambas">Ambas</option>
+              <option value="" className="bg-[#13253A] text-white">Todas las modalidades</option>
+              <option value="presencial" className="bg-[#13253A] text-white">Presencial</option>
+              <option value="online" className="bg-[#13253A] text-white">Online</option>
+              <option value="ambas" className="bg-[#13253A] text-white">Ambas</option>
             </select>
 
             <select
               value={tipoGestionFiltro}
               onChange={(e) => setTipoGestionFiltro(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              className="px-4 py-2 rounded-xl bg-[#13253A] border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="">Todos los tipos de gestión</option>
+              <option value="" className="bg-[#13253A] text-white">Todos los tipos de gestión</option>
               {gestionesCompletas.map((gestion) => (
-                <option key={gestion.id} value={gestion.id}>
+                <option key={gestion.id} value={gestion.id} className="bg-[#13253A] text-white">
                   {gestion.titulo}
                 </option>
               ))}
@@ -324,24 +328,26 @@ export default function GestionesMigratorias() {
             <select
               value={precioFiltro}
               onChange={(e) => setPrecioFiltro(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              className="px-4 py-2 rounded-xl bg-[#13253A] border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="">Cualquier precio</option>
-              <option value="100000">Desde Gs. 100.000</option>
-              <option value="150000">Desde Gs. 150.000</option>
-              <option value="200000">Desde Gs. 200.000</option>
-              <option value="300000">Desde Gs. 300.000</option>
+              <option value="" className="bg-[#13253A] text-white">Cualquier precio</option>
+              <option value="100000" className="bg-[#13253A] text-white">Desde Gs. 100.000</option>
+              <option value="150000" className="bg-[#13253A] text-white">Desde Gs. 150.000</option>
+              <option value="200000" className="bg-[#13253A] text-white">Desde Gs. 200.000</option>
+              <option value="300000" className="bg-[#13253A] text-white">Desde Gs. 300.000</option>
             </select>
 
             <select
               value={ratingFiltro}
               onChange={(e) => setRatingFiltro(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              className="px-4 py-2 rounded-xl bg-[#13253A] border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+              style={{ colorScheme: 'dark' }}
             >
-              <option value="">Todas las calificaciones</option>
-              <option value="4.5">⭐ 4.5+</option>
-              <option value="4.7">⭐ 4.7+</option>
-              <option value="4.8">⭐ 4.8+</option>
+              <option value="" className="bg-[#13253A] text-white">Todas las calificaciones</option>
+              <option value="4.5" className="bg-[#13253A] text-white">⭐ 4.5+</option>
+              <option value="4.7" className="bg-[#13253A] text-white">⭐ 4.7+</option>
+              <option value="4.8" className="bg-[#13253A] text-white">⭐ 4.8+</option>
             </select>
           </div>
 
