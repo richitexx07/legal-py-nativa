@@ -30,7 +30,7 @@ export default function CursoDetallePage() {
     metodoPago: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [snackbar, setSnackbar] = useState({ isOpen: false, message: "", type: "info" as const });
+  const [snackbar, setSnackbar] = useState<{ isOpen: boolean; message: string; type: "success" | "error" | "info" | "warning" }>({ isOpen: false, message: "", type: "info" });
 
   if (!curso) {
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/Card";
@@ -9,7 +9,7 @@ import FormField from "@/components/FormField";
 import Snackbar from "@/components/Snackbar";
 import { mockPasantias, PostulacionPasantia } from "@/lib/educacion-data";
 
-export default function PostularPasantiaPage() {
+function PostularPasantiaPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pasantiaId = searchParams.get("pasantia");
@@ -28,7 +28,7 @@ export default function PostularPasantiaPage() {
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [snackbar, setSnackbar] = useState({ isOpen: false, message: "", type: "info" as const });
+  const [snackbar, setSnackbar] = useState<{ isOpen: boolean; message: string; type: "success" | "error" | "info" | "warning" }>({ isOpen: false, message: "", type: "info" });
 
   useEffect(() => {
     if (!pasantia) {
@@ -81,7 +81,7 @@ export default function PostularPasantiaPage() {
       universidad: formData.universidad,
       carrera: formData.carrera,
       semestre: parseInt(formData.semestre),
-      cv: cvFile.name,
+      cv: cvFile?.name || "sin_cv.pdf",
       disponibilidadHoraria: formData.disponibilidadHoraria,
       motivacion: formData.motivacion,
       fechaPostulacion: new Date().toISOString(),
@@ -270,5 +270,21 @@ export default function PostularPasantiaPage() {
         onClose={() => setSnackbar({ ...snackbar, isOpen: false })}
       />
     </div>
+  );
+}
+
+export default function PostularPasantiaPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6">
+        <Card>
+          <div className="text-center py-8">
+            <p className="text-white/70">Cargando...</p>
+          </div>
+        </Card>
+      </div>
+    }>
+      <PostularPasantiaPageContent />
+    </Suspense>
   );
 }

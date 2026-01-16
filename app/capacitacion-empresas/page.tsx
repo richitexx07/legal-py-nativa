@@ -23,7 +23,7 @@ export default function CapacitacionEmpresasPage() {
     presupuesto: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [snackbar, setSnackbar] = useState({ isOpen: false, message: "", type: "info" as const });
+  const [snackbar, setSnackbar] = useState<{ isOpen: boolean; message: string; type: "success" | "error" | "info" | "warning" }>({ isOpen: false, message: "", type: "info" });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

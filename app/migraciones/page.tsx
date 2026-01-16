@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
@@ -104,7 +104,7 @@ const gestionesCompletas: Gestion[] = [
   },
 ];
 
-export default function GestionesMigratorias() {
+function GestionesMigratoriasContent() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const gestionSeleccionadaParam = searchParams.get("gestion");
@@ -573,5 +573,21 @@ export default function GestionesMigratorias() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function GestionesMigratorias() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6">
+        <Card>
+          <div className="text-center py-8">
+            <p className="text-white/70">Cargando...</p>
+          </div>
+        </Card>
+      </div>
+    }>
+      <GestionesMigratoriasContent />
+    </Suspense>
   );
 }

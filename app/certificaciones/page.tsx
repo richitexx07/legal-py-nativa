@@ -15,7 +15,7 @@ export default function CertificacionesPage() {
     certificado?: typeof mockCertificaciones[0];
     mensaje: string;
   } | null>(null);
-  const [snackbar, setSnackbar] = useState({ isOpen: false, message: "", type: "info" as const });
+  const [snackbar, setSnackbar] = useState<{ isOpen: boolean; message: string; type: "success" | "error" | "info" | "warning" }>({ isOpen: false, message: "", type: "info" });
 
   const handleVerificar = (e: React.FormEvent) => {
     e.preventDefault();

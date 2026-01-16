@@ -9,15 +9,27 @@ interface Tab {
 }
 
 interface TabsProps {
-  tabs: Tab[];
+  tabs: Tab[] | Array<{ id: string; label: string }>;
   defaultTab?: string;
+  activeTab?: string;
+  onTabChange?: (tabId: string) => void;
   className?: string;
 }
 
-export default function Tabs({ tabs, defaultTab, className = "" }: TabsProps) {
-  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+export default function Tabs({ tabs, defaultTab, activeTab: externalActiveTab, onTabChange, className = "" }: TabsProps) {
+  const [internalActiveTab, setInternalActiveTab] = useState(defaultTab || tabs[0]?.id);
+  const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
+  
+  const handleTabChange = (tabId: string) => {
+    if (onTabChange) {
+      onTabChange(tabId);
+    } else {
+      setInternalActiveTab(tabId);
+    }
+  };
 
-  const activeContent = tabs.find((tab) => tab.id === activeTab)?.content;
+  const activeTabData = tabs.find((tab) => tab.id === activeTab);
+  const activeContent = activeTabData && 'content' in activeTabData ? (activeTabData as Tab).content : null;
 
   return (
     <div className={className}>
@@ -25,7 +37,7 @@ export default function Tabs({ tabs, defaultTab, className = "" }: TabsProps) {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             className={`px-4 py-2 text-sm font-medium transition ${
               activeTab === tab.id
                 ? "border-b-2 border-[#C9A24D] text-[#C9A24D]"
@@ -36,7 +48,7 @@ export default function Tabs({ tabs, defaultTab, className = "" }: TabsProps) {
           </button>
         ))}
       </div>
-      <div className="mt-4">{activeContent}</div>
+      {activeContent && <div className="mt-4">{activeContent}</div>}
     </div>
   );
 }

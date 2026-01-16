@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/components/I18nProvider";
 import Link from "next/link";
@@ -8,7 +9,7 @@ import Button from "@/components/Button";
 import Image from "next/image";
 import { mockProfesionales, mockCategorias } from "@/lib/mock-data";
 
-export default function Profesionales() {
+function ProfesionalesContent() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const categoriaParam = searchParams.get("categoria");
@@ -123,5 +124,21 @@ export default function Profesionales() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Profesionales() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6">
+        <Card>
+          <div className="text-center py-8">
+            <p className="text-white/70">Cargando...</p>
+          </div>
+        </Card>
+      </div>
+    }>
+      <ProfesionalesContent />
+    </Suspense>
   );
 }
