@@ -240,6 +240,118 @@ export default function Home() {
         </div>
       </section>
 
+      {/* EDUCACIÓN Y CAPACITACIÓN */}
+      <section className="space-y-4">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold text-white">Educación y Capacitación</h2>
+            <p className="mt-1 text-sm text-white/60">
+              Cursos, especializaciones y programas de desarrollo profesional
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Cursos */}
+          <Link href="/cursos">
+            <Card hover className="h-full">
+              <div className="flex flex-col h-full">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#C9A24D]/20">
+                  <svg
+                    className="h-8 w-8 text-[#C9A24D]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-[#C9A24D] text-lg mb-2">Cursos y Capacitación</h3>
+                <p className="text-sm text-white/70 mb-4 flex-1">
+                  Cursos prácticos y actualizados para profesionales del derecho. Modalidad online, presencial o híbrida.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                  <span className="text-xs text-white/60">Catálogo completo</span>
+                  <Button variant="outline" size="sm">
+                    Ver cursos
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          {/* Especializaciones */}
+          <Link href="/especializaciones">
+            <Card hover className="h-full">
+              <div className="flex flex-col h-full">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#C08457]/20">
+                  <svg
+                    className="h-8 w-8 text-[#C08457]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-[#C08457] text-lg mb-2">Especializaciones</h3>
+                <p className="text-sm text-white/70 mb-4 flex-1">
+                  Programas de especialización avanzada en diversas áreas del derecho. Paraguay e internacional.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                  <span className="text-xs text-white/60">Programas especializados</span>
+                  <Button variant="outline" size="sm">
+                    Ver especializaciones
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          {/* Pasantías */}
+          <Link href="/pasantias">
+            <Card hover className="h-full">
+              <div className="flex flex-col h-full">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#C9A24D]/20">
+                  <svg
+                    className="h-8 w-8 text-[#C9A24D]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="font-semibold text-[#C9A24D] text-lg mb-2">Pasantías Laborales</h3>
+                <p className="text-sm text-white/70 mb-4 flex-1">
+                  Oportunidades de pasantía para secretarios/as y asistentes estudiantes. Experiencia práctica en entorno legal.
+                </p>
+                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                  <span className="text-xs text-white/60">Programa de pasantías</span>
+                  <Button variant="outline" size="sm">
+                    Ver pasantías
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </Link>
+        </div>
+      </section>
+
       {/* ACCESOS RÁPIDOS */}
       <section className="space-y-4">
         <h2 className="text-xl md:text-2xl font-bold text-white">{t.home.quickAccessTitle}</h2>
