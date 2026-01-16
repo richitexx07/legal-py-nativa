@@ -15,7 +15,12 @@ export default function Profesionales() {
 
   // Filtrar profesionales por categoría
   const profesionalesFiltrados = categoriaParam
-    ? mockProfesionales.filter((p) => p.categoria === categoriaParam)
+    ? mockProfesionales.filter((p) => {
+        // Normalizar comparación (eliminar espacios y mayúsculas/minúsculas)
+        const categoriaNormalizada = categoriaParam.trim();
+        const profesionalCategoria = p.categoria?.trim();
+        return profesionalCategoria === categoriaNormalizada;
+      })
     : mockProfesionales;
 
   // Obtener título de categoría

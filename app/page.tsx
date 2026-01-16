@@ -98,7 +98,7 @@ export default function Home() {
           {categoriasPrincipales.map((cat) => (
             <Link
               key={cat.id}
-              href={cat.href === "/profesionales" ? `/profesionales?categoria=${cat.titulo}` : cat.href}
+              href={`/profesionales?categoria=${encodeURIComponent(cat.titulo)}`}
             >
               <Card hover className="h-full">
                 <div className="flex flex-col items-center text-center">
