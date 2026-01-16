@@ -241,7 +241,7 @@ export default function Home() {
       </section>
 
       {/* EDUCACIÓN Y CAPACITACIÓN */}
-      <section className="space-y-4">
+      <section className="space-y-4" id="educacion">
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-white">Educación y Capacitación</h2>
