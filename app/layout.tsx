@@ -9,11 +9,19 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Legal Py",
   description: "La plataforma legal integral de Paraguay",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+      </head>
       <body className="min-h-screen bg-[#0E1B2A] text-white">
         <I18nProvider>
           {/* Top Navigation - Desktop */}
