@@ -73,7 +73,7 @@ export default function Home() {
         {/* Imagen de fondo - Libros, balanza, etc. */}
         <div className="absolute inset-0 opacity-10 md:opacity-15">
           <Image
-            src="/avatars/icono_abogados_-removebg-preview.png"
+            src="/avatars/icono_abogados.jpeg"
             alt="Fondo legal"
             fill
             className="object-cover object-center"
