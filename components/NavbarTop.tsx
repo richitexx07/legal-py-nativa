@@ -28,12 +28,14 @@ export default function NavbarTop() {
   const navItems = [
     { href: "/", label: t.nav.inicio },
     { href: "/profesionales", label: t.nav.profesionales },
+    { href: "/cursos", label: "Cursos" },
+    { href: "/especializaciones", label: "Especializaciones" },
+    { href: "/pasantias", label: "Pasantías" },
     { href: "/gestores", label: t.nav.gestores },
     { href: "/ujieres", label: t.nav.ujieres },
     { href: "/casos", label: t.nav.casos },
     { href: "/migraciones", label: t.nav.migraciones },
     { href: "/chat", label: t.nav.mensajes },
-    { href: "/documentos/traduccion", label: t.nav.traduccion },
   ];
 
   return (
