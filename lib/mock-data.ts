@@ -5,7 +5,7 @@ export interface Profesional {
   nombre: string;
   titulo: string;
   especialidad: string;
-  categoria: "Abogados" | "Escribanos" | "Despachantes" | "Gestores" | "Oficial de Justicia" | "Migraciones";
+  categoria: "Abogados" | "Escribanos" | "Despachantes" | "Gestores" | "Oficial de Justicia" | "Gestiones Migratorias";
   ciudad: string;
   rating: number;
   experiencia: number;
@@ -288,33 +288,33 @@ export const mockProfesionales: Profesional[] = [
     especialidades: ["Notificaciones", "Constancias"],
     idiomas: ["Español"],
   },
-  // MIGRACIONES
+  // GESTIONES MIGRATORIAS
   {
     id: "14",
     nombre: "Mig. Luis Herrera",
-    titulo: "Especialista en Migraciones",
-    especialidad: "Migraciones",
-    categoria: "Migraciones",
+    titulo: "Especialista en Gestiones Migratorias",
+    especialidad: "Gestiones Migratorias",
+    categoria: "Gestiones Migratorias",
     ciudad: "Asunción",
     rating: 4.8,
     experiencia: 10,
     precio: "desde Gs. 150.000",
-    descripcion: "Especialista en trámites migratorios y residencias.",
-    especialidades: ["Residencias", "Cédulas"],
+    descripcion: "Especialista en trámites migratorios y residencias. Asesoramiento y gestión privada de documentos para extranjeros.",
+    especialidades: ["Residencia", "Cédula para extranjeros", "Regularización", "Renovación de documentos", "Turnos"],
     idiomas: ["Español", "Inglés"],
   },
   {
     id: "15",
     nombre: "Mig. Carmen Díaz",
-    titulo: "Especialista en Migraciones",
-    especialidad: "Migraciones",
-    categoria: "Migraciones",
+    titulo: "Especialista en Gestiones Migratorias",
+    especialidad: "Gestiones Migratorias",
+    categoria: "Gestiones Migratorias",
     ciudad: "Ciudad del Este",
     rating: 4.7,
     experiencia: 8,
     precio: "desde Gs. 140.000",
-    descripcion: "Experta en trámites para extranjeros.",
-    especialidades: ["Migraciones"],
+    descripcion: "Experta en trámites para extranjeros. Preparación de carpetas y seguimiento de expedientes.",
+    especialidades: ["Residencia", "Cédula para extranjeros", "Regularización", "Asesoramiento", "Preparación de carpetas"],
     idiomas: ["Español", "Portugués"],
   },
 ];
@@ -436,8 +436,8 @@ export const mockCategorias: Categoria[] = [
   },
   {
     id: "6",
-    titulo: "Migraciones",
-    descripcion: "Residencia, cédula, trámites para extranjeros",
+    titulo: "Gestiones Migratorias",
+    descripcion: "Residencia · Documentos · Regularización",
     href: "/migraciones",
     icono: "/avatars/icono_migraciones_-removebg-preview.png",
   },

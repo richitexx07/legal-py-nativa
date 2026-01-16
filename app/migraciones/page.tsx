@@ -1,466 +1,474 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
+import Link from "next/link";
+import Image from "next/image";
+import { mockProfesionales } from "@/lib/mock-data";
+import { useI18n } from "@/components/I18nProvider";
 
-interface Requisito {
-  id: string;
-  label: string;
-  obligatorio: boolean;
-  descripcion?: string;
-}
-
-interface TipoTramite {
+interface Gestion {
   id: string;
   titulo: string;
   descripcion: string;
-  requisitos: Requisito[];
-  costo: string;
-  tiempo: string;
   icono: string;
 }
 
-const tiposTramite: TipoTramite[] = [
+const gestionesCompletas: Gestion[] = [
   {
-    id: "temporaria",
+    id: "residencia-temporaria",
     titulo: "Residencia Temporaria",
-    descripcion: "Para extranjeros que desean residir en Paraguay por un período determinado",
+    descripcion: "Residencia temporal para extranjeros con estadía definida",
     icono: "📅",
-    requisitos: [
-      {
-        id: "1",
-        label: "Pasaporte vigente (mínimo 6 meses)",
-        obligatorio: true,
-        descripcion: "Original y copia",
-      },
-      {
-        id: "2",
-        label: "Certificado de antecedentes penales del país de origen",
-        obligatorio: true,
-        descripcion: "Debe estar apostillado o legalizado",
-      },
-      {
-        id: "3",
-        label: "Certificado médico",
-        obligatorio: true,
-        descripcion: "Emitido en Paraguay",
-      },
-      {
-        id: "4",
-        label: "Comprobante de ingresos",
-        obligatorio: true,
-        descripcion: "Últimos 3 meses",
-      },
-      {
-        id: "5",
-        label: "Comprobante de domicilio en Paraguay",
-        obligatorio: true,
-      },
-      {
-        id: "6",
-        label: "Fotografías 4x4",
-        obligatorio: true,
-        descripcion: "2 fotografías recientes",
-      },
-    ],
-    costo: "Gs. 500.000 - 800.000",
-    tiempo: "15-30 días hábiles",
   },
   {
-    id: "permanente",
+    id: "residencia-permanente",
     titulo: "Residencia Permanente",
-    descripcion: "Para extranjeros que desean establecerse permanentemente en Paraguay",
+    descripcion: "Residencia permanente para establecerse en Paraguay",
     icono: "🏠",
-    requisitos: [
-      {
-        id: "1",
-        label: "Todos los requisitos de residencia temporaria",
-        obligatorio: true,
-      },
-      {
-        id: "2",
-        label: "Certificado de nacimiento apostillado",
-        obligatorio: true,
-      },
-      {
-        id: "3",
-        label: "Certificado de matrimonio (si aplica)",
-        obligatorio: false,
-        descripcion: "Si está casado/a",
-      },
-      {
-        id: "4",
-        label: "Antecedentes penales de Paraguay",
-        obligatorio: true,
-        descripcion: "Si ya tiene residencia temporaria",
-      },
-      {
-        id: "5",
-        label: "Comprobante de 2 años de residencia temporaria",
-        obligatorio: true,
-      },
-    ],
-    costo: "Gs. 800.000 - 1.200.000",
-    tiempo: "30-90 días hábiles",
   },
   {
-    id: "cedula",
-    titulo: "Cédula Paraguaya",
-    descripcion: "Documento de identidad nacional para extranjeros con residencia permanente",
+    id: "cedula-extranjeros",
+    titulo: "Cédula para Extranjeros",
+    descripcion: "Documento de identidad para extranjeros con residencia",
     icono: "🆔",
-    requisitos: [
-      {
-        id: "1",
-        label: "Residencia permanente vigente",
-        obligatorio: true,
-      },
-      {
-        id: "2",
-        label: "Certificado de nacimiento original apostillado",
-        obligatorio: true,
-      },
-      {
-        id: "3",
-        label: "Certificado de matrimonio (si aplica)",
-        obligatorio: false,
-      },
-      {
-        id: "4",
-        label: "Fotografías 4x4",
-        obligatorio: true,
-        descripcion: "4 fotografías recientes",
-      },
-      {
-        id: "5",
-        label: "Comprobante de domicilio",
-        obligatorio: true,
-      },
-      {
-        id: "6",
-        label: "Turno en Registro Civil",
-        obligatorio: true,
-        descripcion: "Se gestiona a través del sistema",
-      },
-    ],
-    costo: "Gs. 300.000 - 500.000",
-    tiempo: "7-20 días hábiles",
   },
   {
-    id: "inversion",
-    titulo: "Residencia por Inversión",
-    descripcion: "Para extranjeros que realizan inversiones significativas en Paraguay",
+    id: "regularizacion",
+    titulo: "Regularización",
+    descripcion: "Regularización de situación migratoria",
+    icono: "✅",
+  },
+  {
+    id: "renovacion",
+    titulo: "Renovación de Documentos",
+    descripcion: "Renovación de residencia, cédula y otros documentos",
+    icono: "🔄",
+  },
+  {
+    id: "turnos",
+    titulo: "Gestión de Turnos",
+    descripcion: "Agendamiento de turnos en instituciones oficiales",
+    icono: "📋",
+  },
+  {
+    id: "preparacion-carpetas",
+    titulo: "Preparación de Carpetas",
+    descripcion: "Asistencia en preparación y organización de documentación",
+    icono: "📁",
+  },
+  {
+    id: "seguimiento",
+    titulo: "Seguimiento de Expedientes",
+    descripcion: "Monitoreo y actualizaciones del estado de trámites",
+    icono: "📊",
+  },
+  {
+    id: "asesoramiento",
+    titulo: "Asesoramiento Legal",
+    descripcion: "Consulta y asesoría sobre requisitos y procedimientos",
     icono: "💼",
-    requisitos: [
-      {
-        id: "1",
-        label: "Comprobante de inversión mínima de USD 5.000",
-        obligatorio: true,
-        descripcion: "En bienes raíces, empresa o depósito bancario",
-      },
-      {
-        id: "2",
-        label: "Documentación de la inversión",
-        obligatorio: true,
-        descripcion: "Escritura, contrato o certificado bancario",
-      },
-      {
-        id: "3",
-        label: "Pasaporte vigente",
-        obligatorio: true,
-      },
-      {
-        id: "4",
-        label: "Certificado de antecedentes penales",
-        obligatorio: true,
-        descripcion: "Apostillado o legalizado",
-      },
-      {
-        id: "5",
-        label: "Certificado médico",
-        obligatorio: true,
-      },
-      {
-        id: "6",
-        label: "Comprobante de ingresos",
-        obligatorio: true,
-      },
-    ],
-    costo: "Gs. 1.000.000 - 1.500.000",
-    tiempo: "20-45 días hábiles",
   },
 ];
 
-const idiomas = [
-  { codigo: "es", nombre: "Español", bandera: "🇪🇸" },
-  { codigo: "en", nombre: "English", bandera: "🇺🇸" },
-  { codigo: "pt", nombre: "Português", bandera: "🇧🇷" },
-  { codigo: "fr", nombre: "Français", bandera: "🇫🇷" },
-];
+export default function GestionesMigratorias() {
+  const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const gestionSeleccionadaParam = searchParams.get("gestion");
 
-const traducciones: Record<string, Record<string, string>> = {
-  es: {
-    titulo: "Trámites Migratorios",
-    subtitulo: "Servicios para extranjeros: residencia, documentos, asesoría y gestoría",
-    seleccionar: "Selecciona el tipo de trámite",
-    requisitos: "Requisitos",
-    costo: "Costo estimado",
-    tiempo: "Tiempo estimado",
-    iniciar: "Iniciar Trámite",
-    verDetalle: "Ver Detalle",
-    obligatorio: "Obligatorio",
-    opcional: "Opcional",
-    completados: "completados",
-    de: "de",
-  },
-  en: {
-    titulo: "Immigration Services",
-    subtitulo: "Services for foreigners: residence, documents, advice and management",
-    seleccionar: "Select the type of procedure",
-    requisitos: "Requirements",
-    costo: "Estimated cost",
-    tiempo: "Estimated time",
-    iniciar: "Start Procedure",
-    verDetalle: "View Details",
-    obligatorio: "Required",
-    opcional: "Optional",
-    completados: "completed",
-    de: "of",
-  },
-  pt: {
-    titulo: "Serviços de Imigração",
-    subtitulo: "Serviços para estrangeiros: residência, documentos, assessoria e gestão",
-    seleccionar: "Selecione o tipo de procedimento",
-    requisitos: "Requisitos",
-    costo: "Custo estimado",
-    tiempo: "Tempo estimado",
-    iniciar: "Iniciar Procedimento",
-    verDetalle: "Ver Detalhes",
-    obligatorio: "Obrigatório",
-    opcional: "Opcional",
-    completados: "completados",
-    de: "de",
-  },
-  fr: {
-    titulo: "Services d'Immigration",
-    subtitulo: "Services pour étrangers: résidence, documents, conseil et gestion",
-    seleccionar: "Sélectionnez le type de procédure",
-    requisitos: "Exigences",
-    costo: "Coût estimé",
-    tiempo: "Temps estimé",
-    iniciar: "Démarrer la Procédure",
-    verDetalle: "Voir les Détails",
-    obligatorio: "Obligatoire",
-    opcional: "Optionnel",
-    completados: "complétés",
-    de: "de",
-  },
-};
+  // Estados para filtros
+  const [ciudadFiltro, setCiudadFiltro] = useState<string>("");
+  const [precioFiltro, setPrecioFiltro] = useState<string>("");
+  const [ratingFiltro, setRatingFiltro] = useState<string>("");
+  const [modalidadFiltro, setModalidadFiltro] = useState<string>("");
+  const [busqueda, setBusqueda] = useState<string>("");
+  const [mostrarTodasGestiones, setMostrarTodasGestiones] = useState(false);
 
-export default function Migraciones() {
-  const [tipoSeleccionado, setTipoSeleccionado] = useState<string | null>(null);
-  const [idioma, setIdioma] = useState<string>("es");
-  const [checklist, setChecklist] = useState<Record<string, boolean>>({});
+  // Filtrar profesionales de Gestiones Migratorias
+  const especialistas = mockProfesionales.filter(
+    (p) => p.categoria === "Gestiones Migratorias"
+  );
 
-  const t = traducciones[idioma] || traducciones.es;
-  const tramiteActual = tiposTramite.find((t) => t.id === tipoSeleccionado);
+  // Gestiones destacadas (primeras 3)
+  const gestionesDestacadas = gestionesCompletas.slice(0, 3);
+  const gestionesParaMostrar = mostrarTodasGestiones
+    ? gestionesCompletas
+    : gestionesDestacadas;
 
-  const handleToggleCheck = (requisitoId: string) => {
-    setChecklist((prev) => ({
-      ...prev,
-      [requisitoId]: !prev[requisitoId],
-    }));
-  };
+  // Filtrar especialistas según filtros
+  const especialistasFiltrados = useMemo(() => {
+    return especialistas.filter((esp) => {
+      // Filtro por ciudad
+      if (ciudadFiltro && esp.ciudad !== ciudadFiltro) return false;
 
-  const requisitosCompletados = tramiteActual
-    ? tramiteActual.requisitos.filter((r) => checklist[r.id]).length
-  : 0;
-  const totalRequisitos = tramiteActual ? tramiteActual.requisitos.length : 0;
+      // Filtro por rating
+      if (ratingFiltro) {
+        const minRating = parseFloat(ratingFiltro);
+        if (esp.rating < minRating) return false;
+      }
 
-  const handleIniciar = () => {
-    if (tramiteActual) {
-      alert(
-        `Trámite de ${tramiteActual.titulo} iniciado (demo).\nRequisitos completados: ${requisitosCompletados}/${totalRequisitos}`
-      );
-    }
+      // Filtro por búsqueda
+      if (busqueda) {
+        const searchLower = busqueda.toLowerCase();
+        if (
+          !esp.nombre.toLowerCase().includes(searchLower) &&
+          !esp.titulo.toLowerCase().includes(searchLower) &&
+          !esp.especialidades?.some((e) =>
+            e.toLowerCase().includes(searchLower)
+          )
+        ) {
+          return false;
+        }
+      }
+
+      // Filtro por gestión seleccionada (si viene de la URL)
+      if (gestionSeleccionadaParam) {
+        const gestion = gestionesCompletas.find(
+          (g) => g.id === gestionSeleccionadaParam
+        );
+        if (gestion) {
+          // Verificar si el especialista tiene esta especialidad
+          const tieneGestion =
+            esp.especialidades?.some((e) =>
+              e.toLowerCase().includes(gestion.titulo.toLowerCase().split(" ")[0])
+            ) || false;
+          if (!tieneGestion) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [
+    especialistas,
+    ciudadFiltro,
+    ratingFiltro,
+    busqueda,
+    gestionSeleccionadaParam,
+  ]);
+
+  const ciudades = Array.from(
+    new Set(especialistas.map((e) => e.ciudad))
+  ).sort();
+
+  const handleSeleccionarGestion = (gestionId: string) => {
+    window.location.href = `/migraciones?gestion=${gestionId}`;
   };
 
   return (
     <div className="space-y-6">
-      {/* Header con selector de idioma */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white">{t.titulo}</h1>
-          <p className="mt-2 text-white/70">{t.subtitulo}</p>
+      {/* Header con Título, Subtítulo y Disclaimer */}
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white">
+            Gestiones Migratorias
+          </h1>
+          <p className="text-lg md:text-xl text-[#C9A24D] mt-2 font-semibold">
+            Residencia · Documentos · Regularización
+          </p>
+          <p className="text-white/70 mt-3 max-w-3xl">
+            Trámites para extranjeros en Paraguay: asesoramiento, gestión privada, turnos,
+            preparación de carpetas y seguimiento de expedientes.
+          </p>
         </div>
-        <div className="flex-shrink-0">
-          <label className="mb-2 block text-xs font-medium text-white/60">Idioma / Language</label>
-          <div className="flex gap-2">
-            {idiomas.map((lang) => (
-              <button
-                key={lang.codigo}
-                onClick={() => setIdioma(lang.codigo)}
-                className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm transition ${
-                  idioma === lang.codigo
-                    ? "bg-[#C9A24D] text-black font-semibold"
-                    : "bg-white/10 text-white/80 hover:bg-white/15"
-                }`}
-                title={lang.nombre}
-              >
-                <span>{lang.bandera}</span>
-                <span className="hidden sm:inline">{lang.codigo.toUpperCase()}</span>
-              </button>
-            ))}
+
+        {/* Disclaimer Legal */}
+        <Card className="bg-[#C08457]/10 border-[#C08457]/30">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">⚠️</div>
+            <div>
+              <h3 className="font-semibold text-white mb-1">Aviso Importante</h3>
+              <p className="text-sm text-white/80">
+                Servicio privado de gestoría y acompañamiento. No somos un organismo público ni
+                pertenecemos a la Dirección General de Migraciones.
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Selección de tipo de trámite */}
-      {!tipoSeleccionado ? (
+      {/* Buscador y Filtros */}
+      <Card>
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-white">{t.seleccionar}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tiposTramite.map((tipo) => (
-              <Card
-                key={tipo.id}
-                hover
-                className="cursor-pointer"
-                onClick={() => setTipoSeleccionado(tipo.id)}
+          <h2 className="text-lg font-semibold text-white">Buscar Especialista</h2>
+
+          {/* Barra de búsqueda */}
+          <div>
+            <input
+              type="text"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar por nombre, especialidad..."
+              className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+            />
+          </div>
+
+          {/* Filtros */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <select
+              value={ciudadFiltro}
+              onChange={(e) => setCiudadFiltro(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+            >
+              <option value="">Todas las ciudades</option>
+              {ciudades.map((ciudad) => (
+                <option key={ciudad} value={ciudad}>
+                  {ciudad}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={ratingFiltro}
+              onChange={(e) => setRatingFiltro(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+            >
+              <option value="">Todas las calificaciones</option>
+              <option value="4.5">⭐ 4.5+</option>
+              <option value="4.7">⭐ 4.7+</option>
+              <option value="4.8">⭐ 4.8+</option>
+            </select>
+
+            <select
+              value={modalidadFiltro}
+              onChange={(e) => setModalidadFiltro(e.target.value)}
+              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+            >
+              <option value="">Todas las modalidades</option>
+              <option value="presencial">Presencial</option>
+              <option value="online">Online</option>
+              <option value="ambas">Ambas</option>
+            </select>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setCiudadFiltro("");
+                setPrecioFiltro("");
+                setRatingFiltro("");
+                setModalidadFiltro("");
+                setBusqueda("");
+              }}
+              className="w-full"
+            >
+              Limpiar Filtros
+            </Button>
+          </div>
+
+          {/* Indicador de gestión seleccionada */}
+          {gestionSeleccionadaParam && (
+            <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+              <Badge variant="accent">
+                {
+                  gestionesCompletas.find((g) => g.id === gestionSeleccionadaParam)
+                    ?.titulo
+                }
+              </Badge>
+              <Link href="/migraciones">
+                <button className="text-xs text-white/60 hover:text-white">
+                  ✕ Quitar filtro
+                </button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Listado de Especialistas */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl md:text-2xl font-bold text-white">
+            Especialistas en Gestiones Migratorias
+          </h2>
+          <span className="text-sm text-white/60">
+            {especialistasFiltrados.length} especialista
+            {especialistasFiltrados.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+
+        {especialistasFiltrados.length === 0 ? (
+          <Card>
+            <div className="text-center py-8">
+              <p className="text-white/70">No se encontraron especialistas con estos filtros.</p>
+              <Button
+                variant="primary"
+                className="mt-4"
+                onClick={() => {
+                  setCiudadFiltro("");
+                  setRatingFiltro("");
+                  setBusqueda("");
+                }}
               >
+                Limpiar Filtros
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {especialistasFiltrados.map((esp) => (
+              <Card key={esp.id} hover>
                 <div className="flex items-start gap-4">
-                  <div className="text-4xl">{tipo.icono}</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-[#C9A24D] text-lg">{tipo.titulo}</h3>
-                    <p className="text-sm text-white/70 mt-1">{tipo.descripcion}</p>
-                    <div className="mt-3 flex items-center gap-4 text-xs text-white/60">
-                      <span>
-                        <strong>{t.costo}:</strong> {tipo.costo}
-                      </span>
-                      <span>
-                        <strong>{t.tiempo}:</strong> {tipo.tiempo}
-                      </span>
+                  {esp.avatar ? (
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full">
+                      <Image
+                        src={esp.avatar}
+                        alt={esp.nombre}
+                        fill
+                        className="object-cover"
+                        sizes="96px"
+                      />
                     </div>
+                  ) : (
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#C9A24D] to-[#C08457] text-lg font-bold text-black">
+                      {esp.nombre
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-[#C9A24D] truncate">
+                      {esp.nombre}
+                    </h3>
+                    <p className="text-sm text-white/70">{esp.titulo}</p>
+                    <p className="text-xs text-white/60 mt-1">{esp.ciudad}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-sm text-[#C9A24D]">⭐ {esp.rating}</span>
+                      <span className="text-xs text-white/50">•</span>
+                      <span className="text-xs text-white/60">{esp.precio}</span>
+                    </div>
+                    {esp.especialidades && esp.especialidades.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {esp.especialidades.slice(0, 3).map((esp, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {esp}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <Button variant="outline" size="sm">
-                    {t.verDetalle} →
-                  </Button>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link href={`/profesionales/${esp.id}/chat`}>
+                    <Button variant="primary" size="sm" className="flex-1 min-w-0">
+                      {t.professionals.actionsChat}
+                    </Button>
+                  </Link>
+                  <Link href={`/profesionales/${esp.id}`}>
+                    <Button variant="outline" size="sm" className="flex-1 min-w-0">
+                      {t.professionals.actionsViewProfile}
+                    </Button>
+                  </Link>
+                  <Link href={`/profesionales/${esp.id}/reservar`}>
+                    <Button variant="ghost" size="sm" className="flex-1 min-w-0">
+                      {t.professionals.actionsBook}
+                    </Button>
+                  </Link>
                 </div>
               </Card>
             ))}
           </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Botón volver */}
-          <Button variant="ghost" size="sm" onClick={() => setTipoSeleccionado(null)}>
-            ← Volver a tipos de trámite
-          </Button>
+        )}
+      </div>
 
-          {/* Detalle del trámite */}
-          <Card>
-            <div className="space-y-6">
-              {/* Header del trámite */}
-              <div className="flex items-start gap-4 pb-4 border-b border-white/10">
-                <div className="text-4xl">{tramiteActual?.icono}</div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-white">{tramiteActual?.titulo}</h2>
-                  <p className="text-white/70 mt-1">{tramiteActual?.descripcion}</p>
-                </div>
-              </div>
+      {/* ¿Qué podés gestionar? */}
+      <Card>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl md:text-2xl font-bold text-white">
+              ¿Qué podés gestionar?
+            </h2>
+            {!mostrarTodasGestiones && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setMostrarTodasGestiones(true)}
+              >
+                Ver todas las gestiones →
+              </Button>
+            )}
+          </div>
 
-              {/* Info rápida */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="rounded-lg bg-white/5 p-4">
-                  <p className="text-sm text-white/60 mb-1">{t.costo}</p>
-                  <p className="text-lg font-bold text-[#C9A24D]">{tramiteActual?.costo}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {gestionesParaMostrar.map((gestion) => (
+              <button
+                key={gestion.id}
+                onClick={() => handleSeleccionarGestion(gestion.id)}
+                className="text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-[#C9A24D]/40 hover:bg-white/10 transition group"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">{gestion.icono}</span>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white group-hover:text-[#C9A24D] transition">
+                      {gestion.titulo}
+                    </h3>
+                    <p className="text-xs text-white/60 mt-1">{gestion.descripcion}</p>
+                  </div>
                 </div>
-                <div className="rounded-lg bg-white/5 p-4">
-                  <p className="text-sm text-white/60 mb-1">{t.tiempo}</p>
-                  <p className="text-lg font-bold text-[#C08457]">{tramiteActual?.tiempo}</p>
-                </div>
-                <div className="rounded-lg bg-white/5 p-4">
-                  <p className="text-sm text-white/60 mb-1">Progreso</p>
-                  <p className="text-lg font-bold text-white">
-                    {requisitosCompletados} {t.de} {totalRequisitos}
-                  </p>
-                </div>
-              </div>
+              </button>
+            ))}
+          </div>
 
-              {/* Checklist de requisitos */}
-              <div>
-                <h3 className="text-lg font-bold text-white mb-4">{t.requisitos}</h3>
-                <div className="space-y-3">
-                  {tramiteActual?.requisitos.map((requisito) => (
-                    <label
-                      key={requisito.id}
-                      className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-white/5 transition"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checklist[requisito.id] || false}
-                        onChange={() => handleToggleCheck(requisito.id)}
-                        className="mt-1 h-5 w-5 rounded border-white/20 bg-white/10 text-[#C9A24D] focus:ring-[#C9A24D]"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`${
-                              checklist[requisito.id] ? "text-white/60 line-through" : "text-white"
-                            }`}
-                          >
-                            {requisito.label}
-                          </span>
-                          {requisito.obligatorio ? (
-                            <Badge variant="accent" className="text-xs">
-                              {t.obligatorio}
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-xs">
-                              {t.opcional}
-                            </Badge>
-                          )}
-                        </div>
-                        {requisito.descripcion && (
-                          <p className="text-xs text-white/60 mt-1">{requisito.descripcion}</p>
-                        )}
-                      </div>
-                      {checklist[requisito.id] && (
-                        <svg
-                          className="h-5 w-5 text-[#C9A24D] shrink-0"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      )}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="pt-4 border-t border-white/10">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full md:w-auto"
-                  onClick={handleIniciar}
-                >
-                  {t.iniciar} →
-                </Button>
-                <p className="text-xs text-white/50 mt-2">
-                  Al iniciar, se te asignará un gestor especializado para acompañarte en el proceso.
-                </p>
-              </div>
+          {mostrarTodasGestiones && (
+            <div className="pt-4 border-t border-white/10">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMostrarTodasGestiones(false)}
+              >
+                ← Ver menos
+              </Button>
             </div>
-          </Card>
+          )}
         </div>
-      )}
+      </Card>
+
+      {/* Seguimiento y soporte */}
+      <Card className="bg-gradient-to-r from-[#13253A] to-[#0E1B2A]">
+        <div className="space-y-4">
+          <h2 className="text-xl md:text-2xl font-bold text-white">
+            Seguimiento y Soporte
+          </h2>
+          <div className="space-y-3 text-white/80">
+            <div className="flex items-start gap-3">
+              <span className="text-[#C9A24D] mt-1">✓</span>
+              <p>
+                Desde nuestra plataforma podés dar seguimiento a tus trámites migratorios en tiempo
+                real.
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-[#C9A24D] mt-1">✓</span>
+              <p>
+                Recibí actualizaciones automáticas sobre el estado de tu expediente y próximos
+                pasos a seguir.
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-[#C9A24D] mt-1">✓</span>
+              <p>
+                Comunicate directamente con tu especialista asignado a través del chat integrado.
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="text-[#C9A24D] mt-1">✓</span>
+              <p>
+                Accedé a todos tus documentos y comprobantes desde tu panel de usuario.
+              </p>
+            </div>
+          </div>
+          <div className="pt-4">
+            <Link href="/profesional/alta">
+              <Button variant="primary">Contratar Servicio</Button>
+            </Link>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

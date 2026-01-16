@@ -21,7 +21,7 @@ export default function Home() {
       cat.titulo === "Despachantes" ||
       cat.titulo === "Gestores" ||
       cat.titulo === "Oficial de Justicia" ||
-      cat.titulo === "Migraciones"
+      cat.titulo === "Gestiones Migratorias"
       
   );
 

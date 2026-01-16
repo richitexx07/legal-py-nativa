@@ -131,7 +131,7 @@ const diccionarios: Record<Idioma, Diccionario> = {
       gestores: "Gestores",
       ujieres: "Oficial de Justicia",
       casos: "Casos",
-      migraciones: "Migraciones",
+      migraciones: "Gestiones Migratorias",
       mensajes: "Mensajes",
       traduccion: "Traducción",
       soyProfesional: "Soy profesional",
