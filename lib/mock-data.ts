@@ -439,7 +439,7 @@ export const mockCategorias: Categoria[] = [
     titulo: "Gestiones Migratorias",
     descripcion: "Residencia · Documentos · Regularización",
     href: "/migraciones",
-    icono: "/avatars/icono_migraciones_-removebg-preview.png",
+    icono: "/avatars/icono_gestionesmigratorias-removebg-preview.png",
   },
   {
     id: "7",
