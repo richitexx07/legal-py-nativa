@@ -18,7 +18,7 @@ export default function CaseTimeline({
   canAddEvents = false,
 }: CaseTimelineProps) {
   // Convertir eventos del formato Case al formato Timeline
-  const timelineEvents = events.map((event) => ({
+  const timelineEvents: import("@/components/Timeline").TimelineEvent[] = events.map((event) => ({
     id: event.id,
     date: new Date(event.createdAt).toLocaleString("es-PY", {
       year: "numeric",
@@ -29,7 +29,7 @@ export default function CaseTimeline({
     }),
     title: event.title,
     description: event.description,
-    status: event.status,
+    status: event.status as "pending" | "completed" | "in-progress" | "cancelled" | undefined,
     metadata: event.metadata
       ? Object.fromEntries(
           Object.entries(event.metadata).map(([key, value]) => [key, String(value)])

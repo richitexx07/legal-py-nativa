@@ -6,6 +6,7 @@ import {
   getAllInternationalCases,
   getInternationalCases,
   InternationalCase,
+  InternationalCaseStatus,
 } from "@/lib/international";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
@@ -19,7 +20,7 @@ export default function CasosInternacionalesPage() {
   const [selectedCase, setSelectedCase] = useState<InternationalCase | null>(null);
   const [view, setView] = useState<"list" | "funnel">("list");
   const [filters, setFilters] = useState<{
-    status?: string;
+    status?: InternationalCaseStatus;
     minAmount?: number;
   }>({});
 
@@ -118,8 +119,7 @@ export default function CasosInternacionalesPage() {
                 c.internationalStatus === "asignado_gep" ||
                 c.internationalStatus === "en_evaluacion_gep" ||
                 c.internationalStatus === "asignado_consorcio_tier_premium" ||
-                c.internationalStatus === "asignado_consorcio_tier_standard" ||
-                c.internationalStatus === "asignado_consorcio" // Legacy
+                c.internationalStatus === "asignado_consorcio_tier_standard"
             )
             .map((caseData) => (
               <InternationalCaseCard
@@ -185,8 +185,7 @@ export default function CasosInternacionalesPage() {
             <p className="text-2xl font-bold text-[#C9A24D]">
               {cases.filter((c) => 
                 c.internationalStatus === "asignado_consorcio_tier_premium" ||
-                c.internationalStatus === "asignado_consorcio_tier_standard" ||
-                c.internationalStatus === "asignado_consorcio" // Legacy
+                c.internationalStatus === "asignado_consorcio_tier_standard"
               ).length}
             </p>
             <p className="text-sm text-white/70 mt-1">Asignados Consorcio</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
@@ -46,6 +46,27 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
   };
   
   const consortia = getConsortiaToShow();
+
+  // Log cuando se renderizan los botones GEP
+  useEffect(() => {
+    if (caseData.gepGoldResponse === "pendiente" && isGEPGold && typeof window !== "undefined") {
+      // #region agent log
+      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: "debug-session",
+          runId: "run1",
+          hypothesisId: "H1",
+          location: "components/International/FunnelView.tsx:GEPButtons",
+          message: "GEP buttons rendered",
+          data: { isGEPGold, gepGoldResponse: caseData.gepGoldResponse, caseId: caseData.id },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+    }
+  }, [caseData.gepGoldResponse, isGEPGold, caseData.id]);
 
   const handleGEPGoldResponse = async (response: "aceptado" | "declinado", notes?: string) => {
     // #region agent log
@@ -244,21 +265,6 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
             <div className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-4">
               {caseData.gepGoldResponse === "pendiente" && isGEPGold && (
                 <div className="space-y-3">
-                  {/* #region agent log */}
-                  {typeof window !== "undefined" && fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      sessionId: "debug-session",
-                      runId: "run1",
-                      hypothesisId: "H1",
-                      location: "components/International/FunnelView.tsx:GEPButtons",
-                      message: "GEP buttons rendered",
-                      data: { isGEPGold, gepGoldResponse: caseData.gepGoldResponse, caseId: caseData.id },
-                      timestamp: Date.now(),
-                    }),
-                  }).catch(() => {})}
-                  {/* #endregion */}
                   <p className="text-sm text-white/80">
                     Este caso fue derivado a ti según coincidencia de perfil técnico. Revisa los detalles y decide si aceptas o declinas la asignación.
                   </p>
@@ -351,8 +357,7 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
               {consortia.map((consortium) => {
                 // Determinar qué respuesta usar según el tier
                 const response = caseData.tierPremiumResponses?.[consortium.id] || 
-                                caseData.tierStandardResponses?.[consortium.id] ||
-                                caseData.top5ConsortiaResponses?.[consortium.id]; // Legacy compatibility
+                                caseData.tierStandardResponses?.[consortium.id];
                 return (
                   <Card key={consortium.id} className="p-4">
                     <div className="flex items-start justify-between gap-4">

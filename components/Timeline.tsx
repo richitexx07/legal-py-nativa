@@ -5,7 +5,7 @@ export interface TimelineEvent {
   date: string;
   title: string;
   description?: string;
-  status?: "pending" | "completed" | "in-progress";
+  status?: "pending" | "completed" | "in-progress" | "cancelled";
   metadata?: Record<string, string>;
 }
 
@@ -33,6 +33,18 @@ export default function Timeline({ events, className = "" }: TimelineProps) {
         return (
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#C08457]">
             <div className="h-3 w-3 rounded-full bg-white"></div>
+          </div>
+        );
+      case "cancelled":
+        return (
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20 border-2 border-red-500">
+            <svg className="h-4 w-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
           </div>
         );
       default:

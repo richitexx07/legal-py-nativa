@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 interface LegalConsentProps {
+  // Nombres en inglés (originales)
   acceptTerms?: boolean;
   acceptPrivacy?: boolean;
   veracidad?: boolean;
@@ -12,6 +13,11 @@ interface LegalConsentProps {
   termsError?: string;
   privacyError?: string;
   veracidadError?: string;
+  // Nombres en español (compatibilidad)
+  terminos?: boolean;
+  privacidad?: boolean;
+  onTerminosChange?: (value: boolean) => void;
+  onPrivacidadChange?: (value: boolean) => void;
   errors?: {
     terminos?: string;
     privacidad?: string;
@@ -31,11 +37,15 @@ export default function LegalConsent({
   termsError,
   privacyError,
   veracidadError,
+  terminos,
+  privacidad,
+  onTerminosChange,
+  onPrivacidadChange,
   errors = {},
 }: LegalConsentProps) {
-  // Compatibilidad con diferentes nombres de props
-  const terms = acceptTerms !== undefined ? acceptTerms : false;
-  const privacy = acceptPrivacy !== undefined ? acceptPrivacy : false;
+  // Compatibilidad con diferentes nombres de props (prioridad: nombres en español si existen)
+  const terms = terminos !== undefined ? terminos : (acceptTerms !== undefined ? acceptTerms : false);
+  const privacy = privacidad !== undefined ? privacidad : (acceptPrivacy !== undefined ? acceptPrivacy : false);
   const veracidadValue = veracidad !== undefined ? veracidad : false;
   
   const termsErr = termsError || errors.terms || errors.terminos;
@@ -43,11 +53,19 @@ export default function LegalConsent({
   const veracidadErr = veracidadError || errors.veracidad;
 
   const handleTermsChange = (value: boolean) => {
-    if (onTermsChange) onTermsChange(value);
+    if (onTerminosChange) {
+      onTerminosChange(value);
+    } else if (onTermsChange) {
+      onTermsChange(value);
+    }
   };
 
   const handlePrivacyChange = (value: boolean) => {
-    if (onPrivacyChange) onPrivacyChange(value);
+    if (onPrivacidadChange) {
+      onPrivacidadChange(value);
+    } else if (onPrivacyChange) {
+      onPrivacyChange(value);
+    }
   };
 
   const handleVeracidadChange = (value: boolean) => {
@@ -57,7 +75,7 @@ export default function LegalConsent({
   return (
     <div className="space-y-4">
       {/* Términos y Condiciones */}
-      {(onTermsChange !== undefined || acceptTerms !== undefined) && (
+      {(onTermsChange !== undefined || onTerminosChange !== undefined || acceptTerms !== undefined || terminos !== undefined) && (
         <div className="flex items-start gap-3">
           <input
             type="checkbox"
@@ -84,7 +102,7 @@ export default function LegalConsent({
       {termsErr && <p className="text-xs text-red-400 ml-8">{termsErr}</p>}
 
       {/* Política de Privacidad */}
-      {(onPrivacyChange !== undefined || acceptPrivacy !== undefined) && (
+      {(onPrivacyChange !== undefined || onPrivacidadChange !== undefined || acceptPrivacy !== undefined || privacidad !== undefined) && (
         <div className="flex items-start gap-3">
           <input
             type="checkbox"
