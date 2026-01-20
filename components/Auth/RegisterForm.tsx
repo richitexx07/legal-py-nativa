@@ -20,8 +20,9 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [consent1, setConsent1] = useState(false); // Términos, Privacidad e Historial Inmutable
+  const [consent2, setConsent2] = useState(false); // Políticas Financieras
+  const [consent3, setConsent3] = useState(false); // Compliance/AML
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
@@ -60,12 +61,16 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
       newErrors.confirmPassword = "Las contraseñas no coinciden";
     }
 
-    if (!acceptTerms) {
-      newErrors.terms = "Debes aceptar los términos y condiciones";
+    if (!consent1) {
+      newErrors.consent1 = "Debes aceptar los Términos, Privacidad e Historial Inmutable";
     }
 
-    if (!acceptPrivacy) {
-      newErrors.privacy = "Debes aceptar la política de privacidad";
+    if (!consent2) {
+      newErrors.consent2 = "Debes aceptar las Políticas Financieras";
+    }
+
+    if (!consent3) {
+      newErrors.consent3 = "Debes declarar que no utilizarás la plataforma para actividades ilícitas";
     }
 
     setErrors(newErrors);
@@ -86,8 +91,8 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
         password,
         role: selectedRole,
         authMethod: "email",
-        acceptTerms,
-        acceptPrivacy,
+        acceptTerms: consent1, // Mapear consent1 a acceptTerms para compatibilidad
+        acceptPrivacy: consent1, // Mapear consent1 a acceptPrivacy para compatibilidad
       };
 
       const response = await register(registerData);
@@ -232,55 +237,83 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
       </FormField>
 
       <div className="space-y-4">
-        {/* Términos y Condiciones - OBLIGATORIO */}
+        {/* Consentimiento Granular 1: Términos, Privacidad e Historial Inmutable */}
         <div className="flex items-start gap-3">
           <input
             type="checkbox"
-            id="acceptTerms"
-            checked={acceptTerms}
-            onChange={(e) => setAcceptTerms(e.target.checked)}
+            id="consent1"
+            checked={consent1}
+            onChange={(e) => setConsent1(e.target.checked)}
             required
             className="mt-1 w-5 h-5 rounded border-white/20 bg-white/5 text-[#C9A24D] focus:ring-[#C9A24D] focus:ring-2 shrink-0"
           />
-          <label htmlFor="acceptTerms" className="flex-1 text-sm text-white/90 cursor-pointer">
-            Acepto los{" "}
+          <label htmlFor="consent1" className="flex-1 text-sm text-white/90 cursor-pointer">
+            He leído y acepto los{" "}
             <Link
-              href="/legal/terms"
+              href="/legal-center"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#C9A24D] hover:underline font-medium"
             >
-              Términos y Condiciones
+              Términos
             </Link>
-            <span className="text-red-400 ml-1">*</span>
-          </label>
-        </div>
-        {errors.terms && <p className="text-xs text-red-400 ml-8">{errors.terms}</p>}
-
-        {/* Política de Privacidad - OBLIGATORIO */}
-        <div className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            id="acceptPrivacy"
-            checked={acceptPrivacy}
-            onChange={(e) => setAcceptPrivacy(e.target.checked)}
-            required
-            className="mt-1 w-5 h-5 rounded border-white/20 bg-white/5 text-[#C9A24D] focus:ring-[#C9A24D] focus:ring-2 shrink-0"
-          />
-          <label htmlFor="acceptPrivacy" className="flex-1 text-sm text-white/90 cursor-pointer">
-            Acepto la{" "}
+            ,{" "}
             <Link
               href="/legal/privacy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#C9A24D] hover:underline font-medium"
             >
-              Política de Privacidad
+              Privacidad
             </Link>
+            {" "}y el Historial Inmutable (6 meses).
             <span className="text-red-400 ml-1">*</span>
           </label>
         </div>
-        {errors.privacy && <p className="text-xs text-red-400 ml-8">{errors.privacy}</p>}
+        {errors.consent1 && <p className="text-xs text-red-400 ml-8">{errors.consent1}</p>}
+
+        {/* Consentimiento Granular 2: Políticas Financieras */}
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="consent2"
+            checked={consent2}
+            onChange={(e) => setConsent2(e.target.checked)}
+            required
+            className="mt-1 w-5 h-5 rounded border-white/20 bg-white/5 text-[#C9A24D] focus:ring-[#C9A24D] focus:ring-2 shrink-0"
+          />
+          <label htmlFor="consent2" className="flex-1 text-sm text-white/90 cursor-pointer">
+            Acepto las{" "}
+            <Link
+              href="/legal-center"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#C9A24D] hover:underline font-medium"
+            >
+              Políticas Financieras
+            </Link>
+            {" "}y entiendo que Legal PY no procesa pagos directos.
+            <span className="text-red-400 ml-1">*</span>
+          </label>
+        </div>
+        {errors.consent2 && <p className="text-xs text-red-400 ml-8">{errors.consent2}</p>}
+
+        {/* Consentimiento Granular 3: Compliance/AML */}
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="consent3"
+            checked={consent3}
+            onChange={(e) => setConsent3(e.target.checked)}
+            required
+            className="mt-1 w-5 h-5 rounded border-white/20 bg-white/5 text-[#C9A24D] focus:ring-[#C9A24D] focus:ring-2 shrink-0"
+          />
+          <label htmlFor="consent3" className="flex-1 text-sm text-white/90 cursor-pointer">
+            Declaro bajo juramento no utilizar la plataforma para actividades ilícitas (Compliance/AML).
+            <span className="text-red-400 ml-1">*</span>
+          </label>
+        </div>
+        {errors.consent3 && <p className="text-xs text-red-400 ml-8">{errors.consent3}</p>}
 
         {/* Descargo Legal */}
         <div className="mt-4 p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
@@ -294,7 +327,12 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
         </div>
       </div>
 
-      <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+      <Button 
+        type="submit" 
+        variant="primary" 
+        className="w-full" 
+        disabled={loading || !consent1 || !consent2 || !consent3}
+      >
         {loading ? "Registrando..." : "Crear Cuenta"}
       </Button>
 
