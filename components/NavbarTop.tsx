@@ -7,11 +7,15 @@ import Button from "./Button";
 import { useI18n } from "./I18nProvider";
 import LanguageSelector from "./LanguageSelector";
 import LoginModal from "./LoginModal";
+import { getSession } from "@/lib/auth";
 
 export default function NavbarTop() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ top: 0, right: 0 });
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [session, setSession] = useState(getSession());
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { t, idioma, setIdioma } = useI18n();
 
   useEffect(() => {
@@ -23,6 +27,31 @@ export default function NavbarTop() {
       });
     }
   }, [isLoginModalOpen]);
+
+  // Verificar sesión al montar y cuando cambie
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentSession = getSession();
+      setSession(currentSession);
+    }
+  }, []);
+
+  // Cerrar menú de usuario al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   const navItems = [
     { href: "/", label: t.nav.inicio },
@@ -136,33 +165,244 @@ export default function NavbarTop() {
             {/* Divisor Vertical */}
             <div className="hidden sm:block h-6 w-px bg-white/10" aria-hidden="true" />
 
-            {/* Desktop CTAs - Botones de Autenticación */}
-            <div className="hidden sm:flex items-center gap-2">
-              <Link href="/login">
-                <Button variant="primary" size="sm">
-                  Ingresar
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="secondary" size="sm">
-                  Registrarse
-                </Button>
-              </Link>
-            </div>
+            {/* Desktop CTAs - Botones de Autenticación o Menú de Usuario */}
+            {session ? (
+              <div className="hidden sm:block relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition"
+                >
+                  <div className="w-8 h-8 rounded-full bg-[#C9A24D] flex items-center justify-center text-white font-semibold">
+                    {session.user.email.charAt(0).toUpperCase()}
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-white/70 transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
 
-            {/* Mobile CTAs - Botones de Autenticación */}
-            <div className="flex sm:hidden items-center gap-2">
-              <Link href="/login">
-                <Button variant="primary" size="sm">
-                  Ingresar
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="secondary" size="sm">
-                  Registrarse
-                </Button>
-              </Link>
-            </div>
+                {/* Menú Desplegable */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 rounded-lg bg-[#13253A] border border-white/10 shadow-xl z-50">
+                    <div className="p-4 border-b border-white/10">
+                      <p className="text-sm font-semibold text-white">{session.user.email}</p>
+                      <p className="text-xs text-white/60 mt-1">
+                        Nivel {session.user.kycTier} -{" "}
+                        {session.user.kycTier === 0
+                          ? "Visitante"
+                          : session.user.kycTier === 1
+                          ? "Básico"
+                          : session.user.kycTier === 2
+                          ? "Verificado"
+                          : "GEP/Corp"}
+                      </p>
+                    </div>
+                    <div className="p-2">
+                      <Link
+                        href="/security-center"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition group"
+                      >
+                        <svg
+                          className="w-5 h-5 text-[#C9A24D] group-hover:text-[#C9A24D]"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                          />
+                        </svg>
+                        <span className="text-sm text-white/90 group-hover:text-white">Centro de Seguridad</span>
+                      </Link>
+                      <Link
+                        href="/panel"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition group"
+                      >
+                        <svg
+                          className="w-5 h-5 text-white/60 group-hover:text-white/80"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                        <span className="text-sm text-white/70 group-hover:text-white/90">Mi Panel</span>
+                      </Link>
+                      <div className="border-t border-white/10 my-2" />
+                      <button
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            localStorage.removeItem("legal-py-session");
+                            setSession(null);
+                            setIsUserMenuOpen(false);
+                            window.location.href = "/";
+                          }
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-500/10 transition group text-left"
+                      >
+                        <svg
+                          className="w-5 h-5 text-red-400 group-hover:text-red-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                          />
+                        </svg>
+                        <span className="text-sm text-red-400 group-hover:text-red-300">Cerrar Sesión</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2">
+                <Link href="/login">
+                  <Button variant="primary" size="sm">
+                    Ingresar
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button variant="secondary" size="sm">
+                    Registrarse
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile CTAs - Botones de Autenticación o Menú de Usuario */}
+            {session ? (
+              <div className="flex sm:hidden relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/5 transition"
+                >
+                  <div className="w-8 h-8 rounded-full bg-[#C9A24D] flex items-center justify-center text-white font-semibold text-sm">
+                    {session.user.email.charAt(0).toUpperCase()}
+                  </div>
+                </button>
+
+                {/* Menú Desplegable Mobile */}
+                {isUserMenuOpen && (
+                  <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setIsUserMenuOpen(false)}>
+                    <div className="absolute bottom-0 left-0 right-0 bg-[#13253A] border-t border-white/10 rounded-t-2xl p-4">
+                      <div className="mb-4 pb-4 border-b border-white/10">
+                        <p className="text-sm font-semibold text-white">{session.user.email}</p>
+                        <p className="text-xs text-white/60 mt-1">
+                          Nivel {session.user.kycTier} -{" "}
+                          {session.user.kycTier === 0
+                            ? "Visitante"
+                            : session.user.kycTier === 1
+                            ? "Básico"
+                            : session.user.kycTier === 2
+                            ? "Verificado"
+                            : "GEP/Corp"}
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Link
+                          href="/security-center"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                        >
+                          <svg
+                            className="w-6 h-6 text-[#C9A24D]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                            />
+                          </svg>
+                          <span className="text-white font-medium">Centro de Seguridad</span>
+                        </Link>
+                        <Link
+                          href="/panel"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                        >
+                          <svg
+                            className="w-6 h-6 text-white/70"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                          <span className="text-white/90">Mi Panel</span>
+                        </Link>
+                        <button
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              localStorage.removeItem("legal-py-session");
+                              setSession(null);
+                              setIsUserMenuOpen(false);
+                              window.location.href = "/";
+                            }
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition text-red-400"
+                        >
+                          <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                            />
+                          </svg>
+                          <span className="font-medium">Cerrar Sesión</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex sm:hidden items-center gap-2">
+                <Link href="/login">
+                  <Button variant="primary" size="sm">
+                    Ingresar
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button variant="secondary" size="sm">
+                    Registrarse
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

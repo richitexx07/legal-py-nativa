@@ -21,6 +21,20 @@ export type AuthMethod = "email" | "google" | "facebook" | "apple";
 export type TwoFactorStatus = "disabled" | "enabled" | "pending";
 
 /**
+ * Niveles de verificación KYC (Know Your Customer)
+ * 0: Visitante (sin verificación)
+ * 1: Básico (email verificado)
+ * 2: Verificado (identidad verificada)
+ * 3: GEP/Corp (Gold Enterprise Partner o Corporativo)
+ */
+export type KYCTier = 0 | 1 | 2 | 3;
+
+/**
+ * Estado de verificación de identidad
+ */
+export type IdentityVerificationStatus = "pending" | "in_review" | "verified" | "rejected";
+
+/**
  * Información básica del usuario
  */
 export interface User {
@@ -35,6 +49,11 @@ export interface User {
   active: boolean;
   lastLogin?: string; // ISO 8601 date string
   authMethod: AuthMethod;
+  // Campos de seguridad KYC
+  kycTier: KYCTier;
+  isIdentityVerified: boolean;
+  identityVerificationStatus?: IdentityVerificationStatus;
+  identityVerifiedAt?: string; // ISO 8601 date string
 }
 
 /**

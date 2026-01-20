@@ -203,6 +203,10 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
     twoFactorEnabled: false,
     active: true,
     authMethod: data.authMethod || "email",
+    // Campos de seguridad KYC - Inicializar en Nivel 0 (Visitante)
+    kycTier: 0,
+    isIdentityVerified: false,
+    identityVerificationStatus: "pending",
   };
 
   // Guardar usuario
@@ -381,6 +385,11 @@ export async function verifyEmail(email: string, code: string): Promise<AuthResp
   }
 
   user.emailVerified = true;
+  // Actualizar KYC Tier a Nivel 1 (Básico) cuando se verifica el email
+  if (user.kycTier === 0) {
+    user.kycTier = 1;
+  }
+  user.updatedAt = new Date().toISOString();
   saveUser(user);
 
   const profile = getProfile(user.id, user.role);
@@ -533,6 +542,86 @@ export async function disableTwoFactor(userId: string, code: string): Promise<{ 
   user.twoFactorEnabled = false;
   user.twoFactorMethod = undefined;
   saveUser(user);
+
+  return {
+    success: true,
+  };
+}
+
+/**
+ * Actualiza el estado de verificación de identidad del usuario
+ */
+export async function updateIdentityVerification(
+  userId: string,
+  status: "pending" | "in_review" | "verified" | "rejected"
+): Promise<{ success: boolean; error?: string }> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const users = getUsers();
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return {
+      success: false,
+      error: "Usuario no encontrado",
+    };
+  }
+
+  user.identityVerificationStatus = status;
+  user.updatedAt = new Date().toISOString();
+
+  if (status === "verified") {
+    user.isIdentityVerified = true;
+    user.identityVerifiedAt = new Date().toISOString();
+    // Actualizar KYC Tier a Nivel 2 (Verificado) cuando se verifica la identidad
+    if (user.kycTier < 2) {
+      user.kycTier = 2;
+    }
+  } else if (status === "rejected") {
+    user.isIdentityVerified = false;
+  }
+
+  saveUser(user);
+
+  // Actualizar sesión si existe
+  const session = getSession();
+  if (session && session.user.id === userId) {
+    session.user = user;
+    saveSession(session);
+  }
+
+  return {
+    success: true,
+  };
+}
+
+/**
+ * Actualiza el KYC Tier del usuario
+ */
+export async function updateKYCTier(
+  userId: string,
+  tier: 0 | 1 | 2 | 3
+): Promise<{ success: boolean; error?: string }> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const users = getUsers();
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return {
+      success: false,
+      error: "Usuario no encontrado",
+    };
+  }
+
+  user.kycTier = tier;
+  user.updatedAt = new Date().toISOString();
+  saveUser(user);
+
+  // Actualizar sesión si existe
+  const session = getSession();
+  if (session && session.user.id === userId) {
+    session.user = user;
+    saveSession(session);
+  }
 
   return {
     success: true,
