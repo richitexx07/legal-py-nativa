@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/Card";
@@ -10,21 +10,29 @@ import Tabs from "@/components/Tabs";
 import DocumentList, { Document } from "@/components/DocumentList";
 import { mockProfesionales } from "@/lib/mock-data";
 import { useI18n } from "@/components/I18nProvider";
+import { getSession } from "@/lib/auth";
+import {
+  getProfessionalReputation,
+  getReviews,
+  isBlocked as checkIsBlocked,
+} from "@/lib/reputation";
+import type { ProfessionalReputation as ReputationType } from "@/lib/reputation";
 
-// Datos mock adicionales para servicios y reseñas
+// Componentes de perfil
+import StatusBadge from "@/components/Profile/StatusBadge";
+import RatingDisplay from "@/components/Profile/RatingDisplay";
+import ReviewCard from "@/components/Profile/ReviewCard";
+import ReviewForm from "@/components/Profile/ReviewForm";
+import ReportModal from "@/components/Profile/ReportModal";
+import BlockButton from "@/components/Profile/BlockButton";
+import PerformanceHistory from "@/components/Profile/PerformanceHistory";
+
+// Datos mock adicionales para servicios
 interface Servicio {
   id: string;
   nombre: string;
   descripcion: string;
   precio: string;
-}
-
-interface Resena {
-  id: string;
-  autor: string;
-  rating: number;
-  fecha: string;
-  comentario: string;
 }
 
 const mockServicios: Record<string, Servicio[]> = {
@@ -92,41 +100,6 @@ const mockServicios: Record<string, Servicio[]> = {
   ],
 };
 
-const mockResenas: Resena[] = [
-  {
-    id: "1",
-    autor: "Carlos M.",
-    rating: 5,
-    fecha: "Hace 2 semanas",
-    comentario:
-      "Excelente profesional, muy atento y detallado. Me ayudó mucho con mi caso y siempre estuvo disponible para responder mis dudas.",
-  },
-  {
-    id: "2",
-    autor: "María L.",
-    rating: 5,
-    fecha: "Hace 1 mes",
-    comentario:
-      "Muy profesional y conocedor de su área. El proceso fue claro desde el inicio y obtuve resultados favorables.",
-  },
-  {
-    id: "3",
-    autor: "Roberto S.",
-    rating: 4,
-    fecha: "Hace 2 meses",
-    comentario:
-      "Buen servicio, aunque la comunicación podría mejorar un poco. En general, satisfecho con el resultado.",
-  },
-  {
-    id: "4",
-    autor: "Ana P.",
-    rating: 5,
-    fecha: "Hace 3 meses",
-    comentario:
-      "Altamente recomendado. Profesional serio, puntual y con gran conocimiento. Definitivamente volvería a contratarlo.",
-  },
-];
-
 const mockDocumentos: Document[] = [
   {
     id: "1",
@@ -162,6 +135,27 @@ export default function ProfesionalPage({ params }: PageProps) {
   const { id } = use(params);
   const { t } = useI18n();
   const profesional = mockProfesionales.find((p) => p.id === id);
+  const session = getSession();
+
+  // Estados
+  const [reputation, setReputation] = useState<ReputationType | null>(null);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reviewSortBy, setReviewSortBy] = useState<"recent" | "rating" | "helpful">("recent");
+  const [minRating, setMinRating] = useState<number | undefined>(undefined);
+
+  // Cargar reputación y estado de bloqueo
+  useEffect(() => {
+    if (profesional) {
+      const rep = getProfessionalReputation(id);
+      setReputation(rep);
+      
+      if (session?.user.role === "cliente") {
+        setIsBlocked(checkIsBlocked(id, session.user.id));
+      }
+    }
+  }, [id, profesional, session]);
 
   if (!profesional) {
     notFound();
@@ -174,12 +168,65 @@ export default function ProfesionalPage({ params }: PageProps) {
     .join("")
     .slice(0, 2);
 
+  // Obtener reseñas filtradas
+  const reviewsData = reputation
+    ? getReviews(id, { sortBy: reviewSortBy, minRating })
+    : { reviews: [], total: 0 };
+
+  const isClient = session?.user.role === "cliente";
+  const clientId = session?.user.id || "";
+
+  const handleReviewSubmit = () => {
+    setShowReviewForm(false);
+    // Recargar reputación
+    const rep = getProfessionalReputation(id);
+    setReputation(rep);
+  };
+
+  const handleReportSubmit = () => {
+    // Recargar reputación
+    const rep = getProfessionalReputation(id);
+    setReputation(rep);
+  };
+
   const tabs = [
     {
       id: "sobre-mi",
       label: "Sobre Mí",
       content: (
         <div className="space-y-4">
+          {reputation && reputation.status !== "activo" && (
+            <div
+              className={`rounded-lg border p-4 mb-4 ${
+                reputation.status === "suspendido"
+                  ? "bg-red-500/10 border-red-500/30"
+                  : "bg-yellow-500/10 border-yellow-500/30"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">
+                  {reputation.status === "suspendido" ? "⛔" : "⏳"}
+                </span>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-white mb-1">
+                    {reputation.status === "suspendido" ? "Profesional Suspendido" : "En Revisión"}
+                  </h4>
+                  <p className="text-sm text-white/70">
+                    {reputation.status === "suspendido"
+                      ? reputation.suspensionReason ||
+                        "Este profesional está temporalmente suspendido de la plataforma."
+                      : "Este profesional está siendo revisado por nuestro equipo."}
+                  </p>
+                  {reputation.suspensionUntil && (
+                    <p className="text-xs text-white/60 mt-1">
+                      Suspensión hasta: {new Date(reputation.suspensionUntil).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <p className="text-white/80 leading-relaxed">{profesional.descripcion}</p>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -199,6 +246,26 @@ export default function ProfesionalPage({ params }: PageProps) {
                   </Badge>
                 ))}
               </div>
+            )}
+            {reputation && (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-white/60">Estado:</span>
+                  <StatusBadge status={reputation.status} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-white/60">Casos completados:</span>
+                  <span className="text-sm font-medium text-white">
+                    {reputation.casesCompleted} de {reputation.totalCases}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-white/60">Tasa de respuesta:</span>
+                  <span className="text-sm font-medium text-white">
+                    {reputation.responseRate.toFixed(0)}%
+                  </span>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -254,58 +321,109 @@ export default function ProfesionalPage({ params }: PageProps) {
       id: "resenas",
       label: "Reseñas",
       content: (
-        <div className="space-y-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="text-center">
-              <p className="text-4xl font-bold text-[#C9A24D]">{profesional.rating}</p>
-              <div className="flex items-center gap-1 mt-1">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className={`h-5 w-5 ${
-                      i < Math.floor(profesional.rating)
-                        ? "text-[#C9A24D]"
-                        : "text-white/20"
-                    }`}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+        <div className="space-y-6">
+          {reputation && reputation.rating.total > 0 && (
+            <>
+              <RatingDisplay stats={reputation.rating} showDistribution={true} />
+
+              {/* Filtros y ordenamiento */}
+              <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-white/60">Ordenar por:</span>
+                  <select
+                    value={reviewSortBy}
+                    onChange={(e) =>
+                      setReviewSortBy(e.target.value as "recent" | "rating" | "helpful")
+                    }
+                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+                    style={{ colorScheme: "dark" }}
                   >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-sm text-white/60 mt-2">{mockResenas.length} reseñas</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            {mockResenas.map((resena) => (
-              <Card key={resena.id}>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-white">{resena.autor}</p>
-                      <p className="text-xs text-white/60">{resena.fecha}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`h-4 w-4 ${
-                            i < resena.rating ? "text-[#C9A24D]" : "text-white/20"
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-sm text-white/80 leading-relaxed">{resena.comentario}</p>
+                    <option value="recent">Más recientes</option>
+                    <option value="rating">Mejor calificadas</option>
+                    <option value="helpful">Más útiles</option>
+                  </select>
                 </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm text-white/60">Filtrar:</span>
+                  <select
+                    value={minRating || ""}
+                    onChange={(e) =>
+                      setMinRating(e.target.value ? parseInt(e.target.value) : undefined)
+                    }
+                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
+                    style={{ colorScheme: "dark" }}
+                  >
+                    <option value="">Todas</option>
+                    <option value="5">5 estrellas</option>
+                    <option value="4">4+ estrellas</option>
+                    <option value="3">3+ estrellas</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Botón para dejar reseña (solo clientes) */}
+          {isClient && !isBlocked && (
+            <div>
+              {!showReviewForm ? (
+                <Button
+                  variant="primary"
+                  onClick={() => setShowReviewForm(true)}
+                  className="w-full md:w-auto"
+                >
+                  ✍️ Dejar Reseña
+                </Button>
+              ) : (
+                <ReviewForm
+                  professionalId={id}
+                  clientId={clientId}
+                  onSubmit={handleReviewSubmit}
+                  onCancel={() => setShowReviewForm(false)}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Lista de reseñas */}
+          <div className="space-y-4">
+            {reviewsData.reviews.length > 0 ? (
+              reviewsData.reviews.map((review) => (
+                <ReviewCard
+                  key={review.id}
+                  review={review}
+                  professionalId={id}
+                  currentUserId={clientId}
+                />
+              ))
+            ) : (
+              <Card>
+                <p className="text-white/60 text-center py-8">
+                  {reputation && reputation.rating.total === 0
+                    ? "Este profesional aún no tiene reseñas."
+                    : "No hay reseñas que coincidan con los filtros seleccionados."}
+                </p>
               </Card>
-            ))}
+            )}
           </div>
+        </div>
+      ),
+    },
+    {
+      id: "historial",
+      label: "Historial",
+      content: (
+        <div className="space-y-4">
+          {reputation && reputation.performanceHistory.length > 0 ? (
+            <PerformanceHistory history={reputation.performanceHistory} />
+          ) : (
+            <Card>
+              <p className="text-white/60 text-center py-8">
+                No hay historial de desempeño disponible todavía.
+              </p>
+            </Card>
+          )}
         </div>
       ),
     },
@@ -317,7 +435,6 @@ export default function ProfesionalPage({ params }: PageProps) {
           <DocumentList
             documents={mockDocumentos}
             onUpload={() => {
-              // Demo: solo UI
               alert("Funcionalidad de subida de documentos (demo)");
             }}
             showUpload={true}
@@ -327,34 +444,109 @@ export default function ProfesionalPage({ params }: PageProps) {
     },
   ];
 
+  // Si está bloqueado, mostrar mensaje
+  if (isBlocked && isClient) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <div className="text-center py-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/20 mb-4">
+              <span className="text-3xl">🚫</span>
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-2">
+              Has bloqueado a este profesional
+            </h2>
+            <p className="text-white/70 mb-6">
+              No puedes ver el perfil ni contactar a este profesional porque lo has bloqueado.
+            </p>
+            <Link href="/profesionales">
+              <Button variant="primary">Ver Otros Profesionales</Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row gap-6">
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-gradient-to-br from-[#C9A24D] to-[#C08457] text-3xl font-bold text-black md:h-40 md:w-40">
-            {iniciales}
-          </div>
+          {profesional.avatar ? (
+            <img
+              src={profesional.avatar}
+              alt={profesional.nombre}
+              className="h-32 w-32 rounded-2xl object-cover md:h-40 md:w-40"
+            />
+          ) : (
+            <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-gradient-to-br from-[#C9A24D] to-[#C08457] text-3xl font-bold text-black md:h-40 md:w-40">
+              {iniciales}
+            </div>
+          )}
         </div>
 
         {/* Info */}
         <div className="flex-1 space-y-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white">{profesional.nombre}</h1>
-            <p className="text-lg text-white/70 mt-1">{profesional.titulo}</p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-white">
+                {profesional.nombre}
+              </h1>
+              <p className="text-lg text-white/70 mt-1">{profesional.titulo}</p>
+              {reputation && (
+                <div className="mt-2">
+                  <StatusBadge status={reputation.status} />
+                </div>
+              )}
+            </div>
+
+            {/* Acciones para clientes */}
+            {isClient && !isBlocked && (
+              <div className="flex flex-col gap-2 items-end">
+                <BlockButton
+                  professionalId={id}
+                  clientId={clientId}
+                  professionalName={profesional.nombre}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowReportModal(true)}
+                  className="text-red-400 border-red-400/50 hover:bg-red-400/10"
+                >
+                  🚨 Denunciar
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-[#C9A24D] font-semibold">⭐ {profesional.rating}</span>
-              <span className="text-white/60">({mockResenas.length} reseñas)</span>
-            </div>
+            {reputation && reputation.rating.total > 0 ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-[#C9A24D] font-semibold">
+                    ⭐ {reputation.rating.average.toFixed(1)}
+                  </span>
+                  <span className="text-white/60">({reputation.rating.total} reseñas)</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-white/60">Sin calificaciones aún</span>
+              </div>
+            )}
             <span className="text-white/40">•</span>
             <span className="text-white/80">{profesional.experiencia} años de experiencia</span>
             <span className="text-white/40">•</span>
             <div className="flex items-center gap-1">
-              <svg className="h-4 w-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-4 w-4 text-white/60"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -383,17 +575,21 @@ export default function ProfesionalPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* CTA Principal */}
-          <div className="pt-2 flex flex-col sm:flex-row gap-3">
-            <Button variant="primary" size="lg" className="w-full md:w-auto">
-              {t.professionals.bookConsultation} →
-            </Button>
-            <Link href={`/videollamada/${profesional.id}`}>
-              <Button variant="secondary" size="lg" className="w-full md:w-auto">
-                {t.professionals.videoCall} →
-              </Button>
-            </Link>
-          </div>
+          {/* CTA Principal - Solo si está activo */}
+          {(!reputation || reputation.status === "activo") && (
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <Link href={`/profesionales/${id}/reservar`}>
+                <Button variant="primary" size="lg" className="w-full md:w-auto">
+                  {t.professionals.bookConsultation} →
+                </Button>
+              </Link>
+              <Link href={`/videollamada/${profesional.id}`}>
+                <Button variant="secondary" size="lg" className="w-full md:w-auto">
+                  {t.professionals.videoCall} →
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
@@ -401,6 +597,17 @@ export default function ProfesionalPage({ params }: PageProps) {
       <Card>
         <Tabs tabs={tabs} defaultTab="sobre-mi" />
       </Card>
+
+      {/* Modal de denuncia */}
+      {isClient && showReportModal && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          professionalId={id}
+          clientId={clientId}
+          professionalName={profesional.nombre}
+        />
+      )}
 
       {/* Volver */}
       <div className="pt-4">

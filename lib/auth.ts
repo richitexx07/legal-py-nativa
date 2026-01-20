@@ -1,0 +1,523 @@
+// Funciones mock de autenticación para Legal PY
+// Todas las funciones simulan operaciones sin backend real
+
+import {
+  User,
+  UserRole,
+  RegisterData,
+  LoginData,
+  AuthResponse,
+  AuthSession,
+  ClientProfile,
+  ProfessionalProfile,
+  StudentProfile,
+  ProfileCompletionData,
+  AuthMethod,
+} from "./types";
+
+/**
+ * Genera un ID único para usuarios
+ */
+function generateUserId(): string {
+  return `usr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Almacena la sesión actual en localStorage
+ */
+function saveSession(session: AuthSession): void {
+  localStorage.setItem("legal-py-session", JSON.stringify(session));
+}
+
+/**
+ * Obtiene la sesión actual de localStorage
+ */
+export function getSession(): AuthSession | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("legal-py-session");
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Elimina la sesión actual
+ */
+export function clearSession(): void {
+  localStorage.removeItem("legal-py-session");
+}
+
+/**
+ * Obtiene todos los usuarios almacenados
+ */
+function getUsers(): User[] {
+  if (typeof window === "undefined") return [];
+  const stored = localStorage.getItem("legal-py-users");
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Guarda un usuario
+ */
+function saveUser(user: User): void {
+  const users = getUsers();
+  const existingIndex = users.findIndex((u) => u.id === user.id);
+  if (existingIndex >= 0) {
+    users[existingIndex] = user;
+  } else {
+    users.push(user);
+  }
+  localStorage.setItem("legal-py-users", JSON.stringify(users));
+}
+
+/**
+ * Obtiene un perfil según el tipo
+ */
+function getProfile(userId: string, role: UserRole): ClientProfile | ProfessionalProfile | StudentProfile | null {
+  if (typeof window === "undefined") return null;
+  const key = `legal-py-profile-${role}-${userId}`;
+  const stored = localStorage.getItem(key);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Guarda un perfil
+ */
+function saveProfile(userId: string, role: UserRole, profile: ClientProfile | ProfessionalProfile | StudentProfile): void {
+  const key = `legal-py-profile-${role}-${userId}`;
+  localStorage.setItem(key, JSON.stringify(profile));
+}
+
+/**
+ * Genera un código 2FA mock
+ */
+function generateTwoFactorCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * Simula envío de código 2FA (solo mock, no envía realmente)
+ */
+function sendTwoFactorCode(email: string, code: string, method: "email" | "sms" | "app"): void {
+  // En producción, aquí se enviaría el código realmente
+  // Por ahora, lo guardamos en localStorage para pruebas
+  localStorage.setItem("legal-py-2fa-code", JSON.stringify({ email, code, method, expiresAt: Date.now() + 10 * 60 * 1000 })); // 10 minutos
+  console.log(`[MOCK] 2FA Code for ${email}: ${code} (method: ${method})`);
+}
+
+/**
+ * Verifica un código 2FA
+ */
+function verifyTwoFactorCode(email: string, code: string): boolean {
+  const stored = localStorage.getItem("legal-py-2fa-code");
+  if (!stored) return false;
+  try {
+    const data = JSON.parse(stored);
+    if (data.email !== email) return false;
+    if (data.code !== code) return false;
+    if (Date.now() > data.expiresAt) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Registra un nuevo usuario
+ */
+export async function register(data: RegisterData): Promise<AuthResponse> {
+  // Simular delay de red
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Validaciones
+  if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    return {
+      success: false,
+      error: "Email inválido",
+    };
+  }
+
+  if (!data.password || data.password.length < 8) {
+    return {
+      success: false,
+      error: "La contraseña debe tener al menos 8 caracteres",
+    };
+  }
+
+  if (!data.acceptTerms || !data.acceptPrivacy) {
+    return {
+      success: false,
+      error: "Debes aceptar los términos y condiciones y la política de privacidad",
+    };
+  }
+
+  // Verificar si el email ya existe
+  const users = getUsers();
+  const existingUser = users.find((u) => u.email === data.email);
+  if (existingUser) {
+    return {
+      success: false,
+      error: "Este email ya está registrado",
+    };
+  }
+
+  // Crear nuevo usuario
+  const now = new Date().toISOString();
+  const newUser: User = {
+    id: generateUserId(),
+    email: data.email,
+    role: data.role,
+    createdAt: now,
+    updatedAt: now,
+    emailVerified: false, // Requiere verificación
+    twoFactorEnabled: false,
+    active: true,
+    authMethod: data.authMethod || "email",
+  };
+
+  // Guardar usuario
+  saveUser(newUser);
+
+  // Crear perfil vacío según el rol
+  const profile: ClientProfile | ProfessionalProfile | StudentProfile = {
+    userId: newUser.id,
+    firstName: "",
+    lastName: "",
+    preferredLanguage: "es",
+    verificationStatus: "pending",
+    ...(data.role === "cliente" && {
+      // ClientProfile
+    } as Partial<ClientProfile>),
+    ...(data.role === "profesional" && {
+      // ProfessionalProfile
+      professionalTitle: "",
+      specialties: [],
+      experienceYears: 0,
+      city: "",
+      languages: [],
+      planStatus: "pending",
+    } as Partial<ProfessionalProfile>),
+    ...(data.role === "estudiante" && {
+      // StudentProfile
+      internshipsApplied: [],
+    } as Partial<StudentProfile>),
+  };
+
+  saveProfile(newUser.id, data.role, profile);
+
+  // No crear sesión todavía - el usuario debe completar su perfil primero
+  return {
+    success: true,
+    message: "Registro exitoso. Por favor completa tu perfil.",
+    session: {
+      user: newUser,
+      profile: profile,
+    },
+  };
+}
+
+/**
+ * Inicia sesión con email y contraseña
+ */
+export async function login(data: LoginData): Promise<AuthResponse> {
+  // Simular delay de red
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  // Validaciones
+  if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    return {
+      success: false,
+      error: "Email inválido",
+    };
+  }
+
+  if (data.authMethod === "email" && (!data.password || data.password.length < 8)) {
+    return {
+      success: false,
+      error: "Contraseña requerida",
+    };
+  }
+
+  // Buscar usuario
+  const users = getUsers();
+  const user = users.find((u) => u.email === data.email);
+
+  if (!user) {
+    return {
+      success: false,
+      error: "Email o contraseña incorrectos",
+    };
+  }
+
+  if (!user.active) {
+    return {
+      success: false,
+      error: "Tu cuenta está desactivada. Contacta soporte.",
+    };
+  }
+
+  // Si tiene 2FA habilitado, requerir código
+  if (user.twoFactorEnabled) {
+    if (!data.twoFactorCode) {
+      // Generar y enviar código
+      const code = generateTwoFactorCode();
+      sendTwoFactorCode(user.email, code, user.twoFactorMethod || "email");
+      return {
+        success: false,
+        requiresTwoFactor: true,
+        twoFactorMethod: user.twoFactorMethod || "email",
+        message: `Código de verificación enviado a ${user.email}`,
+      };
+    }
+
+    // Verificar código 2FA
+    if (!verifyTwoFactorCode(user.email, data.twoFactorCode)) {
+      return {
+        success: false,
+        error: "Código de verificación inválido o expirado",
+        requiresTwoFactor: true,
+        twoFactorMethod: user.twoFactorMethod || "email",
+      };
+    }
+  }
+
+  // Obtener perfil
+  const profile = getProfile(user.id, user.role);
+  if (!profile) {
+    return {
+      success: false,
+      error: "Error al cargar el perfil. Por favor regístrate nuevamente.",
+    };
+  }
+
+  // Actualizar último login
+  user.lastLogin = new Date().toISOString();
+  saveUser(user);
+
+  // Crear sesión
+  const session: AuthSession = {
+    user,
+    profile,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 días
+  };
+
+  saveSession(session);
+
+  return {
+    success: true,
+    session,
+    message: "Inicio de sesión exitoso",
+  };
+}
+
+/**
+ * Login con proveedor social (mock)
+ */
+export async function loginWithProvider(provider: "google" | "facebook" | "apple"): Promise<AuthResponse> {
+  // Simular delay de red
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // En producción, aquí se haría la autenticación real con OAuth
+  // Por ahora, simulamos un login exitoso después de confirmación
+
+  return {
+    success: false,
+    error: "Login social no implementado todavía. Usa email/contraseña.",
+  };
+}
+
+/**
+ * Verifica email con código (mock)
+ */
+export async function verifyEmail(email: string, code: string): Promise<AuthResponse> {
+  // Simular delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const users = getUsers();
+  const user = users.find((u) => u.email === email);
+  if (!user) {
+    return {
+      success: false,
+      error: "Usuario no encontrado",
+    };
+  }
+
+  // Mock: código de verificación es siempre "123456" para demo
+  if (code !== "123456") {
+    return {
+      success: false,
+      error: "Código inválido. Usa 123456 para demo.",
+    };
+  }
+
+  user.emailVerified = true;
+  saveUser(user);
+
+  const profile = getProfile(user.id, user.role);
+  if (!profile) {
+    return {
+      success: false,
+      error: "Error al cargar el perfil",
+    };
+  }
+
+  const session: AuthSession = {
+    user,
+    profile,
+  };
+
+  saveSession(session);
+
+  return {
+    success: true,
+    session,
+    message: "Email verificado exitosamente",
+  };
+}
+
+/**
+ * Envía código de verificación de email (mock)
+ */
+export async function sendEmailVerificationCode(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
+  // Simular delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Mock: guardar código
+  const code = "123456"; // Siempre 123456 para demo
+  localStorage.setItem("legal-py-email-verification", JSON.stringify({ email, code, expiresAt: Date.now() + 10 * 60 * 1000 }));
+  console.log(`[MOCK] Email verification code for ${email}: ${code}`);
+
+  return {
+    success: true,
+    message: `Código enviado a ${email}. Usa 123456 para demo.`,
+  };
+}
+
+/**
+ * Cierra sesión
+ */
+export async function logout(): Promise<void> {
+  clearSession();
+}
+
+/**
+ * Actualiza el perfil del usuario
+ */
+export async function updateProfile(
+  userId: string,
+  role: UserRole,
+  data: ProfileCompletionData
+): Promise<{ success: boolean; profile?: ClientProfile | ProfessionalProfile | StudentProfile; error?: string }> {
+  // Simular delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const profile = getProfile(userId, role);
+  if (!profile) {
+    return {
+      success: false,
+      error: "Perfil no encontrado",
+    };
+  }
+
+  const updatedProfile = { ...profile, ...data, userId };
+  saveProfile(userId, role, updatedProfile);
+
+  // Actualizar sesión
+  const session = getSession();
+  if (session && session.user.id === userId) {
+    session.profile = updatedProfile;
+    saveSession(session);
+  }
+
+  return {
+    success: true,
+    profile: updatedProfile,
+  };
+}
+
+/**
+ * Habilita 2FA (mock)
+ */
+export async function enableTwoFactor(
+  userId: string,
+  method: "email" | "sms" | "app"
+): Promise<{ success: boolean; qrCode?: string; secret?: string; error?: string }> {
+  // Simular delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const users = getUsers();
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return {
+      success: false,
+      error: "Usuario no encontrado",
+    };
+  }
+
+  user.twoFactorEnabled = true;
+  user.twoFactorMethod = method;
+  saveUser(user);
+
+  // Mock: generar QR code y secret (en producción sería real)
+  const secret = `MOCK_SECRET_${Math.random().toString(36).substr(2, 16)}`;
+  const qrCode = `data:image/svg+xml;base64,${btoa(`<svg>Mock QR for ${user.email}</svg>`)}`;
+
+  return {
+    success: true,
+    qrCode,
+    secret,
+  };
+}
+
+/**
+ * Deshabilita 2FA
+ */
+export async function disableTwoFactor(userId: string, code: string): Promise<{ success: boolean; error?: string }> {
+  // Simular delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const users = getUsers();
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return {
+      success: false,
+      error: "Usuario no encontrado",
+    };
+  }
+
+  if (!user.twoFactorEnabled) {
+    return {
+      success: false,
+      error: "2FA no está habilitado",
+    };
+  }
+
+  // Verificar código antes de deshabilitar
+  if (!verifyTwoFactorCode(user.email, code)) {
+    return {
+      success: false,
+      error: "Código inválido",
+    };
+  }
+
+  user.twoFactorEnabled = false;
+  user.twoFactorMethod = undefined;
+  saveUser(user);
+
+  return {
+    success: true,
+  };
+}
