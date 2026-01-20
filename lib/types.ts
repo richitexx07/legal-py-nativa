@@ -202,3 +202,18 @@ export type ProfileCompletionData =
   | Partial<ClientProfile>
   | Partial<ProfessionalProfile>
   | Partial<StudentProfile>;
+
+/**
+ * Caso legal para el sistema DPT (Derivación Priorizada por Perfil Técnico)
+ */
+export interface LegalCase {
+  id: string;
+  title: string;
+  description: string;
+  complexity: "BAJA" | "MEDIA" | "ALTA";
+  practiceArea: "CIVIL" | "PENAL" | "CORPORATIVO" | "LABORAL" | "FAMILIA";
+  estimatedBudget: number; // En Guaraníes
+  status: "OPEN" | "ASSIGNED" | "CLOSED";
+  exclusiveForGepUntil: string | null; // ISO Date string - Fecha límite de exclusividad GEP
+  createdAt: string; // ISO 8601 date string
+}
