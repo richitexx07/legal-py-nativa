@@ -28,12 +28,14 @@ export default function InternationalCaseCard({
     switch (status) {
       case "asignado_gep":
         return "accent";
-      case "asignado_consorcio":
-        return "outline";
-      case "en_subasta":
+      case "en_evaluacion_gep":
         return "terracota";
-      case "asignado_subasta":
+      case "asignado_consorcio_tier_premium":
         return "accent";
+      case "asignado_consorcio_tier_standard":
+        return "outline";
+      case "asignado_consorcio":
+        return "outline"; // Legacy
       case "rechazado":
         return "outline";
       default:
@@ -45,10 +47,11 @@ export default function InternationalCaseCard({
     const labels: Record<string, string> = {
       pendiente_revision: "Pendiente Revisión",
       en_embudo: "En Embudo",
+      en_evaluacion_gep: "⭐ Evaluación GEP",
       asignado_gep: "Asignado GEP Gold",
-      asignado_consorcio: "Asignado Consorcio",
-      en_subasta: "En Subasta",
-      asignado_subasta: "Asignado por Subasta",
+      asignado_consorcio_tier_premium: "🏆 Asignado Tier Premium",
+      asignado_consorcio_tier_standard: "📋 Asignado Tier Standard",
+      asignado_consorcio: "Asignado Consorcio", // Legacy
       rechazado: "Rechazado",
       completado: "Completado",
     };
@@ -132,42 +135,79 @@ export default function InternationalCaseCard({
           )}
         </div>
 
-        {/* Estado del embudo */}
-        {caseData.assignmentType && (
+        {/* Estado de derivación técnica */}
+        {caseData.derivationStatus && (
           <div className="pt-3 border-t border-white/10">
-            <p className="text-xs text-white/60 mb-2">Estado del Embudo:</p>
+            <p className="text-xs text-white/60 mb-2">Estado de Derivación:</p>
             <div className="space-y-2">
-              {caseData.assignmentType === "gep_gold" && (
-                <div className="flex items-center justify-between p-2 rounded-lg bg-white/5">
-                  <span className="text-sm text-white/80">GEP Gold</span>
-                  {caseData.gepGoldResponse && (
-                    <Badge
-                      variant={caseData.gepGoldResponse === "aceptado" ? "accent" : "outline"}
-                      className="text-xs"
-                    >
-                      {caseData.gepGoldResponse === "aceptado" ? "✓ Aceptado" : "✗ Declinado"}
-                    </Badge>
-                  )}
+              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5">
+                <span className="text-sm text-white/80">
+                  {caseData.derivationStatus.estado === "en_evaluacion_gep" 
+                    ? "⭐ Evaluación Prioritaria GEP"
+                    : caseData.derivationStatus.estado === "derivado_gep"
+                    ? "✓ Derivado a GEP Gold"
+                    : caseData.derivationStatus.estado === "derivado_tier_premium"
+                    ? "🏆 Derivado Tier Premium"
+                    : caseData.derivationStatus.estado === "derivado_tier_standard"
+                    ? "📋 Derivado Tier Standard"
+                    : "Pendiente"}
+                </span>
+                {caseData.gepGoldResponse && caseData.assignmentType === "gep_gold" && (
+                  <Badge
+                    variant={caseData.gepGoldResponse === "aceptado" ? "accent" : "outline"}
+                    className="text-xs"
+                  >
+                    {caseData.gepGoldResponse === "aceptado" ? "✓ Aceptado" : "✗ Declinado"}
+                  </Badge>
+                )}
+              </div>
+              {caseData.derivationStatus.razonDerivacion && (
+                <p className="text-xs text-white/60 italic">
+                  {caseData.derivationStatus.razonDerivacion}
+                </p>
+              )}
+              {caseData.derivationStatus.perfilTecnicoCoincidente && 
+               caseData.derivationStatus.perfilTecnicoCoincidente.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-xs text-white/60 mb-1">Coincidencias de perfil:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {caseData.derivationStatus.perfilTecnicoCoincidente.map((coincidencia) => (
+                      <Badge key={coincidencia} variant="outline" className="text-xs">
+                        {coincidencia}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
-              {caseData.assignmentType === "consorcio" && (
-                <div className="flex items-center justify-between p-2 rounded-lg bg-white/5">
-                  <span className="text-sm text-white/80">Top 5 Consorcios</span>
-                  {caseData.top5ConsortiaResponses && (
-                    <span className="text-xs text-white/60">
-                      {Object.values(caseData.top5ConsortiaResponses).filter((r) => r === "aceptado").length} / 5
-                    </span>
-                  )}
-                </div>
-              )}
-              {caseData.assignmentType === "subasta" && caseData.auctionActive && (
-                <div className="flex items-center justify-between p-2 rounded-lg bg-white/5">
-                  <span className="text-sm text-white/80">Subasta Activa</span>
-                  {caseData.auctionBids && (
-                    <span className="text-xs text-white/60">
-                      {caseData.auctionBids.length} ofertas
-                    </span>
-                  )}
+            </div>
+          </div>
+        )}
+
+        {/* Perfil técnico */}
+        {caseData.technicalProfile && (
+          <div className="pt-3 border-t border-white/10">
+            <p className="text-xs text-white/60 mb-2">Perfil Técnico:</p>
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-white/60">Categoría:</span>
+                <span className="text-white/80">{caseData.technicalProfile.categoria}</span>
+              </div>
+              {caseData.technicalProfile.especialidadesRequeridas && 
+               caseData.technicalProfile.especialidadesRequeridas.length > 0 && (
+                <div>
+                  <span className="text-white/60">Especialidades:</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {caseData.technicalProfile.especialidadesRequeridas.slice(0, 3).map((spec) => (
+                      <Badge key={spec} variant="outline" className="text-xs">
+                        {spec}
+                      </Badge>
+                    ))}
+                    {caseData.technicalProfile.especialidadesRequeridas.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{caseData.technicalProfile.especialidadesRequeridas.length - 3}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

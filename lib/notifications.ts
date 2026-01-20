@@ -22,9 +22,10 @@ export type NotificationType =
   | "international_case_created"
   | "gep_gold_response"
   | "consortium_response"
-  | "auction_started"
-  | "auction_bid_received"
-  | "auction_winner_selected"
+  | "case_derived_to_gep"
+  | "case_derived_to_tier_premium"
+  | "case_derived_to_tier_standard"
+  | "gep_evaluation_window_expiring"
   | "reminder"
   | "alert"
   | "system";
@@ -182,13 +183,13 @@ function getDefaultPreferences(userId: string): NotificationPreferences {
         "payment_registered",
         "payment_verified",
         "international_case_created",
-        "auction_winner_selected",
+        "case_derived_to_gep",
       ],
       priority: ["medium", "high", "urgent"],
     },
     whatsapp: {
       enabled: false,
-      types: ["case_assigned", "payment_verified", "auction_winner_selected"],
+      types: ["case_assigned", "payment_verified", "case_derived_to_gep"],
       priority: ["high", "urgent"],
     },
     app: {
@@ -205,9 +206,10 @@ function getDefaultPreferences(userId: string): NotificationPreferences {
         "international_case_created",
         "gep_gold_response",
         "consortium_response",
-        "auction_started",
-        "auction_bid_received",
-        "auction_winner_selected",
+        "case_derived_to_gep",
+        "case_derived_to_tier_premium",
+        "case_derived_to_tier_standard",
+        "gep_evaluation_window_expiring",
         "reminder",
         "alert",
       ],
@@ -566,17 +568,21 @@ export function getNotificationTemplate(
       title: "Respuesta de consorcio",
       message: `${d.consortiumName || "Un consorcio"} ha ${d.response === "aceptado" ? "aceptado" : "declinado"} el caso`,
     }),
-    auction_started: (d) => ({
-      title: "Subasta iniciada",
-      message: `Se inició una subasta para el caso internacional "${d.caseTitle || "N/A"}"`,
+    case_derived_to_gep: (d) => ({
+      title: "Caso derivado a GEP Gold",
+      message: `El caso "${d.caseTitle || "N/A"}" fue derivado a GEP Gold según perfil técnico. Ventana de evaluación: 48 horas.`,
     }),
-    auction_bid_received: (d) => ({
-      title: "Nueva oferta en subasta",
-      message: `Se recibió una nueva oferta de ${d.amount || "N/A"} USD en la subasta`,
+    case_derived_to_tier_premium: (d) => ({
+      title: "Caso derivado a Tier Premium",
+      message: `El caso fue derivado a consorcios Tier Premium según coincidencia de perfil técnico`,
     }),
-    auction_winner_selected: (d) => ({
-      title: "Ganador de subasta seleccionado",
-      message: `Se seleccionó un ganador para la subasta del caso "${d.caseTitle || "N/A"}"`,
+    case_derived_to_tier_standard: (d) => ({
+      title: "Caso derivado a Tier Standard",
+      message: `El caso fue derivado a consorcios Tier Standard según perfil técnico`,
+    }),
+    gep_evaluation_window_expiring: (d) => ({
+      title: "Ventana de evaluación GEP expirando",
+      message: `La ventana de evaluación prioritaria para el caso "${d.caseTitle || "N/A"}" está por expirar.`,
     }),
     reminder: (d) => ({
       title: d.reminderTitle || "Recordatorio",

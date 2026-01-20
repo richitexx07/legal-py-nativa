@@ -237,9 +237,11 @@ export default function InternationalCaseForm({
 
         <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
           <p className="text-xs text-white/70 leading-relaxed">
-            <strong className="text-blue-400">Proceso de asignación:</strong> Una vez convertido,
-            el caso pasará por el embudo internacional: primero se ofrecerá al socio GEP Gold, luego
-            a los Top 5 Consorcios, y si no hay aceptaciones, se abrirá una subasta.
+            <strong className="text-blue-400">Proceso de derivación ética:</strong> Una vez convertido,
+            el caso será derivado según perfil técnico: primero al socio GEP Gold (evaluación prioritaria de 48h),
+            luego a Consorcios Tier Premium, y si no hay aceptaciones, se derivará a Consorcios Tier Standard.
+            <br />
+            <span className="text-[#C9A24D] font-semibold">No hay subastas ni competencia económica.</span> La derivación se basa exclusivamente en coincidencia de perfil técnico, especialidad y experiencia.
           </p>
         </div>
 

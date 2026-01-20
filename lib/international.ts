@@ -1,4 +1,4 @@
-// Sistema de filtrado y gestión de casos internacionales para Legal PY
+// Sistema de Derivación Priorizada por Perfil Técnico (DPT) para casos internacionales - Legal PY
 
 import { Case } from "./cases";
 
@@ -8,22 +8,22 @@ import { Case } from "./cases";
 export type CaseJurisdiction = "nacional" | "internacional";
 
 /**
- * Estado del caso en el embudo internacional
+ * Estado del caso en el embudo de derivación ética
  */
 export type InternationalCaseStatus =
   | "pendiente_revision"
   | "en_embudo"
+  | "en_evaluacion_gep" // Caso en evaluación prioritaria GEP
   | "asignado_gep"
-  | "asignado_consorcio"
-  | "en_subasta"
-  | "asignado_subasta"
+  | "asignado_consorcio_tier_premium"
+  | "asignado_consorcio_tier_standard"
   | "rechazado"
   | "completado";
 
 /**
- * Tipo de asignación
+ * Tipo de asignación (sin subastas)
  */
-export type AssignmentType = "gep_gold" | "consorcio" | "subasta";
+export type AssignmentType = "gep_gold" | "consorcio_tier_premium" | "consorcio_tier_standard";
 
 /**
  * Consorcio legal
@@ -40,22 +40,37 @@ export interface LegalConsortium {
   logo?: string; // URL del logo
   contactEmail: string;
   website?: string;
+  tier?: "premium" | "standard"; // Tier del consorcio
 }
 
 /**
- * Oferta en subasta
+ * Perfil técnico del caso (para derivación ética)
  */
-export interface AuctionBid {
-  id: string;
-  consortiumId: string;
-  consortiumName: string;
-  amount: number; // Monto en USD
-  currency: "USD";
-  proposedFee: number; // Honorarios propuestos (% del monto del caso)
-  estimatedTime: string; // Tiempo estimado (ej: "3-6 meses")
-  notes?: string; // Notas adicionales
-  submittedAt: string; // ISO 8601
-  status: "pendiente" | "aceptada" | "rechazada";
+export interface CaseTechnicalProfile {
+  categoria: string; // Ej: "Derecho Corporativo", "Arbitraje Internacional"
+  nivelComplejidad: "baja" | "media" | "alta" | "muy_alta";
+  jurisdiccion: string[]; // Jurisdicciones involucradas
+  especialidadesRequeridas: string[]; // Especialidades legales necesarias
+  experienciaMinima?: number; // Años de experiencia mínima
+}
+
+/**
+ * Estado de derivación ética
+ */
+export interface DerivationStatus {
+  estado: "pendiente_gep" | "en_evaluacion_gep" | "derivado_gep" | "derivado_tier_premium" | "derivado_tier_standard";
+  fechaDerivacion?: string;
+  razonDerivacion?: string; // Por qué se derivó a este consorcio
+  perfilTecnicoCoincidente?: string[]; // Qué aspectos del perfil coincidieron
+}
+
+/**
+ * Configuración GEP Gold
+ */
+export interface GEPConfiguration {
+  prioridad: boolean; // Tiene prioridad en asignación
+  ventanaEvaluacion: number; // Horas para evaluar (ej: 48)
+  perfilTecnicoRequerido?: CaseTechnicalProfile; // Perfil que debe coincidir
 }
 
 /**
@@ -71,7 +86,7 @@ export interface InternationalCase extends Case {
   currency: "USD";
   minimumAmount: number; // Monto mínimo requerido (USD 5000)
   
-  // Embudo internacional
+  // Embudo de derivación ética
   internationalStatus: InternationalCaseStatus;
   assignmentType?: AssignmentType;
   
@@ -81,19 +96,21 @@ export interface InternationalCase extends Case {
   gepGoldResponse?: "aceptado" | "declinado" | "pendiente";
   gepGoldResponseDate?: string;
   gepGoldResponseNotes?: string;
+  gepConfiguration?: GEPConfiguration;
   
-  // Top 5 Consorcios
-  top5ConsortiaEligible: boolean;
-  top5ConsortiaAssigned?: string[]; // IDs de consorcios asignados
-  top5ConsortiaResponses?: Record<string, "aceptado" | "declinado" | "pendiente">;
+  // Consorcios Tier Premium
+  tierPremiumEligible: boolean;
+  tierPremiumAssigned?: string[]; // IDs de consorcios Tier Premium asignados
+  tierPremiumResponses?: Record<string, "aceptado" | "declinado" | "pendiente">;
   
-  // Subasta
-  auctionEligible: boolean;
-  auctionActive: boolean;
-  auctionStartDate?: string;
-  auctionEndDate?: string;
-  auctionBids?: AuctionBid[];
-  auctionWinner?: string; // ID del consorcio ganador
+  // Consorcios Tier Standard
+  tierStandardEligible: boolean;
+  tierStandardAssigned?: string[]; // IDs de consorcios Tier Standard asignados
+  tierStandardResponses?: Record<string, "aceptado" | "declinado" | "pendiente">;
+  
+  // Perfil técnico y derivación
+  technicalProfile: CaseTechnicalProfile;
+  derivationStatus: DerivationStatus;
   
   // Información adicional
   countriesInvolved: string[]; // Países involucrados
@@ -112,6 +129,8 @@ export interface CreateInternationalCaseData {
   languagesRequired?: string[];
   complexity?: "baja" | "media" | "alta" | "muy_alta";
   urgency?: "normal" | "alta" | "urgente";
+  categoria?: string; // Categoría legal del caso
+  especialidadesRequeridas?: string[]; // Especialidades necesarias
 }
 
 /**
@@ -133,24 +152,12 @@ export interface ConsortiumResponse {
   notes?: string;
 }
 
-/**
- * Oferta en subasta
- */
-export interface SubmitAuctionBid {
-  caseId: string;
-  consortiumId: string;
-  amount: number;
-  proposedFee: number;
-  estimatedTime: string;
-  notes?: string;
-}
-
 // --- Constantes ---
 
 const MINIMUM_AMOUNT_USD = 5000;
-const TOP_5_CONSORTIA_COUNT = 5;
+const GEP_EVALUATION_WINDOW_HOURS = 48; // Ventana de evaluación GEP: 48 horas
 
-// --- Mock Data: Top 5 Consorcios Legales ---
+// --- Mock Data: Top 5 Consorcios Legales (con Tiers) ---
 
 export const TOP_5_CONSORTIA: LegalConsortium[] = [
   {
@@ -162,6 +169,7 @@ export const TOP_5_CONSORTIA: LegalConsortium[] = [
     rating: 4.9,
     casesCompleted: 1250,
     successRate: 94,
+    tier: "premium",
     contactEmail: "contact@globallegalalliance.com",
     website: "https://globallegalalliance.com",
   },
@@ -174,6 +182,7 @@ export const TOP_5_CONSORTIA: LegalConsortium[] = [
     rating: 4.8,
     casesCompleted: 980,
     successRate: 91,
+    tier: "premium",
     contactEmail: "info@ilpartners.com",
     website: "https://ilpartners.com",
   },
@@ -186,6 +195,7 @@ export const TOP_5_CONSORTIA: LegalConsortium[] = [
     rating: 4.7,
     casesCompleted: 750,
     successRate: 89,
+    tier: "premium",
     contactEmail: "contact@laln.com",
     website: "https://laln.com",
   },
@@ -198,6 +208,7 @@ export const TOP_5_CONSORTIA: LegalConsortium[] = [
     rating: 4.8,
     casesCompleted: 650,
     successRate: 92,
+    tier: "standard",
     contactEmail: "info@transatlanticlegal.com",
     website: "https://transatlanticlegal.com",
   },
@@ -210,6 +221,7 @@ export const TOP_5_CONSORTIA: LegalConsortium[] = [
     rating: 4.6,
     casesCompleted: 520,
     successRate: 88,
+    tier: "standard",
     contactEmail: "contact@pacificrimlegal.com",
     website: "https://pacificrimlegal.com",
   },
@@ -271,6 +283,20 @@ export function createInternationalCase(
     };
   }
   
+  // Crear perfil técnico
+  const technicalProfile: CaseTechnicalProfile = {
+    categoria: data.categoria || "General",
+    nivelComplejidad: data.complexity || "media",
+    jurisdiccion: data.countriesInvolved,
+    especialidadesRequeridas: data.especialidadesRequeridas || [],
+  };
+  
+  // Configuración GEP
+  const gepConfig: GEPConfiguration = {
+    prioridad: true,
+    ventanaEvaluacion: GEP_EVALUATION_WINDOW_HOURS,
+  };
+  
   const internationalCase: InternationalCase = {
     ...caseData,
     jurisdiction: "internacional",
@@ -279,10 +305,14 @@ export function createInternationalCase(
     currency: "USD",
     minimumAmount: MINIMUM_AMOUNT_USD,
     internationalStatus: "pendiente_revision",
-    gepGoldEligible: true, // Todos los casos internacionales son elegibles para GEP Gold
-    top5ConsortiaEligible: true, // Todos son elegibles para Top 5
-    auctionEligible: true, // Todos son elegibles para subasta
-    auctionActive: false,
+    gepGoldEligible: true,
+    tierPremiumEligible: true,
+    tierStandardEligible: true,
+    technicalProfile,
+    derivationStatus: {
+      estado: "pendiente_gep",
+    },
+    gepConfiguration: gepConfig,
     countriesInvolved: data.countriesInvolved,
     languagesRequired: data.languagesRequired || ["Español", "Inglés"],
     complexity: data.complexity || "media",
@@ -383,7 +413,7 @@ export function getInternationalCases(filters?: {
 }
 
 /**
- * Inicia el embudo: Envía a GEP Gold
+ * Inicia el embudo: Envía a GEP Gold (Evaluación Prioritaria)
  */
 export function sendToGEPGold(caseId: string): { success: boolean; error?: string } {
   const caseData = getInternationalCaseById(caseId);
@@ -391,10 +421,15 @@ export function sendToGEPGold(caseId: string): { success: boolean; error?: strin
     return { success: false, error: "Caso internacional no encontrado" };
   }
   
-  caseData.internationalStatus = "asignado_gep";
+  caseData.internationalStatus = "en_evaluacion_gep";
   caseData.assignmentType = "gep_gold";
   caseData.gepGoldAssigned = true;
   caseData.gepGoldResponse = "pendiente";
+  caseData.derivationStatus = {
+    estado: "en_evaluacion_gep",
+    fechaDerivacion: new Date().toISOString(),
+    razonDerivacion: "Derivación prioritaria según perfil técnico del caso",
+  };
   
   saveInternationalCase(caseData);
   
@@ -420,11 +455,16 @@ export function processGEPGoldResponse(
   
   if (response.response === "aceptado") {
     caseData.internationalStatus = "asignado_gep";
+    caseData.derivationStatus = {
+      estado: "derivado_gep",
+      fechaDerivacion: new Date().toISOString(),
+      razonDerivacion: "GEP Gold aceptó el caso según perfil técnico",
+    };
   } else {
-    // Si GEP Gold declina, enviar a Top 5 Consorcios
-    caseData.internationalStatus = "asignado_consorcio";
-    caseData.assignmentType = "consorcio";
-    sendToTop5Consortia(response.caseId);
+    // Si GEP Gold declina, derivar a Tier Premium según perfil técnico
+    caseData.internationalStatus = "asignado_consorcio_tier_premium";
+    caseData.assignmentType = "consorcio_tier_premium";
+    deriveToTierPremium(response.caseId);
   }
   
   saveInternationalCase(caseData);
@@ -433,23 +473,47 @@ export function processGEPGoldResponse(
 }
 
 /**
- * Envía caso a Top 5 Consorcios
+ * Deriva caso a Consorcios Tier Premium según perfil técnico
  */
-export function sendToTop5Consortia(caseId: string): { success: boolean; error?: string } {
+export function deriveToTierPremium(caseId: string): { success: boolean; error?: string } {
   const caseData = getInternationalCaseById(caseId);
   if (!caseData) {
     return { success: false, error: "Caso internacional no encontrado" };
   }
   
-  caseData.internationalStatus = "asignado_consorcio";
-  caseData.assignmentType = "consorcio";
-  caseData.top5ConsortiaAssigned = TOP_5_CONSORTIA.map((c) => c.id);
-  caseData.top5ConsortiaResponses = {};
+  // Obtener consorcios Tier Premium
+  const tierPremiumConsortia = TOP_5_CONSORTIA.filter((c) => c.tier === "premium");
+  
+  // Filtrar por coincidencia de perfil técnico
+  const matchingConsortia = tierPremiumConsortia.filter((consortium) => {
+    const caseSpecialties = caseData.technicalProfile.especialidadesRequeridas || [];
+    return caseSpecialties.some((spec) => consortium.specialties.includes(spec));
+  });
+  
+  // Si hay coincidencias, usar esos; si no, usar todos los Tier Premium
+  const consortiaToAssign = matchingConsortia.length > 0 ? matchingConsortia : tierPremiumConsortia;
+  
+  caseData.internationalStatus = "asignado_consorcio_tier_premium";
+  caseData.assignmentType = "consorcio_tier_premium";
+  caseData.tierPremiumAssigned = consortiaToAssign.map((c) => c.id);
+  caseData.tierPremiumResponses = {};
   
   // Inicializar respuestas como pendientes
-  TOP_5_CONSORTIA.forEach((consortium) => {
-    caseData.top5ConsortiaResponses![consortium.id] = "pendiente";
+  consortiaToAssign.forEach((consortium) => {
+    caseData.tierPremiumResponses![consortium.id] = "pendiente";
   });
+  
+  // Actualizar estado de derivación
+  const coincidencias = matchingConsortia.length > 0
+    ? matchingConsortia.map((c) => c.name)
+    : ["Derivación automática a Tier Premium"];
+  
+  caseData.derivationStatus = {
+    estado: "derivado_tier_premium",
+    fechaDerivacion: new Date().toISOString(),
+    razonDerivacion: "Derivación ética a consorcios Tier Premium según perfil técnico",
+    perfilTecnicoCoincidente: coincidencias,
+  };
   
   saveInternationalCase(caseData);
   
@@ -457,7 +521,55 @@ export function sendToTop5Consortia(caseId: string): { success: boolean; error?:
 }
 
 /**
- * Procesa respuesta de consorcio
+ * Deriva caso a Consorcios Tier Standard según perfil técnico
+ */
+export function deriveToTierStandard(caseId: string): { success: boolean; error?: string } {
+  const caseData = getInternationalCaseById(caseId);
+  if (!caseData) {
+    return { success: false, error: "Caso internacional no encontrado" };
+  }
+  
+  // Obtener consorcios Tier Standard
+  const tierStandardConsortia = TOP_5_CONSORTIA.filter((c) => c.tier === "standard");
+  
+  // Filtrar por coincidencia de perfil técnico
+  const matchingConsortia = tierStandardConsortia.filter((consortium) => {
+    const caseSpecialties = caseData.technicalProfile.especialidadesRequeridas || [];
+    return caseSpecialties.some((spec) => consortium.specialties.includes(spec));
+  });
+  
+  // Si hay coincidencias, usar esos; si no, usar todos los Tier Standard
+  const consortiaToAssign = matchingConsortia.length > 0 ? matchingConsortia : tierStandardConsortia;
+  
+  caseData.internationalStatus = "asignado_consorcio_tier_standard";
+  caseData.assignmentType = "consorcio_tier_standard";
+  caseData.tierStandardAssigned = consortiaToAssign.map((c) => c.id);
+  caseData.tierStandardResponses = {};
+  
+  // Inicializar respuestas como pendientes
+  consortiaToAssign.forEach((consortium) => {
+    caseData.tierStandardResponses![consortium.id] = "pendiente";
+  });
+  
+  // Actualizar estado de derivación
+  const coincidencias = matchingConsortia.length > 0
+    ? matchingConsortia.map((c) => c.name)
+    : ["Derivación automática a Tier Standard"];
+  
+  caseData.derivationStatus = {
+    estado: "derivado_tier_standard",
+    fechaDerivacion: new Date().toISOString(),
+    razonDerivacion: "Derivación ética a consorcios Tier Standard según perfil técnico",
+    perfilTecnicoCoincidente: coincidencias,
+  };
+  
+  saveInternationalCase(caseData);
+  
+  return { success: true };
+}
+
+/**
+ * Procesa respuesta de consorcio (Tier Premium o Standard)
  */
 export function processConsortiumResponse(
   response: ConsortiumResponse
@@ -467,33 +579,73 @@ export function processConsortiumResponse(
     return { success: false, error: "Caso internacional no encontrado" };
   }
   
-  if (!caseData.top5ConsortiaResponses) {
-    caseData.top5ConsortiaResponses = {};
-  }
+  // Determinar si es Tier Premium o Standard
+  const isTierPremium = caseData.tierPremiumAssigned?.includes(response.consortiumId);
+  const isTierStandard = caseData.tierStandardAssigned?.includes(response.consortiumId);
   
-  caseData.top5ConsortiaResponses[response.consortiumId] = response.response;
-  
-  // Verificar si todos respondieron
-  const allResponded = Object.values(caseData.top5ConsortiaResponses).every(
-    (r) => r !== "pendiente"
-  );
-  
-  if (allResponded) {
-    // Si todos declinaron o no hay aceptaciones, ir a subasta
-    const hasAcceptance = Object.values(caseData.top5ConsortiaResponses).some(
-      (r) => r === "aceptado"
+  if (isTierPremium) {
+    if (!caseData.tierPremiumResponses) {
+      caseData.tierPremiumResponses = {};
+    }
+    caseData.tierPremiumResponses[response.consortiumId] = response.response;
+    
+    // Verificar si todos respondieron
+    const allResponded = caseData.tierPremiumAssigned!.every(
+      (id) => caseData.tierPremiumResponses![id] !== "pendiente"
     );
     
-    if (!hasAcceptance) {
-      startAuction(response.caseId);
-    } else {
-      // Asignar al primer consorcio que aceptó
-      const acceptedConsortium = Object.entries(caseData.top5ConsortiaResponses).find(
-        ([_, r]) => r === "aceptado"
+    if (allResponded) {
+      const hasAcceptance = Object.values(caseData.tierPremiumResponses).some(
+        (r) => r === "aceptado"
       );
-      if (acceptedConsortium) {
-        caseData.internationalStatus = "asignado_consorcio";
-        caseData.professionalId = acceptedConsortium[0]; // Usar ID del consorcio
+      
+      if (hasAcceptance) {
+        // Asignar al primer consorcio que aceptó
+        const acceptedConsortium = Object.entries(caseData.tierPremiumResponses).find(
+          ([_, r]) => r === "aceptado"
+        );
+        if (acceptedConsortium) {
+          caseData.internationalStatus = "asignado_consorcio_tier_premium";
+          caseData.professionalId = acceptedConsortium[0];
+        }
+      } else {
+        // Si todos declinaron, derivar a Tier Standard
+        deriveToTierStandard(response.caseId);
+      }
+    }
+  } else if (isTierStandard) {
+    if (!caseData.tierStandardResponses) {
+      caseData.tierStandardResponses = {};
+    }
+    caseData.tierStandardResponses[response.consortiumId] = response.response;
+    
+    // Verificar si todos respondieron
+    const allResponded = caseData.tierStandardAssigned!.every(
+      (id) => caseData.tierStandardResponses![id] !== "pendiente"
+    );
+    
+    if (allResponded) {
+      const hasAcceptance = Object.values(caseData.tierStandardResponses).some(
+        (r) => r === "aceptado"
+      );
+      
+      if (hasAcceptance) {
+        // Asignar al primer consorcio que aceptó
+        const acceptedConsortium = Object.entries(caseData.tierStandardResponses).find(
+          ([_, r]) => r === "aceptado"
+        );
+        if (acceptedConsortium) {
+          caseData.internationalStatus = "asignado_consorcio_tier_standard";
+          caseData.professionalId = acceptedConsortium[0];
+        }
+      } else {
+        // Si todos declinaron, marcar como rechazado
+        caseData.internationalStatus = "rechazado";
+        caseData.derivationStatus = {
+          estado: "derivado_tier_standard",
+          fechaDerivacion: new Date().toISOString(),
+          razonDerivacion: "Todos los consorcios declinaron. Caso marcado como rechazado.",
+        };
       }
     }
   }
@@ -504,111 +656,11 @@ export function processConsortiumResponse(
 }
 
 /**
- * Inicia subasta de caso
+ * Función legacy: Envía caso a Top 5 Consorcios (ahora usa Tier Premium)
+ * Mantenida para compatibilidad, pero internamente usa deriveToTierPremium
  */
-export function startAuction(caseId: string, durationDays: number = 7): { success: boolean; error?: string } {
-  const caseData = getInternationalCaseById(caseId);
-  if (!caseData) {
-    return { success: false, error: "Caso internacional no encontrado" };
-  }
-  
-  const now = new Date();
-  const endDate = new Date(now);
-  endDate.setDate(endDate.getDate() + durationDays);
-  
-  caseData.internationalStatus = "en_subasta";
-  caseData.assignmentType = "subasta";
-  caseData.auctionActive = true;
-  caseData.auctionStartDate = now.toISOString();
-  caseData.auctionEndDate = endDate.toISOString();
-  caseData.auctionBids = [];
-  
-  saveInternationalCase(caseData);
-  
-  return { success: true };
-}
-
-/**
- * Envía oferta en subasta
- */
-export function submitAuctionBid(bid: SubmitAuctionBid): { success: boolean; error?: string } {
-  const caseData = getInternationalCaseById(bid.caseId);
-  if (!caseData) {
-    return { success: false, error: "Caso internacional no encontrado" };
-  }
-  
-  if (!caseData.auctionActive) {
-    return { success: false, error: "La subasta no está activa" };
-  }
-  
-  const endDate = caseData.auctionEndDate ? new Date(caseData.auctionEndDate) : null;
-  if (endDate && new Date() > endDate) {
-    return { success: false, error: "La subasta ha finalizado" };
-  }
-  
-  const consortium = TOP_5_CONSORTIA.find((c) => c.id === bid.consortiumId);
-  if (!consortium) {
-    return { success: false, error: "Consorcio no encontrado" };
-  }
-  
-  if (!caseData.auctionBids) {
-    caseData.auctionBids = [];
-  }
-  
-  const newBid: AuctionBid = {
-    id: `bid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    consortiumId: bid.consortiumId,
-    consortiumName: consortium.name,
-    amount: bid.amount,
-    currency: "USD",
-    proposedFee: bid.proposedFee,
-    estimatedTime: bid.estimatedTime,
-    notes: bid.notes,
-    submittedAt: new Date().toISOString(),
-    status: "pendiente",
-  };
-  
-  caseData.auctionBids.push(newBid);
-  
-  saveInternationalCase(caseData);
-  
-  return { success: true };
-}
-
-/**
- * Selecciona ganador de subasta
- */
-export function selectAuctionWinner(
-  caseId: string,
-  bidId: string
-): { success: boolean; error?: string } {
-  const caseData = getInternationalCaseById(caseId);
-  if (!caseData) {
-    return { success: false, error: "Caso internacional no encontrado" };
-  }
-  
-  if (!caseData.auctionBids) {
-    return { success: false, error: "No hay ofertas en la subasta" };
-  }
-  
-  const bid = caseData.auctionBids.find((b) => b.id === bidId);
-  if (!bid) {
-    return { success: false, error: "Oferta no encontrada" };
-  }
-  
-  // Marcar todas las ofertas como rechazadas
-  caseData.auctionBids.forEach((b) => {
-    b.status = b.id === bidId ? "aceptada" : "rechazada";
-  });
-  
-  caseData.auctionWinner = bid.consortiumId;
-  caseData.internationalStatus = "asignado_subasta";
-  caseData.auctionActive = false;
-  caseData.professionalId = bid.consortiumId;
-  
-  saveInternationalCase(caseData);
-  
-  return { success: true };
+export function sendToTop5Consortia(caseId: string): { success: boolean; error?: string } {
+  return deriveToTierPremium(caseId);
 }
 
 /**
@@ -616,6 +668,20 @@ export function selectAuctionWinner(
  */
 export function getTop5Consortia(): LegalConsortium[] {
   return TOP_5_CONSORTIA;
+}
+
+/**
+ * Obtiene consorcios Tier Premium
+ */
+export function getTierPremiumConsortia(): LegalConsortium[] {
+  return TOP_5_CONSORTIA.filter((c) => c.tier === "premium");
+}
+
+/**
+ * Obtiene consorcios Tier Standard
+ */
+export function getTierStandardConsortia(): LegalConsortium[] {
+  return TOP_5_CONSORTIA.filter((c) => c.tier === "standard");
 }
 
 /**
