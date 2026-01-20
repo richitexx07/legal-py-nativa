@@ -13,6 +13,22 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizeCss: true,
   },
+  // Forzar regeneración de páginas en producción
+  output: 'standalone',
+  // Headers para evitar caché agresivo
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
