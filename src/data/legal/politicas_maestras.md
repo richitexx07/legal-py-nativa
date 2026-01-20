@@ -1,94 +1,72 @@
-CENTRO LEGAL Y DE TRANSPARENCIA - LEGAL PY
+# CENTRO LEGAL Y DE TRANSPARENCIA - LEGAL PY
 
-Bienvenido al Centro de Gobernanza de Legal PY.
-Para facilitar su lectura, hemos clasificado nuestras políticas por orden de prioridad e impacto en su experiencia.
+**Bienvenido al Centro de Gobernanza de Legal PY.**
+Para facilitar su lectura, hemos clasificado nuestras políticas por orden de prioridad e impacto en su experiencia. Toda la información aquí expuesta es vinculante para el uso de la interfaz.
 
-🟥 NIVEL 1: LECTURA OBLIGATORIA (Esenciales)
+## 🟥 NIVEL 1: LECTURA OBLIGATORIA (Esenciales)
+*Estas políticas rigen su uso diario, sus derechos fundamentales y la privacidad de sus datos.*
 
-Estas políticas rigen su uso diario y sus derechos fundamentales.
+### 1. Política de Privacidad y Tratamiento de Datos (v2.1)
+**Última actualización:** 20 de enero de 2026 | **Adecuación:** Ley Nº 7593/2025 y RGPD.
 
-1. Términos y Condiciones de Uso (Contrato General)
+**1.1 Responsable del Tratamiento:**
+El responsable es Legal PY, con domicilio en Asunción, Paraguay. Contacto: `privacidad@legalpy.com`.
 
-Define las reglas del juego. Usted acepta que Legal PY es una plataforma tecnológica de intermediación y no un estudio jurídico.
+**1.2 Información que Recopilamos:**
+* **Identificación:** Nombre, RUC/Cédula, email, teléfono. Para profesionales: Matrícula y títulos.
+* **Historial de Transacciones (Nuevo):** Registro detallado de apertura de casos, carga de documentos y cambios de estado. Incluye logs de auditoría para trazabilidad.
+* **Datos Sensibles:** Legal PY actúa como *Encargado del Tratamiento* con medidas de seguridad reforzadas para proteger el secreto profesional en los documentos cargados.
 
-Puntos Clave: Definición de roles (Cliente/Profesional), prohibición de actividades ilícitas y aceptación de la naturaleza digital del servicio.
+**1.3 Visibilidad y Transparencia (Historial Inmutable):**
+Legal PY garantiza el acceso directo a su **Historial de Actividad** en el panel por **6 meses**. Estos registros son inmutables y sirven como prueba de gestión. Tras este periodo, se archivan en "frío" por 5 años (cumplimiento legal).
 
-Naturaleza del Servicio: Legal PY es una plataforma digital que conecta clientes con profesionales legales. NO proporcionamos asesoramiento legal directo ni procesamos pagos.
+**1.4 Seguridad de Datos:**
+Cifrado TLS 1.3 en tránsito y AES-256 en reposo. Implementamos estándares ISO/IEC 27001.
 
-Registro: Al registrarse, usted garantiza tener capacidad legal y proporcionar datos veraces.
+**1.5 Sus Derechos (ARCO+):**
+Acceso, Rectificación, Supresión, Oposición, Portabilidad y Limitación. Puede ejercerlos escribiendo a `privacidad@legalpy.com`.
 
-2. Política de Privacidad y Tratamiento de Datos (Ley 7593/2025)
+### 2. Términos y Condiciones de Uso (Contrato General)
+* **Naturaleza del Servicio:** Legal PY es una plataforma tecnológica de intermediación. NO somos un estudio jurídico.
+* **Registro:** Al registrarse, garantiza capacidad legal. Los servicios están dirigidos exclusivamente a mayores de 18 años.
+* **Notificación de Brechas:** Nos comprometemos a notificar incidentes de seguridad en un plazo máximo de 72 horas.
 
-Explica cómo protegemos su información.
+### 3. Descargo de Responsabilidad (Disclaimer)
+* **Software "Tal Cual":** No garantizamos resultados específicos en procesos legales.
+* **Uso de IA:** Cualquier asistencia generada por IA es orientativa y no sustituye el criterio profesional.
 
-Derechos ARCO+: Acceso, Rectificación, Cancelación, Oposición y Portabilidad.
+## 🟨 NIVEL 2: SEGURIDAD OPERATIVA Y BLINDAJE DE SERVICIOS
+*Reglas específicas para la gestión de casos, documentos y pagos.*
 
-Historial Inmutable: Garantizamos la visibilidad de su historial de transacciones y gestiones en su panel por 6 meses.
+### 4. Blindaje de Servicios Específicos
+Protecciones legales para las funcionalidades activas en la plataforma:
 
-Retención: Tras los 6 meses, los datos se archivan en "frío" por 5 años para cumplimiento legal, pero no son accesibles en la UI.
+* **Consultas Rápidas / Chat:** Toda respuesta es una "orientación preliminar", no un dictamen vinculante. No use el chat para emergencias (privación de libertad o plazos perentorios).
+* **Gestión de Expedientes:** El usuario es responsable de la veracidad de los documentos que sube. Al finalizar una gestión, dispone de **30 días** para descargar su expediente antes del archivo muerto.
+* **Marcas y Patentes:** El pago de honorarios no garantiza la concesión de la marca por parte de la DINAPI. No hay reembolsos por rechazos administrativos.
+* **Conflictos:** Legal PY puede actuar como mediador técnico (aportando logs), pero no dicta sentencias ni indemniza.
 
-Seguridad: Uso de cifrado TLS 1.3 y AES-256 para documentos sensibles.
+### 5. Política de Verificación (Anti-Intrusismo)
+* **Filtro de Matrícula:** Suspendemos cuentas de profesionales con matrícula vencida o reportada.
+* **Reporte de Ética:** Canal habilitado para denunciar ejercicio ilegal de la profesión.
 
-3. Descargo de Responsabilidad (Disclaimer)
+### 6. Política de Pagos y Transparencia
+* **No Intermediación:** Legal PY no toca los honorarios profesionales.
+* **Facturación:** La obligación fiscal recae en el profesional prestador del servicio.
 
-Naturaleza: El software se entrega "tal cual".
+## 🟦 NIVEL 3: CUMPLIMIENTO INTERNACIONAL Y CORPORATIVO
+*Para empresas, usuarios extranjeros (UE/USA) y seguridad de estado.*
 
-Responsabilidad: Legal PY no es responsable por negligencia profesional, pérdida de juicios, pérdida de plazos procesales o errores en la carga de documentos por parte del usuario.
+### 7. Anexo de Privacidad Internacional (RGPD / CCPA)
+* **Base Legal Internacional:** Tratamiento basado en ejecución de contrato (Art. 6.1.b RGPD) y cumplimiento legal (Art. 6.1.c RGPD).
+* **Transferencias:** Uso de **Cláusulas Contractuales Tipo (SCC)** para asegurar la protección de datos al transferirse a servidores en Paraguay.
+* **Derechos EE. UU. (California):** Derecho a saber y "Do Not Sell My Personal Information".
 
-Uso de IA: Cualquier asistencia generada por IA es meramente orientativa y no sustituye el criterio profesional.
+### 8. Políticas para Empresas y Consorcios
+* **Cuentas Corporativas:** La empresa es responsable de gestionar los permisos de sus empleados.
+* **Seguridad Notarial:** Implementamos "Huella Digital de Documento" (Hash). Legal PY facilita la logística pero no sustituye la fe pública presencial del Escribano.
+* **Indemnidad Tecnológica:** Las empresas mantienen indemne a Legal PY ante errores de interpretación de sus propios profesionales.
 
-🟨 NIVEL 2: SEGURIDAD FINANCIERA Y OPERATIVA
-
-Lectura crítica para quienes realizan pagos o gestionan casos.
-
-4. Política de Pagos y Transparencia Financiera
-
-No Intermediación: Legal PY no toca el dinero de los honorarios. Los pagos son directos entre Cliente y Profesional.
-
-Facturación: La obligación de facturar es del profesional. Los registros en la web son meramente informativos para trazabilidad.
-
-Suscripciones: Los pagos por uso de la plataforma (SaaS) no son reembolsables una vez iniciado el periodo.
-
-5. Modelo de Derivación Priorizada (DPT)
-
-Explicación de cómo asignamos o sugerimos casos:
-
-Clasificación: El sistema analiza complejidad, materia y jurisdicción.
-
-Preferencia GEP: Los Gold Enterprise Partners tienen prioridad de 24-48hs para aceptar casos complejos (High-Ticket).
-
-Derivación Escalonada: Si el GEP declina, el caso pasa a Tier 1 (Consorcios) y luego a la red general de profesionales.
-
-6. Régimen de Estudiantes y Pasantes
-
-Prohibición: Los estudiantes NO pueden firmar escritos judiciales, asesorar independientemente ni cobrar honorarios.
-
-Supervisión: Deben actuar bajo la tutela estricta de un profesional matriculado.
-
-Sanción: La violación de esta norma implica la expulsión inmediata y reporte a autoridades académicas.
-
-🟦 NIVEL 3: CUMPLIMIENTO INTERNACIONAL Y CORPORATIVO
-
-Para empresas, usuarios extranjeros y seguridad de estado.
-
-7. Anexo de Seguridad Internacional y GDPR
-
-Usuarios UE/EEUU: Aplicación de Cláusulas Contractuales Tipo (SCC) para transferencia de datos a servidores en Paraguay/Nube.
-
-Privacidad: Cumplimiento con estándares de California (CCPA) y Europa (RGPD).
-
-Representante: Contacto directo con DPO para usuarios internacionales: dpo@legalpy.com.
-
-8. Protocolo de Seguridad Nacional (AML/Interpol)
-
-Lavado de Dinero: Cumplimiento con GAFILAT/SEPRELAD. Política de "Conozca a su Cliente" (KYC) y reporte de operaciones sospechosas.
-
-Cooperación: Entrega de datos a autoridades (Interpol/Fiscalía) bajo orden judicial sin violar la privacidad (excepción legal por seguridad pública).
-
-9. Políticas para Empresas y Consorcios
-
-Cuentas Corporativas: Gestión de accesos delegados y responsabilidad por credenciales compartidas.
-
-Propiedad Intelectual: Deslinde de responsabilidad en gestión de marcas, patentes y derechos de autor.
-
-Blindaje de Servicios: Legal PY no garantiza resultados en trámites migratorios o concesiones estatales.
+### 9. Protocolo de Seguridad Nacional (AML)
+* **Lavado de Activos:** Cumplimiento con GAFILAT/SEPRELAD. Monitoreo de transacciones sospechosas.
+* **Cooperación:** Entrega de datos a Interpol/Fiscalía únicamente bajo orden judicial válida.

@@ -41,30 +41,33 @@ function parsePoliciesByLevel(content: string): PolicyLevel[] {
     {
       id: 'nivel-1',
       emoji: '🟥',
+      titlePattern: /🟥\s*NIVEL\s*1:/i,
       title: 'NIVEL 1: LECTURA OBLIGATORIA (Esenciales)',
-      description: 'Estas políticas rigen su uso diario y sus derechos fundamentales.'
+      description: 'Estas políticas rigen su uso diario, sus derechos fundamentales y la privacidad de sus datos.'
     },
     {
       id: 'nivel-2',
       emoji: '🟨',
-      title: 'NIVEL 2: SEGURIDAD FINANCIERA Y OPERATIVA',
-      description: 'Lectura crítica para quienes realizan pagos o gestionan casos.'
+      titlePattern: /🟨\s*NIVEL\s*2:/i,
+      title: 'NIVEL 2: SEGURIDAD OPERATIVA Y BLINDAJE DE SERVICIOS',
+      description: 'Reglas específicas para la gestión de casos, documentos y pagos.'
     },
     {
       id: 'nivel-3',
       emoji: '🟦',
+      titlePattern: /🟦\s*NIVEL\s*3:/i,
       title: 'NIVEL 3: CUMPLIMIENTO INTERNACIONAL Y CORPORATIVO',
-      description: 'Para empresas, usuarios extranjeros y seguridad de estado.'
+      description: 'Para empresas, usuarios extranjeros (UE/USA) y seguridad de estado.'
     }
   ];
 
-  // Encontrar el índice de cada nivel
+  // Encontrar el índice de cada nivel usando el patrón regex
   const levelIndices: Array<{ pattern: typeof levelPatterns[0]; index: number }> = [];
   
   levelPatterns.forEach(pattern => {
-    const index = content.indexOf(pattern.title);
-    if (index !== -1) {
-      levelIndices.push({ pattern, index });
+    const match = content.match(pattern.titlePattern);
+    if (match && match.index !== undefined) {
+      levelIndices.push({ pattern, index: match.index });
     }
   });
 
@@ -82,11 +85,19 @@ function parsePoliciesByLevel(content: string): PolicyLevel[] {
     const levelContent = content.substring(startIndex, endIndex);
     const policies = extractPolicies(levelContent);
     
+    // Extraer el título real del contenido (después del emoji y "NIVEL X:")
+    const titleMatch = levelContent.match(/##\s*[🟥🟨🟦]\s*(NIVEL\s*\d+:[^#\n]+)/i);
+    const actualTitle = titleMatch ? titleMatch[1].trim() : current.pattern.title.replace(/^[🟥🟨🟦]\s*/, '');
+    
+    // Extraer la descripción real del contenido (línea después del título con *)
+    const descMatch = levelContent.match(/\*\s*([^\n]+)/);
+    const actualDescription = descMatch ? descMatch[1].trim() : current.pattern.description;
+    
     levels.push({
       id: current.pattern.id,
-      title: current.pattern.title.replace(/^[🟥🟨🟦]\s*/, ''), // Remover emoji del título
+      title: actualTitle,
       emoji: current.pattern.emoji,
-      description: current.pattern.description,
+      description: actualDescription,
       policies
     });
   }
