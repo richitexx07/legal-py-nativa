@@ -119,9 +119,24 @@ export default function PostCasePage() {
     };
 
     // Guardar en localStorage para simulación
-    const existingCases = JSON.parse(localStorage.getItem("legal-py-cases") || "[]");
-    existingCases.push(newCase);
-    localStorage.setItem("legal-py-cases", JSON.stringify(existingCases));
+    try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:122',message:'Saving case to localStorage',data:{caseId:newCase.id,title:newCase.title,complexity:newCase.complexity,budget:newCase.estimatedBudget},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+      // #endregion
+      const existingCases = JSON.parse(localStorage.getItem("legal-py-cases") || "[]");
+      existingCases.push(newCase);
+      localStorage.setItem("legal-py-cases", JSON.stringify(existingCases));
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:125',message:'Case saved successfully',data:{totalCases:existingCases.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+      // #endregion
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:127',message:'ERROR saving case',data:{errorMessage:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+      // #endregion
+      alert("Error al guardar el caso: " + (error instanceof Error ? error.message : String(error)));
+      setLoading(false);
+      return;
+    }
 
     setLoading(false);
     setShowSuccessModal(true);

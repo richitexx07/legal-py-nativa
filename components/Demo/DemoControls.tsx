@@ -13,10 +13,16 @@ export default function DemoControls() {
   useEffect(() => {
     // Solo visible en desarrollo o si el usuario es admin (simulado)
     if (typeof window !== "undefined") {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Demo/DemoControls.tsx:15',message:'DemoControls init',data:{hostname:window.location.hostname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
       const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
       // También visible si hay una flag en localStorage
       const showDemoControls = localStorage.getItem("legal-py-demo-mode") === "true";
       setIsVisible(isDev || showDemoControls);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Demo/DemoControls.tsx:19',message:'DemoControls visibility set',data:{isDev,showDemoControls,isVisible:isDev||showDemoControls},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
     }
   }, []);
 
@@ -31,19 +37,34 @@ export default function DemoControls() {
   }
 
   const handleSetTier = async (tier: 1 | 3) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Demo/DemoControls.tsx:33',message:'handleSetTier called',data:{tier,hasSession:!!session,userId:session?.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+    // #endregion
     if (!session) {
       alert("Debes estar autenticado para usar los controles de demo");
       return;
     }
 
-    await updateKYCTier(session.user.id, tier);
-    
-    // Actualizar sesión local
-    const updatedSession = getSession();
-    if (updatedSession) {
-      setSession(updatedSession);
-      // Forzar recarga de la página para actualizar toda la UI
-      window.location.reload();
+    try {
+      await updateKYCTier(session.user.id, tier);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Demo/DemoControls.tsx:40',message:'Tier updated successfully',data:{tier},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
+      // Actualizar sesión local
+      const updatedSession = getSession();
+      if (updatedSession) {
+        setSession(updatedSession);
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Demo/DemoControls.tsx:45',message:'Reloading page',data:{newTier:updatedSession.user.kycTier},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+        // #endregion
+        // Forzar recarga de la página para actualizar toda la UI
+        window.location.reload();
+      }
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Demo/DemoControls.tsx:50',message:'ERROR updating tier',data:{errorMessage:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
+      alert("Error al actualizar el tier: " + (error instanceof Error ? error.message : String(error)));
     }
   };
 

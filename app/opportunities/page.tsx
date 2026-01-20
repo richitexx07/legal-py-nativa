@@ -85,9 +85,15 @@ export default function OpportunitiesPage() {
       // 3. Leer casos del localStorage (casos publicados por usuarios)
       let localStorageCases: LegalCase[] = [];
       try {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/opportunities/page.tsx:87',message:'Reading localStorage cases',data:{userTier:currentSession.user.kycTier},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+        // #endregion
         const stored = localStorage.getItem("legal-py-cases");
         if (stored) {
           const parsed = JSON.parse(stored);
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/opportunities/page.tsx:91',message:'Parsed localStorage data',data:{isArray:Array.isArray(parsed),parsedLength:Array.isArray(parsed)?parsed.length:0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+          // #endregion
           // Validar que sean casos válidos
           localStorageCases = Array.isArray(parsed)
             ? parsed.filter(
@@ -104,8 +110,14 @@ export default function OpportunitiesPage() {
                   c.createdAt
               )
             : [];
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/opportunities/page.tsx:105',message:'Validated localStorage cases',data:{validCases:localStorageCases.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+          // #endregion
         }
       } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/opportunities/page.tsx:108',message:'ERROR reading localStorage',data:{errorMessage:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+        // #endregion
         console.error("Error reading cases from localStorage:", error);
       }
 
