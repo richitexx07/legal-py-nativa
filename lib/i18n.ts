@@ -298,8 +298,6 @@ const diccionarios: Record<Idioma, Diccionario> = {
       quickChatSubtitle: "Eñe'ẽ peteĩ abogado ndive ko'ag̃aite",
       quickCourierTitle: "Servicio courier legal",
       quickCourierSubtitle: "Emondo ha egueru kuatia kuéra tekorosãme",
-      quickAuctionsTitle: "Subasta de casos",
-      quickAuctionsSubtitle: "Emoherakuã nde caso ha ekaru ñembojerovia",
     },
     professionals: {
       listTitle: "Profesional kuéra",
@@ -422,8 +420,6 @@ const diccionarios: Record<Idioma, Diccionario> = {
       quickChatSubtitle: "Chat with a lawyer now",
       quickCourierTitle: "Legal courier service",
       quickCourierSubtitle: "Send or legalize documents",
-      quickAuctionsTitle: "Case auctions",
-      quickAuctionsSubtitle: "Publish your case and receive offers",
     },
     professionals: {
       listTitle: "Professionals",
@@ -546,8 +542,6 @@ const diccionarios: Record<Idioma, Diccionario> = {
       quickChatSubtitle: "Converse com um advogado agora",
       quickCourierTitle: "Courier jurídico",
       quickCourierSubtitle: "Envio ou legalização de documentos",
-      quickAuctionsTitle: "Leilão de casos",
-      quickAuctionsSubtitle: "Publique seu caso e receba propostas",
     },
     professionals: {
       listTitle: "Profissionais",
