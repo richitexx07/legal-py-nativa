@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
@@ -9,12 +10,15 @@ import Tabs from "@/components/Tabs";
 import { InscripcionCurso, PostulacionPasantia, SolicitudCapacitacion } from "@/lib/educacion-data";
 import { mockCursos, mockPasantias } from "@/lib/educacion-data";
 import { getSession } from "@/lib/auth";
+import { LegalCase } from "@/lib/types";
 
 export default function PanelAdminPage() {
-  const [activeTab, setActiveTab] = useState("inscripciones");
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState("gestiones");
   const [inscripciones, setInscripciones] = useState<InscripcionCurso[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionPasantia[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudCapacitacion[]>([]);
+  const [myCases, setMyCases] = useState<LegalCase[]>([]);
   const [session, setSession] = useState(getSession());
 
   useEffect(() => {
@@ -31,6 +35,28 @@ export default function PanelAdminPage() {
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
+
+      // Cargar casos del usuario actual desde localStorage
+      if (currentSession) {
+        try {
+          const storedCases = localStorage.getItem("legal-py-cases");
+          if (storedCases) {
+            const allCases: LegalCase[] = JSON.parse(storedCases);
+            // Filtrar casos del usuario actual (por ahora, todos los casos son del usuario actual)
+            // En producción, se filtraría por userId
+            const userCases = allCases.filter((c) => c.status === "OPEN" || c.status === "ASSIGNED");
+            // Ordenar por fecha (más nuevos primero)
+            userCases.sort((a, b) => {
+              const dateA = new Date(a.createdAt).getTime();
+              const dateB = new Date(b.createdAt).getTime();
+              return dateB - dateA;
+            });
+            setMyCases(userCases);
+          }
+        } catch (error) {
+          console.error("Error loading cases:", error);
+        }
+      }
     }
   }, []);
 
@@ -60,7 +86,31 @@ export default function PanelAdminPage() {
     return estados[estado] || "outline";
   };
 
+  const getCaseStatusBadge = (caseData: LegalCase) => {
+    if (caseData.exclusiveForGepUntil) {
+      const exclusiveUntil = new Date(caseData.exclusiveForGepUntil);
+      const now = new Date();
+      if (exclusiveUntil > now) {
+        return { label: "En revisión DPT", variant: "terracota" as const };
+      }
+    }
+    if (caseData.status === "ASSIGNED") {
+      return { label: "Asignado", variant: "accent" as const };
+    }
+    return { label: "Abierto", variant: "outline" as const };
+  };
+
+  const getComplexityBadge = (complexity: LegalCase["complexity"]) => {
+    const colors: Record<LegalCase["complexity"], { bg: string; text: string }> = {
+      BAJA: { bg: "bg-gray-500/20", text: "text-gray-400" },
+      MEDIA: { bg: "bg-yellow-500/20", text: "text-yellow-400" },
+      ALTA: { bg: "bg-orange-500/20", text: "text-orange-400" },
+    };
+    return colors[complexity];
+  };
+
   const tabs = [
+    { id: "gestiones", label: `Mis Gestiones Activas (${myCases.length})` },
     { id: "inscripciones", label: `Inscripciones (${inscripciones.length})` },
     { id: "postulaciones", label: `Postulaciones (${postulaciones.length})` },
     { id: "solicitudes", label: `Solicitudes (${solicitudes.length})` },
@@ -78,6 +128,79 @@ export default function PanelAdminPage() {
       </div>
 
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Mis Gestiones Activas */}
+      {activeTab === "gestiones" && (
+        <div className="space-y-4">
+          {myCases.length === 0 ? (
+            <Card>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📋</div>
+                <h3 className="text-xl font-semibold text-white mb-2">No tienes gestiones activas</h3>
+                <p className="text-white/70 mb-6">
+                  Publica tu primer caso legal y comienza a recibir propuestas de profesionales.
+                </p>
+                <Button variant="primary" onClick={() => router.push("/post-case")}>
+                  ⚖️ Publicar Mi Primer Caso
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            myCases.map((caseData) => {
+              const statusBadge = getCaseStatusBadge(caseData);
+              const complexityStyle = getComplexityBadge(caseData.complexity);
+              return (
+                <Card key={caseData.id}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <h3 className="font-semibold text-[#C9A24D]">{caseData.title}</h3>
+                        <Badge variant={statusBadge.variant} className="text-xs">
+                          {statusBadge.label}
+                        </Badge>
+                        <Badge variant="outline" className={`text-xs ${complexityStyle.bg} ${complexityStyle.text} border-current`}>
+                          Prioridad: {caseData.complexity}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-white/70 mb-3 line-clamp-2">{caseData.description}</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <div>
+                          <span className="text-white/50">Área:</span>{" "}
+                          <span className="text-white/80">{caseData.practiceArea}</span>
+                        </div>
+                        <div>
+                          <span className="text-white/50">Presupuesto:</span>{" "}
+                          <span className="text-[#C9A24D] font-semibold">
+                            {new Intl.NumberFormat("es-PY", {
+                              style: "currency",
+                              currency: "PYG",
+                              minimumFractionDigits: 0,
+                            }).format(caseData.estimatedBudget)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-white/50">Publicado:</span>{" "}
+                          <span className="text-white/80">
+                            {new Date(caseData.createdAt).toLocaleDateString("es-PY")}
+                          </span>
+                        </div>
+                      </div>
+                      {caseData.exclusiveForGepUntil && (
+                        <div className="mt-3 p-2 rounded-lg bg-[#C9A24D]/10 border border-[#C9A24D]/30">
+                          <p className="text-xs text-[#C9A24D]">
+                            👑 Caso con prioridad exclusiva GEP hasta{" "}
+                            {new Date(caseData.exclusiveForGepUntil).toLocaleString("es-PY")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          )}
+        </div>
+      )}
 
       {/* Inscripciones */}
       {activeTab === "inscripciones" && (

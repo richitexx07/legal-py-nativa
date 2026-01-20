@@ -24,7 +24,7 @@ export default function OpportunitiesPage() {
         return;
       }
 
-      // Datos mock de casos para pruebas
+      // 1. Datos mock de casos para pruebas (mantener como base)
       const mockCases: Omit<LegalCase, "exclusiveForGepUntil" | "id" | "createdAt">[] = [
         // 2 Casos "High Ticket" (deben salir bloqueados para usuarios normales)
         {
@@ -70,21 +70,58 @@ export default function OpportunitiesPage() {
         },
       ];
 
-      // Calcular prioridad y crear casos completos
+      // 2. Calcular prioridad y crear casos mock completos
       const now = new Date().toISOString();
-      const processedCases: LegalCase[] = mockCases.map((mockCase, index) => {
+      const processedMockCases: LegalCase[] = mockCases.map((mockCase, index) => {
         const priority = calculateCasePriority(mockCase);
         return {
-          id: `case_${Date.now()}_${index}`,
+          id: `mock_case_${Date.now()}_${index}`,
           ...mockCase,
           ...priority,
           createdAt: now,
         };
       });
 
-      // Filtrar casos disponibles según el tier del usuario
+      // 3. Leer casos del localStorage (casos publicados por usuarios)
+      let localStorageCases: LegalCase[] = [];
+      try {
+        const stored = localStorage.getItem("legal-py-cases");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Validar que sean casos válidos
+          localStorageCases = Array.isArray(parsed)
+            ? parsed.filter(
+                (c: any): c is LegalCase =>
+                  c &&
+                  typeof c === "object" &&
+                  c.id &&
+                  c.title &&
+                  c.description &&
+                  c.complexity &&
+                  c.practiceArea &&
+                  typeof c.estimatedBudget === "number" &&
+                  c.status &&
+                  c.createdAt
+              )
+            : [];
+        }
+      } catch (error) {
+        console.error("Error reading cases from localStorage:", error);
+      }
+
+      // 4. Combinar casos: localStorage primero (más nuevos), luego mocks
+      const allCases = [...localStorageCases, ...processedMockCases];
+
+      // 5. Ordenar por fecha de creación (más nuevos primero)
+      allCases.sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // Orden descendente (más reciente primero)
+      });
+
+      // 6. Filtrar casos disponibles según el tier del usuario
       const userTier = currentSession.user.kycTier;
-      const availableCases = getAvailableCasesForUser(userTier, processedCases);
+      const availableCases = getAvailableCasesForUser(userTier, allCases);
       setCases(availableCases);
     }
   }, [router]);

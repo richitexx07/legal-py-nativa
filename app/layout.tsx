@@ -5,6 +5,7 @@ import NavbarTop from "@/components/NavbarTop";
 import BottomNav from "@/components/BottomNav";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import Footer from "@/components/Footer";
+import DemoControls from "@/components/Demo/DemoControls";
 
 export const metadata: Metadata = {
   title: "Legal Py",
@@ -38,6 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Floating Chat Button - All Devices */}
           <FloatingChatButton />
+
+          {/* Demo Controls - Solo en desarrollo */}
+          <DemoControls />
         </I18nProvider>
       </body>
     </html>
