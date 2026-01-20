@@ -55,8 +55,6 @@ export interface Diccionario {
     quickChatSubtitle: string;
     quickCourierTitle: string;
     quickCourierSubtitle: string;
-    quickAuctionsTitle: string;
-    quickAuctionsSubtitle: string;
   };
   professionals: {
     listTitle: string;
@@ -178,8 +176,6 @@ const diccionarios: Record<Idioma, Diccionario> = {
       quickChatSubtitle: "Chat con un Abogado Ahora",
       quickCourierTitle: "Servicio de Courier Legal",
       quickCourierSubtitle: "Envío o Legalización de Documentos",
-      quickAuctionsTitle: "Subastas de Casos",
-      quickAuctionsSubtitle: "Publica tu Caso y Recibe Ofertas",
     },
     professionals: {
       listTitle: "Profesionales",
