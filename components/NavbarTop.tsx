@@ -119,35 +119,33 @@ export default function NavbarTop() {
             {/* Divisor Vertical */}
             <div className="hidden sm:block h-6 w-px bg-white/10" aria-hidden="true" />
 
-            {/* Desktop CTAs */}
+            {/* Desktop CTAs - Botones de Autenticación */}
             <div className="hidden sm:flex items-center gap-2">
-              <div className="relative" ref={buttonRef as any}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsLoginModalOpen(true)}
-                >
-                  {t.nav.iniciarSesion}
-                </Button>
-              </div>
-              <Link href="/profesional/alta">
+              <Link href="/login">
                 <Button variant="primary" size="sm">
-                  {t.profesional.suscribirme}
+                  Ingresar
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button variant="secondary" size="sm">
+                  Registrarse
                 </Button>
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button className="md:hidden rounded-lg p-2 hover:bg-white/5 transition" aria-label="Menú">
-              <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+            {/* Mobile CTAs - Botones de Autenticación */}
+            <div className="flex sm:hidden items-center gap-2">
+              <Link href="/login">
+                <Button variant="primary" size="sm">
+                  Ingresar
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button variant="secondary" size="sm">
+                  Registrarse
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
