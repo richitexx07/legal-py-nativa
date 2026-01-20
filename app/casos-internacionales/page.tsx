@@ -53,7 +53,26 @@ export default function CasosInternacionalesPage() {
   }
 
   const isAdmin = session.user.role === "profesional"; // En producción, verificar si es admin
-  const isGEPGold = false; // En producción, verificar si es GEP Gold
+  // Activar GEP Gold para profesionales (demo: todos los profesionales pueden ver botones de aceptar/declinar)
+  const isGEPGold = session.user.role === "profesional"; // En producción, verificar plan GEP Gold del usuario
+
+  // #region agent log
+  if (typeof window !== "undefined") {
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run1",
+        hypothesisId: "H1",
+        location: "app/casos-internacionales/page.tsx:isGEPGold",
+        message: "isGEPGold flag calculated",
+        data: { isGEPGold, userRole: session.user.role, hasSelectedCase: !!selectedCase },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+  }
+  // #endregion
 
   if (view === "funnel" && selectedCase) {
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/Card";
@@ -128,11 +128,27 @@ const mockDocumentos: Document[] = [
 ];
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function ProfesionalPage({ params }: PageProps) {
-  const { id } = use(params);
+  const { id } = params;
+
+  // #region agent log
+  fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sessionId: "debug-session",
+      runId: "run1",
+      hypothesisId: "H1",
+      location: "app/profesionales/[id]/page.tsx:ProfesionalPage",
+      message: "ProfesionalPage render start",
+      data: { id },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
   const { t } = useI18n();
   const profesional = mockProfesionales.find((p) => p.id === id);
   const session = getSession();

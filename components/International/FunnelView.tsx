@@ -4,6 +4,7 @@ import { useState } from "react";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
+import Snackbar from "@/components/Snackbar";
 import {
   InternationalCase,
   processGEPGoldResponse,
@@ -23,6 +24,11 @@ interface FunnelViewProps {
 export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: FunnelViewProps) {
   const [loading, setLoading] = useState(false);
   const [selectedStep, setSelectedStep] = useState<"gep" | "tier_premium" | "tier_standard">("gep");
+  const [snackbar, setSnackbar] = useState<{ message: string; type: "success" | "error" | "info" | "warning"; isOpen: boolean }>({
+    message: "",
+    type: "info",
+    isOpen: false,
+  });
   const tierPremiumConsortia = getTierPremiumConsortia();
   const tierStandardConsortia = getTierStandardConsortia();
   
@@ -42,6 +48,23 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
   const consortia = getConsortiaToShow();
 
   const handleGEPGoldResponse = async (response: "aceptado" | "declinado", notes?: string) => {
+    // #region agent log
+    if (typeof window !== "undefined") {
+      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: "debug-session",
+          runId: "run1",
+          hypothesisId: "H2",
+          location: "components/International/FunnelView.tsx:handleGEPGoldResponse",
+          message: "GEP response button clicked",
+          data: { response, caseId: caseData.id },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+    }
+    // #endregion
     setLoading(true);
     try {
       await processGEPGoldResponse({
@@ -50,8 +73,35 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
         notes,
       });
       onUpdate();
+      setSnackbar({
+        message: response === "aceptado" ? "✓ Caso aceptado exitosamente" : "Caso declinado. Se derivará a consorcios Tier Premium.",
+        type: response === "aceptado" ? "success" : "info",
+        isOpen: true,
+      });
+      // #region agent log
+      if (typeof window !== "undefined") {
+        fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: "debug-session",
+            runId: "run1",
+            hypothesisId: "H2",
+            location: "components/International/FunnelView.tsx:handleGEPGoldResponse",
+            message: "GEP response processed successfully",
+            data: { response, caseId: caseData.id },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+      }
+      // #endregion
     } catch (error) {
       console.error("Error processing GEP Gold response:", error);
+      setSnackbar({
+        message: "Error al procesar la respuesta. Intenta nuevamente.",
+        type: "error",
+        isOpen: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -71,8 +121,19 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
         notes,
       });
       onUpdate();
+      const consortiumName = [...tierPremiumConsortia, ...tierStandardConsortia].find(c => c.id === consortiumId)?.name || "Consorcio";
+      setSnackbar({
+        message: response === "aceptado" ? `✓ ${consortiumName} aceptó el caso` : `${consortiumName} declinó el caso`,
+        type: response === "aceptado" ? "success" : "info",
+        isOpen: true,
+      });
     } catch (error) {
       console.error("Error processing consortium response:", error);
+      setSnackbar({
+        message: "Error al procesar la respuesta. Intenta nuevamente.",
+        type: "error",
+        isOpen: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -183,6 +244,21 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
             <div className="p-4 rounded-lg bg-white/5 border border-white/10 space-y-4">
               {caseData.gepGoldResponse === "pendiente" && isGEPGold && (
                 <div className="space-y-3">
+                  {/* #region agent log */}
+                  {typeof window !== "undefined" && fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      sessionId: "debug-session",
+                      runId: "run1",
+                      hypothesisId: "H1",
+                      location: "components/International/FunnelView.tsx:GEPButtons",
+                      message: "GEP buttons rendered",
+                      data: { isGEPGold, gepGoldResponse: caseData.gepGoldResponse, caseId: caseData.id },
+                      timestamp: Date.now(),
+                    }),
+                  }).catch(() => {})}
+                  {/* #endregion */}
                   <p className="text-sm text-white/80">
                     Este caso fue derivado a ti según coincidencia de perfil técnico. Revisa los detalles y decide si aceptas o declinas la asignación.
                   </p>
@@ -454,6 +530,14 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
           </div>
         )}
       </Card>
+
+      {/* Snackbar para feedback visual */}
+      <Snackbar
+        message={snackbar.message}
+        type={snackbar.type}
+        isOpen={snackbar.isOpen}
+        onClose={() => setSnackbar({ ...snackbar, isOpen: false })}
+      />
     </div>
   );
 }

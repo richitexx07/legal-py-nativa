@@ -6,6 +6,7 @@ import { createReport } from "@/lib/reputation";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import FormField from "@/components/FormField";
+import Snackbar from "@/components/Snackbar";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -28,6 +29,15 @@ export default function ReportModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+    isOpen: boolean;
+  }>({
+    message: "",
+    type: "info",
+    isOpen: false,
+  });
 
   const reportTypes: { value: ReportType; label: string; description: string }[] = [
     {
@@ -91,6 +101,11 @@ export default function ReportModal({
 
       if (response.success) {
         setSubmitted(true);
+        setSnackbar({
+          message: "✓ Denuncia enviada para revisión confidencial",
+          type: "success",
+          isOpen: true,
+        });
         setTimeout(() => {
           onClose();
           setSubmitted(false);
@@ -99,10 +114,22 @@ export default function ReportModal({
           setType("otro");
         }, 2000);
       } else {
-        setErrors({ general: response.error || "Error al enviar la denuncia" });
+        const msg = response.error || "Error al enviar la denuncia";
+        setErrors({ general: msg });
+        setSnackbar({
+          message: msg,
+          type: "error",
+          isOpen: true,
+        });
       }
     } catch (error) {
-      setErrors({ general: "Error inesperado. Intenta nuevamente." });
+      const msg = "Error inesperado. Intenta nuevamente.";
+      setErrors({ general: msg });
+      setSnackbar({
+        message: msg,
+        type: "error",
+        isOpen: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -120,6 +147,12 @@ export default function ReportModal({
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Denunciar Profesional">
+      <Snackbar
+        message={snackbar.message}
+        type={snackbar.type}
+        isOpen={snackbar.isOpen}
+        onClose={() => setSnackbar({ ...snackbar, isOpen: false })}
+      />
       {submitted ? (
         <div className="text-center py-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 mb-4">

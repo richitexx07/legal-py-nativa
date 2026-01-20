@@ -34,6 +34,23 @@ function saveSession(session: AuthSession): void {
  */
 export function getSession(): AuthSession | null {
   if (typeof window === "undefined") return null;
+
+  // #region agent log
+  fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sessionId: "debug-session",
+      runId: "run1",
+      hypothesisId: "H3",
+      location: "lib/auth.ts:getSession",
+      message: "getSession called in browser",
+      data: {},
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
   const stored = localStorage.getItem("legal-py-session");
   if (!stored) return null;
   try {

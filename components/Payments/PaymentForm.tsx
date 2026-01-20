@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import FormField from "@/components/FormField";
 import Card from "@/components/Card";
 import PaymentDisclaimer from "./PaymentDisclaimer";
+import Snackbar from "@/components/Snackbar";
 
 interface PaymentFormProps {
   caseId?: string;
@@ -32,6 +33,15 @@ export default function PaymentForm({
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+    isOpen: boolean;
+  }>({
+    message: "",
+    type: "info",
+    isOpen: false,
+  });
 
   const paymentMethods: { value: PaymentMethod; label: string; icon: string }[] = [
     { value: "transferencia-bancaria", label: "Transferencia Bancaria", icon: "🏦" },
@@ -86,12 +96,29 @@ export default function PaymentForm({
       const response = await registerPayment(data, clientId);
 
       if (response.success) {
+        setSnackbar({
+          message: "✓ Pago registrado en el historial (Legal PY no procesa fondos)",
+          type: "success",
+          isOpen: true,
+        });
         onSuccess();
       } else {
-        setErrors({ general: response.error || "Error al registrar el pago" });
+        const msg = response.error || "Error al registrar el pago";
+        setErrors({ general: msg });
+        setSnackbar({
+          message: msg,
+          type: "error",
+          isOpen: true,
+        });
       }
     } catch (error) {
-      setErrors({ general: "Error inesperado. Intenta nuevamente." });
+      const msg = "Error inesperado. Intenta nuevamente.";
+      setErrors({ general: msg });
+      setSnackbar({
+        message: msg,
+        type: "error",
+        isOpen: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -246,6 +273,13 @@ export default function PaymentForm({
           </div>
         </form>
       </Card>
+
+      <Snackbar
+        message={snackbar.message}
+        type={snackbar.type}
+        isOpen={snackbar.isOpen}
+        onClose={() => setSnackbar({ ...snackbar, isOpen: false })}
+      />
     </div>
   );
 }
