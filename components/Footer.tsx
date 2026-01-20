@@ -58,6 +58,11 @@ export default function Footer() {
                   Términos y Condiciones
                 </Link>
               </li>
+              <li>
+                <Link href="/informe" className="text-sm text-[#C9A24D] hover:text-white transition-colors font-medium">
+                  📊 Informe Ejecutivo
+                </Link>
+              </li>
             </ul>
           </div>
 
