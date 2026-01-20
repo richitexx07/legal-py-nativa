@@ -425,8 +425,8 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-[#C9A24D]">Casos Internacionales</h3>
-                <p className="mt-2 text-sm text-white/70">Derivación ética por perfil técnico</p>
+                <h3 className="font-semibold text-[#C9A24D]">🌍 Casos Internacionales</h3>
+                <p className="mt-2 text-sm text-white/70">Derivación ética por perfil técnico - Sistema DPT</p>
               </div>
             </Card>
           </Link>
