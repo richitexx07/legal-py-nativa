@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import Card from "@/components/Card";
 import CardImage from "@/components/CardImage";
@@ -10,9 +12,19 @@ import Timeline, { TimelineEvent } from "@/components/Timeline";
 import { mockProfesionales, mockCategorias, mockCasos } from "@/lib/mock-data";
 import Image from "next/image";
 import { useI18n } from "@/components/I18nProvider";
+import { getSession } from "@/lib/auth";
 
 export default function Home() {
   const { t } = useI18n();
+  const router = useRouter();
+  const [session, setSession] = useState(getSession());
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentSession = getSession();
+      setSession(currentSession);
+    }
+  }, []);
   // Filtrar solo las 6 categorías solicitadas
   const categoriasPrincipales = mockCategorias.filter(
     (cat) =>
@@ -432,6 +444,30 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Botón Flotante "Publicar Caso" */}
+      {session && (
+        <Link
+          href="/post-case"
+          className="fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6 flex items-center gap-2 px-6 py-4 rounded-full bg-[#C9A24D] hover:bg-[#b8943f] text-black font-semibold shadow-lg transition hover:scale-105"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <span className="hidden sm:inline">⚖️ Publicar Caso</span>
+          <span className="sm:hidden">⚖️</span>
+        </Link>
+      )}
     </div>
   );
 }

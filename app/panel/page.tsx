@@ -1,18 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
 import Tabs from "@/components/Tabs";
 import { InscripcionCurso, PostulacionPasantia, SolicitudCapacitacion } from "@/lib/educacion-data";
 import { mockCursos, mockPasantias } from "@/lib/educacion-data";
+import { getSession } from "@/lib/auth";
 
 export default function PanelAdminPage() {
   const [activeTab, setActiveTab] = useState("inscripciones");
   const [inscripciones, setInscripciones] = useState<InscripcionCurso[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionPasantia[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudCapacitacion[]>([]);
+  const [session, setSession] = useState(getSession());
 
   useEffect(() => {
     // Cargar datos del localStorage
@@ -23,6 +26,12 @@ export default function PanelAdminPage() {
     setInscripciones(insc);
     setPostulaciones(post);
     setSolicitudes(sol);
+
+    // Verificar sesión
+    if (typeof window !== "undefined") {
+      const currentSession = getSession();
+      setSession(currentSession);
+    }
   }, []);
 
   const getCursoNombre = (cursoId: string) => {
@@ -220,6 +229,30 @@ export default function PanelAdminPage() {
             ))
           )}
         </div>
+      )}
+
+      {/* Botón Flotante "Publicar Caso" */}
+      {session && (
+        <Link
+          href="/post-case"
+          className="fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6 flex items-center gap-2 px-6 py-4 rounded-full bg-[#C9A24D] hover:bg-[#b8943f] text-black font-semibold shadow-lg transition hover:scale-105"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <span className="hidden sm:inline">⚖️ Publicar Caso</span>
+          <span className="sm:hidden">⚖️</span>
+        </Link>
       )}
     </div>
   );

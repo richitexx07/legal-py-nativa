@@ -203,6 +203,27 @@ export default function NavbarTop() {
                     </div>
                     <div className="p-2">
                       <Link
+                        href="/opportunities"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition group relative"
+                      >
+                        <svg
+                          className="w-5 h-5 text-blue-400 group-hover:text-blue-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <span className="text-sm text-white/90 group-hover:text-white">Panel de Oportunidades</span>
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                      </Link>
+                      <Link
                         href="/security-center"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition group"
@@ -318,6 +339,27 @@ export default function NavbarTop() {
                         </p>
                       </div>
                       <div className="space-y-2">
+                        <Link
+                          href="/opportunities"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition relative"
+                        >
+                          <svg
+                            className="w-6 h-6 text-blue-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span className="text-white font-medium">Panel de Oportunidades</span>
+                          <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        </Link>
                         <Link
                           href="/security-center"
                           onClick={() => setIsUserMenuOpen(false)}
