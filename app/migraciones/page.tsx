@@ -468,17 +468,17 @@ function GestionesMigratoriasContent() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link href={`/profesionales/${esp.id}/chat`}>
                     <Button variant="primary" size="sm" className="flex-1 min-w-0">
-                      {t.professionals.actionsChat}
+                      {t("professionals.actions_chat")}
                     </Button>
                   </Link>
                   <Link href={`/profesionales/${esp.id}`}>
                     <Button variant="outline" size="sm" className="flex-1 min-w-0">
-                      {t.professionals.actionsViewProfile}
+                      {t("professionals.actions_view_profile")}
                     </Button>
                   </Link>
                   <Link href={`/profesionales/${esp.id}/reservar`}>
                     <Button variant="ghost" size="sm" className="flex-1 min-w-0">
-                      {t.professionals.actionsBook}
+                      {t("professionals.actions_book")}
                     </Button>
                   </Link>
                 </div>

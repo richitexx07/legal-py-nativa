@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Idioma, idiomasDisponibles } from "@/lib/i18n";
+import { LanguageCode, languages } from "@/lib/translations";
 
 interface LanguageSelectorProps {
-  onLanguageChange: (idioma: Idioma) => void;
-  currentLanguage: Idioma;
+  onLanguageChange: (idioma: LanguageCode) => void;
+  currentLanguage: LanguageCode;
 }
 
 export default function LanguageSelector({
@@ -27,10 +27,10 @@ export default function LanguageSelector({
         aria-label="Seleccionar idioma"
       >
         <span>
-          {idiomasDisponibles.find((l) => l.codigo === currentLanguage)?.bandera || "🌐"}
+          {languages.find((l) => l.code === currentLanguage)?.flag || "🌐"}
         </span>
         <span className="hidden sm:inline">
-          {idiomasDisponibles.find((l) => l.codigo === currentLanguage)?.codigo.toUpperCase() ||
+          {languages.find((l) => l.code === currentLanguage)?.code.toUpperCase() ||
             "ES"}
         </span>
         <svg
@@ -55,23 +55,23 @@ export default function LanguageSelector({
             onClick={() => setIsOpen(false)}
           />
           <div className="absolute right-0 top-full mt-2 z-50 min-w-[180px] rounded-xl border border-white/10 bg-[#13253A] shadow-lg overflow-hidden">
-            {idiomasDisponibles.map((idioma) => (
+            {languages.map((idioma) => (
               <button
-                key={idioma.codigo}
+                key={idioma.code}
                 onClick={() => {
-                  onLanguageChange(idioma.codigo);
+                  onLanguageChange(idioma.code);
                   setIsOpen(false);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm transition ${
-                  currentLanguage === idioma.codigo
+                  currentLanguage === idioma.code
                     ? "bg-[#C9A24D]/20 text-[#C9A24D]"
                     : "text-white/80 hover:bg-white/5"
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span>{idioma.bandera}</span>
-                  <span>{idioma.nombre}</span>
-                  {currentLanguage === idioma.codigo && (
+                  <span>{idioma.flag}</span>
+                  <span>{idioma.name}</span>
+                  {currentLanguage === idioma.code && (
                     <svg
                       className="h-4 w-4 ml-auto text-[#C9A24D]"
                       fill="currentColor"

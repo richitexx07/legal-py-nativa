@@ -93,16 +93,16 @@ export default function NavbarTop() {
   }, [isUserMenuOpen]);
 
   const navItems = [
-    { href: "/", label: t.nav.inicio },
-    { href: "/profesionales", label: t.nav.profesionales },
+    { href: "/", label: t("navbar.home") },
+    { href: "/profesionales", label: t("navbar.professionals") },
     { href: "/cursos", label: "Cursos" },
     { href: "/especializaciones", label: "Especializaciones" },
     { href: "/pasantias", label: "Pasantías" },
-    { href: "/gestores", label: t.nav.gestores },
-    { href: "/ujieres", label: t.nav.ujieres },
-    { href: "/casos", label: t.nav.casos },
-    { href: "/migraciones", label: t.nav.migraciones },
-    { href: "/chat", label: t.nav.mensajes },
+    { href: "/gestores", label: t("navbar.gestores") },
+    { href: "/ujieres", label: t("navbar.ujieres") },
+    { href: "/casos", label: t("navbar.cases") },
+    { href: "/migraciones", label: t("navbar.migraciones") },
+    { href: "/chat", label: t("navbar.messages") },
   ];
 
   return (

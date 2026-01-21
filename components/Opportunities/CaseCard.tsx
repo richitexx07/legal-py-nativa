@@ -6,6 +6,7 @@ import { isCaseAvailableForUser, getTimeUntilRelease } from "@/lib/dpt-engine";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
+import { useI18n } from "@/components/I18nProvider";
 
 interface CaseCardProps {
   legalCase: LegalCase;
@@ -14,6 +15,7 @@ interface CaseCardProps {
 }
 
 export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps) {
+  const { t } = useI18n();
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const isGEP = userTier === 3;
   const isAvailable = isCaseAvailableForUser(userTier, legalCase);
@@ -36,7 +38,7 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
 
   // Formatear tiempo restante
   const formatTimeRemaining = (ms: number | null): string => {
-    if (ms === null || ms <= 0) return "Disponible ahora";
+    if (ms === null || ms <= 0) return t("common.open");
 
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
@@ -172,7 +174,7 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
               className="w-full"
               onClick={() => onApply?.(legalCase.id)}
             >
-              ⚡ Aceptar Caso Ahora
+              {t("navbar.opportunities")}
             </Button>
           ) : isAvailable ? (
             <Button
@@ -180,11 +182,11 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
               className="w-full"
               onClick={() => onApply?.(legalCase.id)}
             >
-              Aplicar
+              {t("common.send")}
             </Button>
           ) : (
             <Button variant="outline" className="w-full" disabled>
-              🔒 No Disponible
+              🔒 {t("dashboard.status")}
             </Button>
           )}
         </div>

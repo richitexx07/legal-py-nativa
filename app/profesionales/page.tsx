@@ -34,12 +34,12 @@ function ProfesionalesContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            {categoriaInfo ? categoriaInfo.titulo : t.professionals.listTitle}
+            {categoriaInfo ? categoriaInfo.titulo : t("professionals.list_title")}
           </h1>
           <p className="text-white/70 mt-1">
             {categoriaInfo
               ? categoriaInfo.descripcion
-              : t.professionals.listSubtitle}
+              : t("professionals.list_subtitle")}
           </p>
         </div>
         {categoriaParam && (
@@ -105,17 +105,17 @@ function ProfesionalesContent() {
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link href={`/profesionales/${pro.id}/chat`}>
                   <Button variant="primary" size="sm" className="flex-1 min-w-0">
-                    {t.professionals.actionsChat}
+                    {t("professionals.actions_chat")}
                   </Button>
                 </Link>
                 <Link href={`/profesionales/${pro.id}`}>
                   <Button variant="outline" size="sm" className="flex-1 min-w-0">
-                    {t.professionals.actionsViewProfile}
+                    {t("professionals.actions_view_profile")}
                   </Button>
                 </Link>
                 <Link href={`/profesionales/${pro.id}/reservar`}>
                   <Button variant="ghost" size="sm" className="flex-1 min-w-0">
-                    {t.professionals.actionsBook}
+                    {t("professionals.actions_book")}
                   </Button>
                 </Link>
               </div>

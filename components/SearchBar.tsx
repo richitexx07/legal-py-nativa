@@ -16,8 +16,8 @@ export default function SearchBar({
   locationPlaceholder,
 }: SearchBarProps) {
   const { t } = useI18n();
-  const finalPlaceholder = placeholder || t.home.searchPlaceholder;
-  const finalLocationPlaceholder = locationPlaceholder || t.home.locationPlaceholder;
+  const finalPlaceholder = placeholder || t("home.search_placeholder");
+  const finalLocationPlaceholder = locationPlaceholder || t("home.location_placeholder");
   const [service, setService] = useState("");
   const [location, setLocation] = useState("");
 
@@ -73,7 +73,7 @@ export default function SearchBar({
         </svg>
       </div>
       <Button onClick={handleSearch} variant="primary" size="lg">
-        {t.common.buscar}
+        {t("common.search")}
       </Button>
     </div>
   );

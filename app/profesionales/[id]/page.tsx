@@ -596,12 +596,12 @@ export default function ProfesionalPage({ params }: PageProps) {
             <div className="pt-2 flex flex-col sm:flex-row gap-3">
               <Link href={`/profesionales/${id}/reservar`}>
                 <Button variant="primary" size="lg" className="w-full md:w-auto">
-                  {t.professionals.bookConsultation} →
+                  {t("professionals.book_consultation")} →
                 </Button>
               </Link>
               <Link href={`/videollamada/${profesional.id}`}>
                 <Button variant="secondary" size="lg" className="w-full md:w-auto">
-                  {t.professionals.videoCall} →
+                  {t("professionals.video_call")} →
                 </Button>
               </Link>
             </div>
@@ -629,7 +629,7 @@ export default function ProfesionalPage({ params }: PageProps) {
       <div className="pt-4">
         <Link href="/profesionales">
           <Button variant="ghost" size="sm">
-            ← {t.common.volver} {t.nav.profesionales.toLowerCase()}
+            ← {t("common.back")} {t("navbar.professionals").toLowerCase()}
           </Button>
         </Link>
       </div>

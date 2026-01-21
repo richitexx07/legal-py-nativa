@@ -25,7 +25,7 @@ export default function NuevoCaso() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white">{t.nav.publicarCaso}</h1>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-white">{t("navbar.publish_case")}</h1>
         <p className="mt-2 text-white/70">
           Publica tu caso y recibe ofertas de profesionales verificados.
         </p>
@@ -116,11 +116,11 @@ export default function NuevoCaso() {
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" variant="primary" size="lg" className="flex-1">
-              Publicar Caso
+              {t("navbar.publish_case")}
             </Button>
             <Link href="/casos">
               <Button type="button" variant="ghost" size="lg">
-                Cancelar
+                {t("common.cancel")}
               </Button>
             </Link>
           </div>

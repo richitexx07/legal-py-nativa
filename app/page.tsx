@@ -90,14 +90,13 @@ export default function Home() {
         
         <div className="relative max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight text-white mb-6">
-            Tu Seguridad Jurídica{" "}
+            {t("hero.title").split("Blindada con Tecnología")[0] || "Tu Seguridad Jurídica"}{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C9A24D] to-[#C08457]">
-              Blindada con Tecnología
+              {t("hero.title").includes("Blindada con Tecnología") ? "Blindada con Tecnología" : t("hero.title")}
             </span>
           </h1>
           <p className="mt-4 text-white/80 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-light">
-            Conectamos casos de alto valor con los mejores profesionales verificados de Paraguay. 
-            <span className="block mt-2 text-white/70">Sin intermediarios, sin riesgos.</span>
+            {t("hero.subtitle")}
           </p>
 
           {/* CTAs - Diseñados para máxima conversión */}
@@ -105,7 +104,7 @@ export default function Home() {
             <Link href="/post-case">
               <button className="group relative px-8 py-4 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black font-bold text-lg rounded-xl shadow-2xl hover:shadow-[#C9A24D]/50 transition-all duration-300 hover:scale-105 transform">
                 <span className="flex items-center gap-2">
-                  ⚡ Publicar Caso Ahora
+                  {t("hero.cta_primary")}
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -115,7 +114,7 @@ export default function Home() {
             <Link href="/register?rol=profesional">
               <button className="px-8 py-4 border-2 border-blue-400 text-blue-400 font-semibold text-lg rounded-xl hover:bg-blue-400/10 transition-all duration-300 hover:scale-105 transform">
                 <span className="flex items-center gap-2">
-                  Soy Profesional
+                  {t("hero.cta_secondary")}
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -260,7 +259,7 @@ export default function Home() {
       {/* CATEGORÍAS */}
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white">{t.home.servicesTitle}</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white">{t("home.services_title")}</h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {categoriasPrincipales.map((cat) => (
@@ -308,12 +307,12 @@ export default function Home() {
       {/* DESTACADOS */}
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white">{t.home.featuredTitle}</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white">{t("home.featured_title")}</h2>
           <Link
             href="/profesionales"
             className="text-sm text-white/60 hover:text-[#C9A24D] transition"
           >
-            {t.home.featuredViewAll}
+            {t("home.featured_view_all")}
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -352,7 +351,7 @@ export default function Home() {
                     <span className="text-xs text-white/60">{pro.precio}</span>
                     <Link href={`/profesionales/${pro.id}`}>
                       <Button variant="outline" size="sm">
-                        {t.home.featuredViewProfile}
+                        {t("home.featured_view_profile")}
                       </Button>
                     </Link>
                   </div>
@@ -366,9 +365,9 @@ export default function Home() {
       {/* SEGUIMIENTO DE CASOS */}
       <section className="space-y-4">
         <div className="flex items-end justify-between gap-4">
-          <h2 className="text-xl md:text-2xl font-bold text-white">{t.home.casesTitle}</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white">{t("home.cases_title")}</h2>
           <Link href="/casos" className="text-sm text-white/60 hover:text-[#C9A24D] transition">
-            {t.home.casesViewAll}
+            {t("home.cases_view_all")}
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -399,7 +398,7 @@ export default function Home() {
 
                 <Link href="/casos">
                   <Button variant="outline" size="sm" className="w-full">
-                    {t.home.casesViewDetails}
+                    {t("home.cases_view_details")}
                   </Button>
                 </Link>
               </div>
@@ -522,7 +521,7 @@ export default function Home() {
 
       {/* ACCESOS RÁPIDOS */}
       <section className="space-y-4">
-        <h2 className="text-xl md:text-2xl font-bold text-white">{t.home.quickAccessTitle}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-white">{t("home.quick_access_title")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Consulta Rápida */}
           <Link href="/chat">
@@ -543,8 +542,8 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-[#C9A24D]">{t.home.quickChatTitle}</h3>
-                <p className="mt-2 text-sm text-white/70">{t.home.quickChatSubtitle}</p>
+                <h3 className="font-semibold text-[#C9A24D]">{t("home.quick_chat_title")}</h3>
+                <p className="mt-2 text-sm text-white/70">{t("home.quick_chat_subtitle")}</p>
               </div>
             </Card>
           </Link>
@@ -568,8 +567,8 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-[#C08457]">{t.home.quickCourierTitle}</h3>
-                <p className="mt-2 text-sm text-white/70">{t.home.quickCourierSubtitle}</p>
+                <h3 className="font-semibold text-[#C08457]">{t("home.quick_courier_title")}</h3>
+                <p className="mt-2 text-sm text-white/70">{t("home.quick_courier_subtitle")}</p>
               </div>
             </Card>
           </Link>

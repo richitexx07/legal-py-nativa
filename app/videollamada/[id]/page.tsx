@@ -40,8 +40,8 @@ export default function VideollamadaPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white">{t.video.pageTitle}</h1>
-        <p className="mt-2 text-white/70">{t.video.pageSubtitle}</p>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-white">{t("video.page_title")}</h1>
+        <p className="mt-2 text-white/70">{t("video.page_subtitle")}</p>
       </div>
 
       <Card>
@@ -84,7 +84,7 @@ export default function VideollamadaPage({ params }: PageProps) {
                 </div>
                 <p className="text-white/60">Listo para iniciar la videollamada</p>
                 <Button onClick={handleStartCall} variant="primary" size="lg">
-                  {t.video.startCall}
+                  {t("video.start_call")}
                 </Button>
               </div>
             )}
@@ -96,7 +96,7 @@ export default function VideollamadaPage({ params }: PageProps) {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C9A24D]"></div>
                   </div>
                 </div>
-                <p className="text-white/80 font-medium">{t.video.connecting}</p>
+                <p className="text-white/80 font-medium">{t("video.connecting")}</p>
               </div>
             )}
 
@@ -119,12 +119,12 @@ export default function VideollamadaPage({ params }: PageProps) {
                     </svg>
                   </div>
                 </div>
-                <p className="text-white/80 font-medium">{t.video.inCall}</p>
+                <p className="text-white/80 font-medium">{t("video.in_call")}</p>
                 <p className="text-sm text-white/60">
                   Conectado con {profesional.nombre}
                 </p>
                 <Button onClick={handleEndCall} variant="secondary" size="lg" className="bg-red-500/20 hover:bg-red-500/30 border-red-500/40">
-                  {t.video.endCall}
+                  {t("video.end_call")}
                 </Button>
               </div>
             )}
@@ -148,14 +148,14 @@ export default function VideollamadaPage({ params }: PageProps) {
                     </svg>
                   </div>
                 </div>
-                <p className="text-white/80 font-medium">{t.video.callEnded}</p>
+                <p className="text-white/80 font-medium">{t("video.call_ended")}</p>
                 <div className="flex gap-3 justify-center">
                   <Button onClick={handleStartCall} variant="primary" size="lg">
-                    {t.video.startCall}
+                    {t("video.start_call")}
                   </Button>
                   <Link href={`/profesionales/${id}`}>
                     <Button variant="ghost" size="lg">
-                      {t.common.volver}
+                      {t("common.back")}
                     </Button>
                   </Link>
                 </div>

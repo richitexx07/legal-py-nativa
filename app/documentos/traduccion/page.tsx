@@ -34,14 +34,17 @@ export default function TraduccionPage() {
     { code: "es", name: "Español" },
     { code: "en", name: "English" },
     { code: "pt", name: "Português" },
+    { code: "de", name: "Deutsch" },
+    { code: "fr", name: "Français" },
+    { code: "it", name: "Italiano" },
     { code: "gn", name: "Guaraní" },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white">{t.translation.pageTitle}</h1>
-        <p className="mt-2 text-white/70">{t.translation.pageSubtitle}</p>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-white">{t("translation.page_title")}</h1>
+        <p className="mt-2 text-white/70">{t("translation.page_subtitle")}</p>
       </div>
 
       <Card>
@@ -49,7 +52,7 @@ export default function TraduccionPage() {
           {/* Upload */}
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">
-              {t.translation.uploadLabel}
+              {t("translation.upload_label")}
             </label>
             <input
               type="file"
@@ -68,7 +71,7 @@ export default function TraduccionPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">
-                {t.translation.sourceLanguage}
+                {t("translation.source_language")}
               </label>
               <select
                 value={sourceLang}
@@ -84,7 +87,7 @@ export default function TraduccionPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">
-                {t.translation.targetLanguage}
+                {t("translation.target_language")}
               </label>
               <select
                 value={targetLang}
@@ -110,7 +113,7 @@ export default function TraduccionPage() {
             className="w-full"
             disabled={!file || status === "processing"}
           >
-            {status === "processing" ? t.translation.statusProcessing : t.translation.translateButton}
+            {status === "processing" ? t("translation.status_processing") : t("translation.translate_button")}
           </Button>
         </div>
       </Card>
@@ -119,19 +122,19 @@ export default function TraduccionPage() {
       <Card>
         <div className="space-y-4">
           {status === "idle" && (
-            <p className="text-white/60 text-center py-8">{t.translation.statusIdle}</p>
+            <p className="text-white/60 text-center py-8">{t("translation.status_idle")}</p>
           )}
           {status === "processing" && (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C9A24D]"></div>
-              <p className="mt-4 text-white/60">{t.translation.statusProcessing}</p>
+              <p className="mt-4 text-white/60">{t("translation.status_processing")}</p>
             </div>
           )}
           {status === "completed" && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-white">{t.translation.statusResultTitle}</h3>
+              <h3 className="text-lg font-semibold text-white">{t("translation.status_result_title")}</h3>
               <div className="rounded-xl bg-white/5 p-6 border border-white/10">
-                <p className="text-white/60">{t.translation.statusPlaceholder}</p>
+                <p className="text-white/60">{t("translation.status_placeholder")}</p>
               </div>
             </div>
           )}

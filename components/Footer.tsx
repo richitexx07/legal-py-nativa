@@ -56,7 +56,7 @@ export default function Footer() {
                   <svg className="w-3.5 h-3.5 text-white/50 group-hover:text-[#C9A24D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  {t.footer.privacidad}
+                  {t("footer.privacy")}
                 </Link>
               </li>
               <li>
@@ -80,13 +80,13 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Soporte</h3>
             <ul className="space-y-2">
               <li>
-                <span className="text-sm text-white/70">{t.footer.soporte}</span>
+                <span className="text-sm text-white/70">{t("footer.support")}</span>
               </li>
               <li>
-                <span className="text-sm text-white/70">{t.footer.seguridad}</span>
+                <span className="text-sm text-white/70">{t("footer.security")}</span>
               </li>
               <li>
-                <span className="text-sm text-white/70">{t.footer.cumplimiento}</span>
+                <span className="text-sm text-white/70">{t("footer.compliance")}</span>
               </li>
             </ul>
           </div>
@@ -107,7 +107,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="border-t border-white/10 pt-6 text-center text-sm text-white/50">
           <p>
-            {t.footer.copyright} {new Date().getFullYear()} Legal Py — {t.footer.demo}
+            {t("footer.copyright")} {new Date().getFullYear()} Legal Py — {t("footer.demo")}
           </p>
         </div>
       </div>
