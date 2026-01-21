@@ -14,13 +14,19 @@ interface RoleModeModalProps {
 
 export default function RoleModeModal({ isOpen, onClose, currentMode, onSelectMode }: RoleModeModalProps) {
   const { t } = useLanguage();
-  
+
+  const rows: Array<{ id: ViewMode; icon: string; titleKey: string; descKey: string }> = [
+    { id: "cliente", icon: "👤", titleKey: "roles.client_title", descKey: "roles.client_desc" },
+    { id: "profesional", icon: "💼", titleKey: "roles.pro_title", descKey: "roles.pro_desc" },
+    { id: "estudiante", icon: "🎓", titleKey: "roles.student_title", descKey: "roles.student_desc" },
+  ];
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t("roles.modal_title") || "¿Cómo deseas operar hoy?"}
-      className="max-w-2xl bg-white/5 backdrop-blur-2xl border border-white/15"
+      title={t("roles.switch_modal_title") || "Selecciona tu Espacio de Trabajo"}
+      className="max-w-lg bg-slate-900/95 border border-white/10 rounded-3xl shadow-2xl animate-scale-in"
       position="center"
     >
       <div className="space-y-4">
@@ -28,99 +34,49 @@ export default function RoleModeModal({ isOpen, onClose, currentMode, onSelectMo
           {t("roles.modal_subtitle") || "Elegí el modo para adaptar la interfaz (sin perder tus datos)."}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* MODO CLIENTE */}
-          <button
-            onClick={() => onSelectMode("cliente")}
-            className={`group text-left rounded-3xl p-6 border transition-all ${
-              currentMode === "cliente"
-                ? "bg-white/15 border-white/30 shadow-xl"
-                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
-            }`}
-            aria-label="Seleccionar modo cliente"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-2xl font-extrabold text-white">👤 {t("roles.client_mode")}</p>
-                <p className="mt-2 text-sm text-white/70">{t("roles.client_desc")}</p>
-              </div>
-              {currentMode === "cliente" && (
-                <div className="h-8 w-8 rounded-2xl bg-[#C9A24D]/20 border border-[#C9A24D]/30 flex items-center justify-center">
-                  <span className="text-[#C9A24D] font-bold">✓</span>
+        <div className="space-y-2">
+          {rows.map((row) => {
+            const active = currentMode === row.id;
+            const title = t(row.titleKey);
+            const desc = t(row.descKey);
+            return (
+              <button
+                key={row.id}
+                onClick={() => onSelectMode(row.id)}
+                className={`w-full flex items-center justify-between gap-3 rounded-2xl px 4 py-3 transition-all text-left ${
+                  active
+                    ? "bg-white text-slate-900 shadow-lg"
+                    : "bg-slate-800/80 hover:bg-slate-700/90 text-white"
+                }`}
+                aria-label={`Seleccionar modo ${title}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-slate-900/80 flex items-center justify-center text-lg">
+                    {row.icon}
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${active ? "text-slate-900" : "text-white"}`}>{title}</p>
+                    <p className={`text-xs ${active ? "text-slate-600" : "text-slate-300/80"}`}>{desc}</p>
+                  </div>
                 </div>
-              )}
-            </div>
-
-            <div className="mt-4 rounded-2xl bg-white/5 border border-white/10 p-4">
-              <p className="text-xs text-white/60 leading-relaxed">
-                {t("roles.client_features") || "Verás \"Mis Casos\", transparencia, seguridad y el flujo para publicar un caso."}
-              </p>
-            </div>
-          </button>
-
-          {/* MODO PROFESIONAL */}
-          <button
-            onClick={() => onSelectMode("profesional")}
-            className={`group text-left rounded-3xl p-6 border transition-all ${
-              currentMode === "profesional"
-                ? "bg-[#C9A24D]/10 border-[#C9A24D]/30 shadow-xl"
-                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
-            }`}
-            aria-label="Seleccionar modo profesional"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-2xl font-extrabold text-white">💼 {t("roles.pro_mode")}</p>
-                <p className="mt-2 text-sm text-white/70">{t("roles.pro_desc")}</p>
-              </div>
-              {currentMode === "profesional" && (
-                <div className="h-8 w-8 rounded-2xl bg-[#C9A24D]/20 border border-[#C9A24D]/30 flex items-center justify-center">
-                  <span className="text-[#C9A24D] font-bold">✓</span>
+                <div className="flex items-center">
+                  {active ? (
+                    <div className="h-5 w-5 rounded-full border-2 border-blue-500 flex items-center justify-center">
+                      <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                    </div>
+                  ) : (
+                    <div className="h-5 w-5 rounded-full border border-slate-500/60 group-hover:border-white/80" />
+                  )}
                 </div>
-              )}
-            </div>
-
-            <div className="mt-4 rounded-2xl bg-white/5 border border-white/10 p-4">
-              <p className="text-xs text-white/60 leading-relaxed">
-                {t("roles.pro_features") || "Verás \"Panel de Oportunidades\", gestión, evaluación DPT y panel profesional."}
-              </p>
-            </div>
-          </button>
-
-          {/* MODO ESTUDIANTE */}
-          <button
-            onClick={() => onSelectMode("estudiante")}
-            className={`group text-left rounded-3xl p-6 border transition-all ${
-              currentMode === "estudiante"
-                ? "bg-emerald-500/10 border-emerald-400/40 shadow-xl"
-                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
-            }`}
-            aria-label="Seleccionar modo estudiante"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-2xl font-extrabold text-white">🎓 {t("roles.student_title") || "MODO ESTUDIANTE"}</p>
-                <p className="mt-2 text-sm text-white/70">{t("roles.student_desc")}</p>
-              </div>
-              {currentMode === "estudiante" && (
-                <div className="h-8 w-8 rounded-2xl bg-emerald-400/20 border border-emerald-400/50 flex items-center justify-center">
-                  <span className="text-emerald-300 font-bold">✓</span>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 rounded-2xl bg-white/5 border border-white/10 p-4">
-              <p className="text-xs text-white/60 leading-relaxed">
-                {t("student_panel.active_learning") || "Acceso rápido a cursos, especializaciones y pasantías."}
-              </p>
-            </div>
-          </button>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end pt-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition text-sm text-white/80"
+            className="px-4 py-2 rounded-2xl bg-slate-800 text-sm text-white/80 hover:bg-slate-700 transition"
           >
             {t("common.cancel")}
           </button>

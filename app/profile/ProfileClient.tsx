@@ -8,7 +8,7 @@ import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
 import { getSession, updateIdentityVerification, updateProfile } from "@/lib/auth";
 import type { AuthSession } from "@/lib/types";
-import BiometricCapture from "@/components/Security/BiometricCapture";
+import BiometricVerificationModal from "@/components/Security/BiometricVerificationModal";
 
 function safeInitials(name: string) {
   const parts = name.trim().split(" ").filter(Boolean);
@@ -176,10 +176,22 @@ export default function ProfileClient() {
       <div className="mx-auto max-w-5xl px-4 pb-14">
         {/* Header card */}
         <div className="-mt-16 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-2xl shadow-2xl">
+          {/* Alerta de visibilidad / verificación */}
+          {!verified && (
+            <div className="mb-4 rounded-2xl border border-yellow-400/40 bg-yellow-400/10 px-4 py-3 text-xs md:text-sm text-yellow-100">
+              ⚠️ Identidad no verificada. Tu perfil es invisible para clientes premium hasta que completes la validación biométrica.
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div className="flex items-end gap-5">
               {/* Avatar (bloqueado) */}
-              <div className="relative h-28 w-28 rounded-full border border-white/15 bg-white/5 overflow-hidden shadow-xl">
+              <button
+                type="button"
+                onClick={() => setIsBioModalOpen(true)}
+                className="relative h-28 w-28 rounded-full border border-white/15 bg-white/5 overflow-hidden shadow-xl group focus:outline-none focus:ring-2 focus:ring-[#C9A24D]/70 focus:ring-offset-2 focus:ring-offset-slate-900"
+                aria-label="Actualizar foto de perfil mediante verificación biométrica"
+              >
                 {avatarSrc ? (
                   <Image src={avatarSrc} alt="Foto de perfil" fill className="object-cover" />
                 ) : (
@@ -187,18 +199,21 @@ export default function ProfileClient() {
                     {safeInitials(fullName)}
                   </div>
                 )}
-                {/* Candado: NO editable */}
-                <div className="absolute bottom-2 right-2 rounded-full bg-black/60 border border-white/15 p-2 backdrop-blur">
-                  <span className="text-sm">🔒</span>
+                {/* Candado / cámara: NO editable directo */}
+                <div className="absolute bottom-2 right-2 rounded-full bg-black/70 border border-emerald-400/70 px-2 py-1 flex items-center gap-1 backdrop-blur">
+                  <span className="text-xs">🔒</span>
+                  <span className="text-[10px] text-emerald-200 font-semibold hidden sm:inline">
+                    Biométrico
+                  </span>
                 </div>
-              </div>
+              </button>
 
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-2xl md:text-3xl font-extrabold text-white truncate">{fullName}</h1>
                   {verified && (
                     <Badge variant="accent" className="bg-blue-500 text-white">
-                      ✓ Verificado
+                      ✓ Identidad Verificada Biométricamente
                     </Badge>
                   )}
                 </div>
@@ -343,21 +358,12 @@ export default function ProfileClient() {
         </div>
       </Modal>
 
-      {/* Modal biometría */}
-      <Modal
+      {/* Modal biometría - usa cámara real (react-webcam) */}
+      <BiometricVerificationModal
         isOpen={isBioModalOpen}
         onClose={() => setIsBioModalOpen(false)}
-        title="Validación Biométrica"
-        className="max-w-xl bg-white/10 backdrop-blur-2xl border border-white/15"
-        position="center"
-      >
-        <div className="space-y-3">
-          <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-4 text-sm text-yellow-100">
-            ⚠️ Este proceso actualiza tu identidad y tu foto de perfil. Simulación demo.
-          </div>
-          <BiometricCapture onCancel={() => setIsBioModalOpen(false)} onVerified={onBiometricVerified} />
-        </div>
-      </Modal>
+        onVerify={(imgSrc) => onBiometricVerified({ selfieDataUrl: imgSrc })}
+      />
     </div>
   );
 }

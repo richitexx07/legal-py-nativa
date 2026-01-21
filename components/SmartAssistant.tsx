@@ -97,7 +97,8 @@ export default function SmartAssistant() {
     {
       id: uid(),
       role: "assistant",
-      text: t("assistant.welcome_default") || "Soy tu asistente inteligente de Legal PY. Puedo orientarte y recomendarte profesionales verificados según tu caso.",
+      text:
+        "Hola, veo que necesitás ayuda legal. Para recomendarte al mejor experto, decime: ¿tu caso es Civil, Penal o Laboral?",
     },
   ]);
 
@@ -374,24 +375,27 @@ export default function SmartAssistant() {
 
   return (
     <>
-      {/* CTA Cerrado - Premium Widget */}
+      {/* CTA Cerrado - Burbuja Neuroventas */}
       {!isOpen && (
         <button
           onClick={() => {
             setIsOpen(true);
             setIsMinimized(false);
           }}
-          className="fixed bottom-24 right-6 z-40 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
+          className="fixed bottom-24 right-6 z-40 flex items-center gap-3 text-left"
           aria-label="Abrir asistente inteligente"
         >
-          <div className="h-10 w-10 rounded-2xl bg-black/10 flex items-center justify-center">
-            <span className="text-lg">💡</span>
+          <div className="relative h-12 w-12">
+            <span className="absolute inset-0 rounded-full bg-[#C9A24D]/40 animate-ping pointer-events-none" />
+            <div className="relative h-12 w-12 rounded-full overflow-hidden border border-[#C9A24D]/80 bg-black/40 flex items-center justify-center shadow-lg">
+              <Image src={assistantMeta.avatarSrc} alt={assistantMeta.name} fill className="object-cover" />
+            </div>
           </div>
-          <div className="text-left">
-            <p className="text-sm font-extrabold leading-tight">{t("assistant.cta_title") || "¿Necesitas Consejo Legal?"}</p>
-            <p className="text-xs font-medium opacity-80">{t("assistant.cta_subtitle") || "Habla con un Asistente"}</p>
+          <div className="max-w-xs rounded-2xl bg-gradient-to-r from-[#C9A24D] to-[#C08457] px-4 py-3 shadow-2xl hover:shadow-[#C9A24D]/40 transition-all hover:scale-[1.02]">
+            <p className="text-sm font-extrabold text-black leading-snug">
+              ¿No sabes a quién contratar? Te ayudamos a elegir al profesional exacto para tu caso 🎯
+            </p>
           </div>
-          <div className="ml-2 h-2 w-2 rounded-full bg-green-600 animate-pulse" />
         </button>
       )}
 
@@ -528,6 +532,27 @@ export default function SmartAssistant() {
                   </div>
                 </div>
               ))}
+
+              {/* Botones rápidos de clasificación inicial */}
+              {messages.length === 1 && messages[0].role === "assistant" && (
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {[
+                    { label: "Civil", value: "Mi caso es Civil" },
+                    { label: "Penal", value: "Mi caso es Penal" },
+                    { label: "Laboral", value: "Mi caso es Laboral" },
+                    { label: "No sé", value: "No estoy seguro, necesito que me ayuden a clasificar mi caso" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => sendMessage(opt.value)}
+                      className="px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-[11px] text-white/90 hover:bg-white/10 hover:border-white/40 transition"
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Recomendaciones */}
               {professionals.length > 0 && (

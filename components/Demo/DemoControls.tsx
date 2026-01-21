@@ -9,6 +9,10 @@ export default function DemoControls() {
   const [isOpen, setIsOpen] = useState(false);
   const [session, setSession] = useState(getSession());
   const [isVisible, setIsVisible] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string>(() => {
+    if (typeof window === "undefined") return "Básico";
+    return localStorage.getItem("legal-py-demo-plan") || "Básico";
+  });
 
   useEffect(() => {
     // Solo visible en desarrollo o si el usuario es admin (simulado)
@@ -132,30 +136,61 @@ export default function DemoControls() {
               </button>
             </div>
 
-            <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+            <div className="p-2 rounded-lg bg-white/5 border border-white/10 space-y-1">
               <p className="text-xs text-white/60 mb-1">Nivel Actual</p>
               <p className="text-sm font-semibold text-white">
                 Nivel {currentTier} - {tierNames[currentTier as keyof typeof tierNames]}
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Button
-                variant={currentTier === 1 ? "primary" : "outline"}
-                size="sm"
-                className="w-full text-xs"
-                onClick={() => handleSetTier(1)}
+            <div className="space-y-3">
+              <p className="text-xs text-white/60">Cambiar Nivel Rápido</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={currentTier === 1 ? "primary" : "outline"}
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={() => handleSetTier(1)}
+                >
+                  👮‍♂️ Nivel 1
+                </Button>
+                <Button
+                  variant={currentTier === 3 ? "primary" : "outline"}
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={() => handleSetTier(3)}
+                >
+                  👑 GEP
+                </Button>
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 pt-2 space-y-2">
+              <p className="text-xs text-white/60 mb-1">Simular Plan</p>
+              <select
+                value={selectedPlan}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedPlan(value);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("legal-py-demo-plan", value);
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{
+                      method:'POST',
+                      headers:{'Content-Type':'application/json'},
+                      body:JSON.stringify({location:'components/Demo/DemoControls.tsx:planChange',message:'Demo plan changed',data:{plan:value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypeothesisId:'H4'}),
+                    }).catch(()=>{});
+                    // #endregion
+                    window.dispatchEvent(new CustomEvent('legal-py-plan-changed',{ detail:{ plan:value }}));
+                  }
+                }}
+                className="w-full rounded-lg bg-slate-900/80 border border-white/20 px-2 py-1 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
               >
-                👮‍♂️ Soy Nivel 1 (Normal)
-              </Button>
-              <Button
-                variant={currentTier === 3 ? "primary" : "outline"}
-                size="sm"
-                className="w-full text-xs"
-                onClick={() => handleSetTier(3)}
-              >
-                👑 Soy Nivel 3 (GEP)
-              </Button>
+                <option value="Básico">Básico</option>
+                <option value="Profesional">Profesional</option>
+                <option value="Empresarial">Empresarial</option>
+                <option value="GEP">GEP</option>
+              </select>
             </div>
 
             <div className="border-t border-white/10 pt-2">

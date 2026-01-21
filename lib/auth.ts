@@ -257,6 +257,88 @@ export async function login(data: LoginData): Promise<AuthResponse> {
   // Simular delay de red
   await new Promise((resolve) => setTimeout(resolve, 800));
 
+  // Cuenta maestra de demostración (modo inversor / GEP)
+  if (data.email === "demo@legalpy.com" && data.password === "inversor2026") {
+    const nowIso = new Date().toISOString();
+    const demoUserId = "usr_demo_gep";
+
+    const demoUser: User = {
+      id: demoUserId,
+      email: "demo@legalpy.com",
+      role: "profesional",
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      emailVerified: true,
+      twoFactorEnabled: false,
+      active: true,
+      lastLogin: nowIso,
+      authMethod: "email",
+      kycTier: 3,
+      isIdentityVerified: true,
+      identityVerificationStatus: "verified",
+      identityVerifiedAt: nowIso,
+    };
+
+    const demoProfile: ProfessionalProfile = {
+      userId: demoUserId,
+      firstName: "Cuenta",
+      lastName: "Demo Inversor",
+      professionalTitle: "Socio GEP",
+      specialties: ["Abogados"],
+      experienceYears: 10,
+      city: "Asunción",
+      phone: "+595 999 000 000",
+      languages: ["es", "en"],
+      verificationStatus: "verified",
+      planId: "GEP",
+      planStatus: "active",
+    };
+
+    // Sembrar demo en localStorage
+    if (typeof window !== "undefined") {
+      // Usuarios y perfiles demo
+      const users = getUsers().filter((u) => u.id !== demoUserId);
+      users.push(demoUser);
+      localStorage.setItem("legal-py-users", JSON.stringify(users));
+      saveProfile(demoUserId, "profesional", demoProfile);
+
+      // Casos demo (5 activos) para dashboard y oportunidades
+      const demoCases: LegalCase[] = Array.from({ length: 5 }).map((_, idx) => ({
+        id: `demo_case_${idx + 1}`,
+        title: idx < 2 ? "Caso Corporativo High-Ticket" : "Gestión Legal Recurrente",
+        description:
+          idx < 2
+            ? "Reestructuración societaria y blindaje patrimonial para grupo empresarial."
+            : "Gestión mensual de contratos y cobranzas para cliente PYME.",
+        complexity: idx < 2 ? "ALTA" : "MEDIA",
+        practiceArea: idx % 2 === 0 ? "CORPORATIVO" : "CIVIL",
+        estimatedBudget: idx < 2 ? 25000000 : 6000000,
+        status: "OPEN",
+        exclusiveForGepUntil: idx < 2 ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null,
+        createdAt: new Date(Date.now() - idx * 3600 * 1000).toISOString(),
+      }));
+      localStorage.setItem("legal-py-cases", JSON.stringify(demoCases));
+
+      // Marcar modo demo y plan actual
+      localStorage.setItem("legal-py-demo-mode", "true");
+      localStorage.setItem("legal-py-demo-plan", "GEP");
+    }
+
+    const session: AuthSession = {
+      user: demoUser,
+      profile: demoProfile,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    saveSession(session);
+
+    return {
+      success: true,
+      session,
+      message: "Inicio de sesión de demostración (modo inversor GEP)",
+    };
+  }
+
   // Validaciones
   if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     return {
