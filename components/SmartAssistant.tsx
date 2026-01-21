@@ -132,7 +132,7 @@ export default function SmartAssistant() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: "debug-session",
-          runId: "run1",
+          runId: "run3",
           hypothesisId: "H-SA",
           location: "components/SmartAssistant.tsx:open",
           message: "SmartAssistant opened",
@@ -263,7 +263,7 @@ export default function SmartAssistant() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sessionId: "debug-session",
-        runId: "run1",
+        runId: "run3",
         hypothesisId: "H-SA",
         location: "components/SmartAssistant.tsx:sendMessage",
         message: "User message sent",

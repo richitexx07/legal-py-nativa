@@ -127,22 +127,20 @@ export default function NavbarTop() {
               <span className="text-xl font-extrabold">Py</span>
             </Link>
 
-            {/* Cambiar Modo (Modal) - Solo visible cuando hay sesión */}
-            {session && (
-              <div className="hidden lg:flex items-center gap-2">
-                <button
-                  onClick={() => setIsModeModalOpen(true)}
-                  className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition"
-                  aria-label="Cambiar modo"
-                >
-                  <span className="text-base">{viewMode === "cliente" ? "👤" : "💼"}</span>
-                  <span className="hidden xl:inline font-semibold">Cambiar modo</span>
-                  <svg className="h-4 w-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-            )}
+            {/* Cambiar Modo (Modal) - Visible para demo (con o sin sesión) */}
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                onClick={() => setIsModeModalOpen(true)}
+                className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition"
+                aria-label="Cambiar modo"
+              >
+                <span className="text-base">{viewMode === "cliente" ? "👤" : "💼"}</span>
+                <span className="hidden xl:inline font-semibold">Cambiar modo</span>
+                <svg className="h-4 w-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:block min-w-0">
@@ -608,14 +606,12 @@ export default function NavbarTop() {
       />
 
       {/* Modal de Cambio de Modo */}
-      {session && (
-        <RoleModeModal
-          isOpen={isModeModalOpen}
-          onClose={() => setIsModeModalOpen(false)}
-          currentMode={viewMode}
-          onSelectMode={applyViewMode}
-        />
-      )}
+      <RoleModeModal
+        isOpen={isModeModalOpen}
+        onClose={() => setIsModeModalOpen(false)}
+        currentMode={viewMode}
+        onSelectMode={applyViewMode}
+      />
     </header>
   );
 }
