@@ -6,18 +6,18 @@ import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
-import RoleSwitch from "@/components/RoleSwitch";
+import RoleModeModal, { ViewMode } from "@/components/RoleModeModal";
 import { InscripcionCurso, PostulacionPasantia, SolicitudCapacitacion } from "@/lib/educacion-data";
 import { mockCursos, mockPasantias } from "@/lib/educacion-data";
 import { getSession } from "@/lib/auth";
 import { LegalCase } from "@/lib/types";
 import { generateCaseHash, truncateHash, copyToClipboard } from "@/lib/security";
-import { ViewMode } from "@/components/RoleSwitch";
 
 export default function PanelAdminPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("gestiones");
   const [viewMode, setViewMode] = useState<ViewMode>("cliente");
+  const [isModeModalOpen, setIsModeModalOpen] = useState(false);
   const [inscripciones, setInscripciones] = useState<InscripcionCurso[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionPasantia[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudCapacitacion[]>([]);
@@ -89,6 +89,21 @@ export default function PanelAdminPage() {
         }
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      const savedMode = localStorage.getItem("legal-py-view-mode") as ViewMode | null;
+      if (savedMode && (savedMode === "cliente" || savedMode === "profesional")) {
+        setViewMode(savedMode);
+      }
+    };
+    window.addEventListener("legal-py-view-mode-changed", handler);
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener("legal-py-view-mode-changed", handler);
+      window.removeEventListener("storage", handler);
+    };
   }, []);
 
   const getCursoNombre = (cursoId: string) => {
@@ -192,9 +207,16 @@ export default function PanelAdminPage() {
           )}
         </div>
 
-        {/* Role Switch en el Panel */}
+        {/* Cambiar Modo en el Panel (Modal) */}
         <div className="flex justify-end mb-6">
-          <RoleSwitch currentMode={viewMode} onModeChange={setViewMode} />
+          <button
+            onClick={() => setIsModeModalOpen(true)}
+            className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/90 hover:bg-white/10 transition"
+            aria-label="Cambiar modo"
+          >
+            <span className="text-base">{viewMode === "cliente" ? "👤" : "💼"}</span>
+            <span className="font-semibold">Cambiar modo</span>
+          </button>
         </div>
 
         {/* Tabs con diseño mejorado */}
@@ -556,6 +578,33 @@ export default function PanelAdminPage() {
           <span className="sm:hidden">⚖️</span>
         </Link>
       )}
+
+      <RoleModeModal
+        isOpen={isModeModalOpen}
+        onClose={() => setIsModeModalOpen(false)}
+        currentMode={viewMode}
+        onSelectMode={(mode) => {
+          setViewMode(mode);
+          localStorage.setItem("legal-py-view-mode", mode);
+          window.dispatchEvent(new Event("legal-py-view-mode-changed"));
+          setIsModeModalOpen(false);
+          // #region agent log
+          fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId: "debug-session",
+              runId: "run3",
+              hypothesisId: "H-MODE",
+              location: "app/panel/page.tsx:onSelectMode",
+              message: "View mode changed via modal (panel)",
+              data: { mode },
+              timestamp: Date.now(),
+            }),
+          }).catch(() => {});
+          // #endregion
+        }}
+      />
         </div>
     </div>
   );

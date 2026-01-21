@@ -7,7 +7,7 @@ import Button from "./Button";
 import { useI18n } from "./I18nProvider";
 import LanguageSelector from "./LanguageSelector";
 import LoginModal from "./LoginModal";
-import RoleSwitch, { ViewMode } from "./RoleSwitch";
+import RoleModeModal, { ViewMode } from "./RoleModeModal";
 import { getSession } from "@/lib/auth";
 
 export default function NavbarTop() {
@@ -16,6 +16,7 @@ export default function NavbarTop() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [session, setSession] = useState(getSession());
   const [viewMode, setViewMode] = useState<ViewMode>("cliente");
+  const [isModeModalOpen, setIsModeModalOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { t, idioma, setIdioma } = useI18n();
@@ -49,6 +50,30 @@ export default function NavbarTop() {
       setSession(currentSession);
     }
   }, []);
+
+  const applyViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("legal-py-view-mode", mode);
+      window.dispatchEvent(new Event("legal-py-view-mode-changed"));
+    }
+    setIsModeModalOpen(false);
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run3",
+        hypothesisId: "H-MODE",
+        location: "components/NavbarTop.tsx:applyViewMode",
+        message: "View mode changed via modal",
+        data: { mode },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  };
 
   // Cerrar menú de usuario al hacer click fuera
   useEffect(() => {
@@ -102,10 +127,20 @@ export default function NavbarTop() {
               <span className="text-xl font-extrabold">Py</span>
             </Link>
 
-            {/* Role Switch - Solo visible cuando hay sesión */}
+            {/* Cambiar Modo (Modal) - Solo visible cuando hay sesión */}
             {session && (
-              <div className="hidden lg:block">
-                <RoleSwitch currentMode={viewMode} onModeChange={setViewMode} />
+              <div className="hidden lg:flex items-center gap-2">
+                <button
+                  onClick={() => setIsModeModalOpen(true)}
+                  className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition"
+                  aria-label="Cambiar modo"
+                >
+                  <span className="text-base">{viewMode === "cliente" ? "👤" : "💼"}</span>
+                  <span className="hidden xl:inline font-semibold">Cambiar modo</span>
+                  <svg className="h-4 w-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
               </div>
             )}
 
@@ -571,6 +606,16 @@ export default function NavbarTop() {
         onClose={() => setIsLoginModalOpen(false)}
         buttonPosition={buttonPosition}
       />
+
+      {/* Modal de Cambio de Modo */}
+      {session && (
+        <RoleModeModal
+          isOpen={isModeModalOpen}
+          onClose={() => setIsModeModalOpen(false)}
+          currentMode={viewMode}
+          onSelectMode={applyViewMode}
+        />
+      )}
     </header>
   );
 }

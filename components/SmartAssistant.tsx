@@ -77,6 +77,7 @@ export default function SmartAssistant() {
   const role = session?.user.role ?? "cliente";
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [assistant, setAssistant] = useState<AssistantId>("victoria");
   const [input, setInput] = useState("");
   const [recommendedTopic, setRecommendedTopic] = useState<null | "cheques" | "penal" | "default">(null);
@@ -144,6 +145,65 @@ export default function SmartAssistant() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  const closeWidget = (reason: "x" | "outside") => {
+    setIsOpen(false);
+    setIsMinimized(false);
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run3",
+        hypothesisId: "H-SA-CLOSE",
+        location: "components/SmartAssistant.tsx:closeWidget",
+        message: "SmartAssistant closed",
+        data: { reason },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  };
+
+  const minimizeWidget = () => {
+    setIsMinimized(true);
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run3",
+        hypothesisId: "H-SA-MIN",
+        location: "components/SmartAssistant.tsx:minimize",
+        message: "SmartAssistant minimized",
+        data: {},
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  };
+
+  const restoreWidget = () => {
+    setIsOpen(true);
+    setIsMinimized(false);
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run3",
+        hypothesisId: "H-SA-MIN",
+        location: "components/SmartAssistant.tsx:restore",
+        message: "SmartAssistant restored",
+        data: {},
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  };
 
   const handleSelectAssistant = (next: AssistantId) => {
     setAssistant(next);
@@ -229,7 +289,10 @@ export default function SmartAssistant() {
       {/* CTA Cerrado - Premium Widget */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true);
+            setIsMinimized(false);
+          }}
           className="fixed bottom-24 right-4 z-40 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
           aria-label="Abrir asistente inteligente"
         >
@@ -246,7 +309,35 @@ export default function SmartAssistant() {
 
       {/* Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-4 z-40 w-[360px] max-w-[92vw]">
+        <div className="fixed inset-0 z-40">
+          {/* Click outside handler */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+            onClick={() => closeWidget("outside")}
+            aria-hidden="true"
+          />
+
+          {/* Minimized state (no pierde conversación) */}
+          {isMinimized ? (
+            <button
+              onClick={restoreWidget}
+              className="absolute bottom-24 right-4 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
+              aria-label="Restaurar asistente"
+            >
+              <div className="h-10 w-10 rounded-2xl bg-black/10 flex items-center justify-center">
+                <span className="text-lg">💡</span>
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-extrabold leading-tight">{assistantMeta.name}</p>
+                <p className="text-xs font-medium opacity-80">Continuar</p>
+              </div>
+              <div className="ml-2 h-2 w-2 rounded-full bg-green-600 animate-pulse" />
+            </button>
+          ) : (
+            <div
+              className="absolute bottom-24 right-4 w-[360px] max-w-[92vw]"
+              onClick={(e) => e.stopPropagation()}
+            >
           <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/5 backdrop-blur-2xl shadow-2xl">
             {/* Header */}
             <div className={`p-5 border-b border-white/10 bg-gradient-to-r ${assistantMeta.accent}`}>
@@ -267,13 +358,24 @@ export default function SmartAssistant() {
                 </div>
 
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => closeWidget("x")}
                   className="rounded-2xl p-2 hover:bg-white/10 transition"
                   aria-label="Cerrar asistente"
                 >
                   <svg className="h-5 w-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
+                </button>
+              </div>
+
+              {/* Acciones: Minimizar */}
+              <div className="mt-3 flex justify-end">
+                <button
+                  onClick={minimizeWidget}
+                  className="text-xs text-white/80 hover:text-white transition rounded-xl px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10"
+                  aria-label="Minimizar asistente"
+                >
+                  Minimizar
                 </button>
               </div>
 
@@ -437,6 +539,8 @@ export default function SmartAssistant() {
               </p>
             </div>
           </div>
+            </div>
+          )}
         </div>
       )}
     </>
