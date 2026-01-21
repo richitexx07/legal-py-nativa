@@ -8,6 +8,8 @@ interface BiometricVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onVerify: (selfieDataUrl: string) => void;
+  isMandatory?: boolean; // Si es true, no se puede cerrar hasta verificar
+  isVerifying?: boolean; // Estado de verificación externo
 }
 
 type ScanStatus = "idle" | "scanning" | "done" | "error";
@@ -20,6 +22,8 @@ export default function BiometricVerificationModal({
   isOpen,
   onClose,
   onVerify,
+  isMandatory = false,
+  isVerifying = false,
 }: BiometricVerificationModalProps) {
   const webcamRef = useRef<Webcam | null>(null);
   const [status, setStatus] = useState<ScanStatus>("idle");
@@ -41,7 +45,7 @@ export default function BiometricVerificationModal({
   }, []);
 
   const handleStartScan = () => {
-    if (cameraError) return;
+    if (cameraError || isVerifying) return;
     setStatus("scanning");
     setMessage("Verificando Liveness... Parpadee y mantenga el rostro dentro del marco.");
 
@@ -57,9 +61,10 @@ export default function BiometricVerificationModal({
           return;
         }
         setStatus("done");
-        setMessage("Liveness verificado correctamente.");
+        setMessage("Comparando con tu cédula de identidad...");
+        // Llamar a onVerify - el componente padre manejará el matching
         onVerify(imageSrc);
-        onClose();
+        // No cerrar aquí - el padre lo hará después de verificar el matching
         return;
       }
       requestAnimationFrame(loop);
@@ -71,33 +76,39 @@ export default function BiometricVerificationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Fondo oscuro + blur */}
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+      {/* Fondo oscuro + blur - NO clickeable en modo obligatorio */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        className="absolute inset-0 bg-black/80 backdrop-blur-md"
+        onClick={isMandatory ? undefined : onClose}
         aria-hidden="true"
       />
 
       {/* Contenedor del modal */}
       <div
-        className="relative z-50 w-full max-w-md rounded-3xl border border-emerald-400/40 bg-gradient-to-br from-slate-900/80 via-slate-900/95 to-slate-900/90 p-6 shadow-[0_0_40px_rgba(16,185,129,0.45)]"
+        className="relative z-50 w-full max-w-md rounded-3xl border border-emerald-400/40 bg-gradient-to-br from-slate-900/90 via-slate-900/95 to-slate-900/90 p-6 shadow-[0_0_40px_rgba(16,185,129,0.6)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-white">Validación Biométrica</h2>
-          <button
-            onClick={onClose}
-            className="rounded-2xl p-1.5 hover:bg-white/10 transition"
-            aria-label="Cerrar"
-          >
-            <span className="text-white/70">✕</span>
-          </button>
+          <h2 className="text-xl font-bold text-white">
+            {isMandatory ? "⚠️ Verificación de Identidad Requerida" : "Validación Biométrica"}
+          </h2>
+          {/* Solo mostrar botón cerrar si NO es obligatorio */}
+          {!isMandatory && (
+            <button
+              onClick={onClose}
+              className="rounded-2xl p-1.5 hover:bg-white/10 transition"
+              aria-label="Cerrar"
+            >
+              <span className="text-white/70">✕</span>
+            </button>
+          )}
         </div>
 
-        <p className="text-xs text-emerald-200/90 mb-3">
-          Solo usamos esta captura para verificar que eres una persona real. No compartas este
-          dispositivo con terceros mientras operas.
+        <p className="text-sm text-emerald-200/90 mb-4">
+          {isMandatory
+            ? "Para acceder a la plataforma, debes verificar tu identidad comparando tu selfie con la foto de tu cédula de identidad. Este proceso es obligatorio y no se puede omitir."
+            : "Solo usamos esta captura para verificar que eres una persona real. No compartas este dispositivo con terceros mientras operas."}
         </p>
 
         <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl bg-black/60 border border-emerald-400/40 flex items-center justify-center">
@@ -141,21 +152,28 @@ export default function BiometricVerificationModal({
 
         {/* Botones */}
         <div className="mt-4 flex justify-end gap-2">
-          <Button
-            variant="secondary"
-            className="rounded-2xl"
-            onClick={onClose}
-            disabled={status === "scanning"}
-          >
-            Cancelar
-          </Button>
+          {/* Solo mostrar Cancelar si NO es obligatorio */}
+          {!isMandatory && (
+            <Button
+              variant="secondary"
+              className="rounded-2xl"
+              onClick={onClose}
+              disabled={status === "scanning" || isVerifying}
+            >
+              Cancelar
+            </Button>
+          )}
           <Button
             variant="primary"
             className="rounded-2xl"
             onClick={handleStartScan}
-            disabled={!!cameraError || status === "scanning"}
+            disabled={!!cameraError || status === "scanning" || isVerifying}
           >
-            {status === "scanning" ? "Escaneando..." : "Iniciar Escaneo Facial"}
+            {isVerifying
+              ? "Comparando con tu cédula..."
+              : status === "scanning"
+              ? "Escaneando..."
+              : "📸 Escanear Rostro Ahora"}
           </Button>
         </div>
       </div>

@@ -28,6 +28,7 @@ export default function RoleModeModal({ isOpen, onClose, currentMode, onSelectMo
       title={t("roles.switch_modal_title") || "Selecciona tu Espacio de Trabajo"}
       className="max-w-lg bg-slate-900/95 border border-white/10 rounded-3xl shadow-2xl animate-scale-in"
       position="center"
+      zIndexClass="z-[9999]"
     >
       <div className="space-y-4">
         <p className="text-sm text-white/70">

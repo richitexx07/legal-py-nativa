@@ -25,9 +25,11 @@ export default function PanelAdminPage() {
   const [postulaciones, setPostulaciones] = useState<PostulacionPasantia[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudCapacitacion[]>([]);
   const [myCases, setMyCases] = useState<LegalCase[]>([]);
-  const [session, setSession] = useState(getSession());
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Cargar modo de visualización
     if (typeof window !== "undefined") {
       const savedMode = localStorage.getItem("legal-py-view-mode") as ViewMode | null;
@@ -149,6 +151,15 @@ export default function PanelAdminPage() {
     };
   }, []);
 
+  // Log de notificaciones
+  useEffect(() => {
+    if (typeof window !== "undefined" && viewMode === "cliente" && myCases.length > 0) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:notifications',message:'Notifications should render',data:{viewMode,myCasesCount:myCases.length,shouldShow:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
+    }
+  }, [viewMode, myCases.length]);
+
   const getCursoNombre = (cursoId: string) => {
     const curso = mockCursos.find((c) => c.id === cursoId);
     return curso?.titulo || "Curso no encontrado";
@@ -217,6 +228,20 @@ export default function PanelAdminPage() {
   };
 
   const tabs = getTabs();
+
+  // Durante SSR o antes del mount, mostrar placeholder para evitar hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8 px-4">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="mb-8">
+            <div className="h-10 w-64 bg-white/5 rounded-lg animate-pulse mb-2" />
+            <div className="h-5 w-96 bg-white/5 rounded-lg animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8 px-4">
@@ -306,6 +331,37 @@ export default function PanelAdminPage() {
             <span className="font-semibold">{t("navbar.switch_role")}</span>
           </button>
         </div>
+
+        {/* Notificaciones Dopamínicas */}
+        {viewMode === "cliente" && myCases.length > 0 && (
+          <div className="mb-6 space-y-3">
+            <div className="backdrop-blur-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl border border-blue-400/30 p-4 shadow-lg animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl shrink-0 animate-pulse">
+                  🔔
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">El Dr. Juan vio tu caso</p>
+                  <p className="text-sm text-white/80">Está revisando los detalles y te contactará pronto</p>
+                </div>
+              </div>
+            </div>
+            <div className="backdrop-blur-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl border border-green-400/30 p-4 shadow-lg animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white text-xl shrink-0 animate-pulse">
+                  📄
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold">Tienes un documento para firmar</p>
+                  <p className="text-sm text-white/80">Revisa y firma el contrato de servicios</p>
+                </div>
+                <Button variant="primary" className="rounded-xl px-4 py-2 text-sm shrink-0">
+                  Ver Documento
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* DASHBOARD CLIENTE / PROFESIONAL */}
         {viewMode !== "estudiante" && (

@@ -636,8 +636,12 @@ export async function disableTwoFactor(userId: string, code: string): Promise<{ 
  */
 export async function updateIdentityVerification(
   userId: string,
-  status: "pending" | "in_review" | "verified" | "rejected"
+  data: {
+    status: "pending" | "in_review" | "verified" | "rejected";
+    selfieDataUrl?: string; // URL de la selfie capturada (para matching con cédula)
+  }
 ): Promise<{ success: boolean; error?: string }> {
+  const { status, selfieDataUrl } = data;
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   const users = getUsers();
@@ -655,6 +659,17 @@ export async function updateIdentityVerification(
   if (status === "verified") {
     user.isIdentityVerified = true;
     user.identityVerifiedAt = new Date().toISOString();
+    // Guardar selfie en localStorage para referencia futura (simulado)
+    if (selfieDataUrl && typeof window !== "undefined") {
+      try {
+        const biometricData = JSON.parse(localStorage.getItem(`legal-py-biometric-${userId}`) || "{}");
+        biometricData.selfieDataUrl = selfieDataUrl;
+        biometricData.verifiedAt = new Date().toISOString();
+        localStorage.setItem(`legal-py-biometric-${userId}`, JSON.stringify(biometricData));
+      } catch (e) {
+        console.error("Error guardando selfie:", e);
+      }
+    }
     // Actualizar KYC Tier a Nivel 2 (Verificado) cuando se verifica la identidad
     if (user.kycTier < 2) {
       user.kycTier = 2;

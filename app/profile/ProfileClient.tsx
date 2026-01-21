@@ -141,7 +141,7 @@ export default function ProfileClient() {
     // #endregion
 
     await updateProfile(userId, role, { avatar: selfieDataUrl } as any);
-    await updateIdentityVerification(userId, "verified");
+    await updateIdentityVerification(userId, { status: "verified", selfieDataUrl });
     localStorage.setItem("legal-py-reverify-required", "false");
 
     const next = getSession();

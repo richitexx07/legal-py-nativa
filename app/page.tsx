@@ -17,9 +17,11 @@ import { getSession } from "@/lib/auth";
 export default function Home() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [session, setSession] = useState(getSession());
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);

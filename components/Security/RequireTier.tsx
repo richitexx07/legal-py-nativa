@@ -15,10 +15,12 @@ interface RequireTierProps {
 
 export default function RequireTier({ tier, children, fallback }: RequireTierProps) {
   const router = useRouter();
-  const [session, setSession] = useState(getSession());
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+  const [mounted, setMounted] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
@@ -34,7 +36,7 @@ export default function RequireTier({ tier, children, fallback }: RequireTierPro
     }
   }, [tier, router]);
 
-  if (!session) {
+  if (!mounted || !session) {
     return null;
   }
 

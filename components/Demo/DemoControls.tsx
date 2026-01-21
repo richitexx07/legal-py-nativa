@@ -7,7 +7,8 @@ import Button from "@/components/Button";
 
 export default function DemoControls() {
   const [isOpen, setIsOpen] = useState(false);
-  const [session, setSession] = useState(getSession());
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+  const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>(() => {
     if (typeof window === "undefined") return "Básico";
@@ -15,8 +16,11 @@ export default function DemoControls() {
   });
 
   useEffect(() => {
+    setMounted(true);
     // Solo visible en desarrollo o si el usuario es admin (simulado)
     if (typeof window !== "undefined") {
+      const currentSession = getSession();
+      setSession(currentSession);
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Demo/DemoControls.tsx:15',message:'DemoControls init',data:{hostname:window.location.hostname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
       // #endregion
@@ -32,11 +36,13 @@ export default function DemoControls() {
 
   useEffect(() => {
     // Actualizar sesión cuando cambie
-    const currentSession = getSession();
-    setSession(currentSession);
-  }, [isOpen]);
+    if (mounted && typeof window !== "undefined") {
+      const currentSession = getSession();
+      setSession(currentSession);
+    }
+  }, [isOpen, mounted]);
 
-  if (!isVisible) {
+  if (!mounted || !isVisible) {
     return null;
   }
 

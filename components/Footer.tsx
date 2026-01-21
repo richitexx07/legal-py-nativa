@@ -80,6 +80,11 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">{t("footer.support_title")}</h3>
             <ul className="space-y-2">
               <li>
+                <Link href="/pricing" className="text-sm text-white/70 hover:text-[#C9A24D] transition-colors flex items-center gap-2">
+                  💎 {t("footer.pricing") || "Planes y Precios"}
+                </Link>
+              </li>
+              <li>
                 <span className="text-sm text-white/70">{t("footer.support")}</span>
               </li>
               <li>

@@ -9,7 +9,8 @@ import Badge from "@/components/Badge";
 
 export default function SecurityCenterPage() {
   const router = useRouter();
-  const [session, setSession] = useState(getSession());
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{
     cedulaFrente: "pending" | "uploaded";
@@ -42,10 +43,29 @@ export default function SecurityCenterPage() {
   ]);
 
   useEffect(() => {
-    if (!session) {
-      router.push("/login");
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const currentSession = getSession();
+      setSession(currentSession);
+      if (!currentSession) {
+        router.push("/login");
+      }
     }
-  }, [session, router]);
+  }, [router]);
+
+  // Durante SSR o antes del mount, mostrar placeholder para evitar hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="mb-8">
+            <div className="h-10 w-64 bg-white/5 rounded-lg animate-pulse mb-2" />
+            <div className="h-5 w-96 bg-white/5 rounded-lg animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!session) {
     return null;
@@ -97,6 +117,13 @@ export default function SecurityCenterPage() {
       [type]: "uploaded",
     }));
 
+    // Guardar en localStorage que la cédula fue subida (para BiometricGate)
+    if (type === "cedulaFrente" || type === "cedulaDorso") {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`legal-py-cedula-${user.id}`, "uploaded");
+      }
+    }
+
     // Si todos los documentos están subidos, cambiar estado a "en revisión"
     const newStatus = { ...uploadStatus, [type]: "uploaded" };
     const allUploaded =
@@ -105,7 +132,7 @@ export default function SecurityCenterPage() {
       newStatus.selfie === "uploaded";
 
     if (allUploaded) {
-      await updateIdentityVerification(user.id, "in_review");
+      await updateIdentityVerification(user.id, { status: "in_review" });
       // Actualizar sesión
       const updatedSession = getSession();
       if (updatedSession) {
@@ -123,7 +150,7 @@ export default function SecurityCenterPage() {
       uploadStatus.selfie === "uploaded"
     ) {
       setLoading(true);
-      await updateIdentityVerification(user.id, "in_review");
+      await updateIdentityVerification(user.id, { status: "in_review" });
       const updatedSession = getSession();
       if (updatedSession) {
         setSession(updatedSession);

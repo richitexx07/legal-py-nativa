@@ -382,7 +382,7 @@ export default function SmartAssistant() {
             setIsOpen(true);
             setIsMinimized(false);
           }}
-          className="fixed bottom-24 right-6 z-40 flex items-center gap-3 text-left"
+          className="fixed bottom-32 right-6 z-[50] flex items-center gap-3 text-left pointer-events-auto"
           aria-label="Abrir asistente inteligente"
         >
           <div className="relative h-12 w-12">
@@ -401,10 +401,10 @@ export default function SmartAssistant() {
 
       {/* Panel */}
       {isOpen && (
-        <div className="fixed inset-0 z-40">
+        <div className="fixed inset-0 z-[50] pointer-events-none">
           {/* Click outside handler */}
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-auto"
             onClick={() => closeWidget("outside")}
             aria-hidden="true"
           />
@@ -413,7 +413,7 @@ export default function SmartAssistant() {
           {isMinimized ? (
             <button
               onClick={restoreWidget}
-              className="absolute bottom-24 right-6 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
+              className="absolute bottom-32 right-6 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3 pointer-events-auto z-[51]"
               aria-label="Restaurar asistente"
             >
               <div className="h-10 w-10 rounded-2xl bg-black/10 flex items-center justify-center">
@@ -427,7 +427,7 @@ export default function SmartAssistant() {
             </button>
           ) : (
             <div
-              className="absolute bottom-24 right-6 w-[360px] max-w-[92vw]"
+              className="absolute bottom-32 right-6 w-[360px] max-w-[92vw] pointer-events-auto z-[51]"
               onClick={(e) => e.stopPropagation()}
             >
           <div className="relative overflow-hidden rounded-3xl border border-[#C9A24D]/60 bg-white/10 backdrop-blur-2xl shadow-[0_0_35px_rgba(201,162,77,0.45)]">

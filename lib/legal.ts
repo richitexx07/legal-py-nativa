@@ -22,9 +22,19 @@ export function getLegalPolicies(): PolicyLevel[] {
   try {
     const filePath = path.join(process.cwd(), 'src/data/legal/politicas_maestras.md');
     const content = fs.readFileSync(filePath, 'utf-8');
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/legal.ts:getLegalPolicies',message:'Reading policies file',data:{filePath,contentLength:content.length,hasContent:!!content},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
     
-    return parsePoliciesByLevel(content);
+    const parsed = parsePoliciesByLevel(content);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/legal.ts:getLegalPolicies',message:'Policies parsed',data:{levelsCount:parsed.length,levels:parsed.map(l=>({id:l.id,title:l.title,policiesCount:l.policies.length}))},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
+    return parsed;
   } catch (error) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/legal.ts:getLegalPolicies',message:'ERROR reading policies',data:{errorMessage:error instanceof Error?error.message:String(error),errorStack:error instanceof Error?error.stack:undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
     console.error('Error reading legal policies:', error);
     return [];
   }

@@ -10,9 +10,20 @@ interface ModalProps {
   className?: string;
   position?: "center" | "below-button";
   buttonPosition?: { top: number; right: number };
+  /** Permite sobreescribir la capa (z-index) del overlay principal */
+  zIndexClass?: string;
 }
 
-export default function Modal({ isOpen, onClose, children, title, className = "", position = "center", buttonPosition }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+  title,
+  className = "",
+  position = "center",
+  buttonPosition,
+  zIndexClass,
+}: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -45,7 +56,7 @@ export default function Modal({ isOpen, onClose, children, title, className = ""
 
   const positionClasses = position === "below-button" 
     ? "flex items-start justify-end"
-    : "flex items-center justify-center p-4";
+    : "flex items-center justify-center p-4 min-h-screen";
 
   const modalStyle = position === "below-button" && buttonPosition
     ? {
@@ -54,8 +65,10 @@ export default function Modal({ isOpen, onClose, children, title, className = ""
       }
     : {};
 
+  const zClass = zIndexClass || "z-50";
+
   return (
-    <div className={`fixed inset-0 z-50 ${positionClasses}`}>
+    <div className={`fixed inset-0 ${zClass} ${positionClasses}`}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"

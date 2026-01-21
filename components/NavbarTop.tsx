@@ -16,10 +16,11 @@ export default function NavbarTop() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ top: 0, right: 0 });
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [session, setSession] = useState(getSession());
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("cliente");
   const [isModeModalOpen, setIsModeModalOpen] = useState(false);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { t, language, setLanguage } = useLanguage();
@@ -65,8 +66,9 @@ export default function NavbarTop() {
     }
   }, [isLoginModalOpen]);
 
-  // Verificar sesión y userId al montar
+  // Verificar sesión y userId al montar (solo en cliente)
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
@@ -147,7 +149,7 @@ export default function NavbarTop() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0E1B2A]/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0E1B2A]/90 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 py-4">
         <div className="flex items-center justify-between gap-4 min-w-0">
           {/* Zona Izquierda: Logo + Menú */}
@@ -208,9 +210,9 @@ export default function NavbarTop() {
             </div>
 
             {/* Notifications */}
-            {mockUserId ? (
+            {mounted && mockUserId ? (
               <NotificationBell userId={mockUserId} />
-            ) : (
+            ) : mounted ? (
               <button
                 onClick={() => {
                   window.location.href = "/login";
@@ -227,13 +229,15 @@ export default function NavbarTop() {
                   />
                 </svg>
               </button>
+            ) : (
+              <div className="relative rounded-lg p-2 w-10 h-10 bg-white/5 animate-pulse" aria-hidden="true" />
             )}
 
             {/* Divisor Vertical */}
             <div className="hidden sm:block h-6 w-px bg-white/10" aria-hidden="true" />
 
             {/* Desktop CTAs - Botones de Autenticación o Menú de Usuario */}
-            {session ? (
+            {mounted && session ? (
               <div className="hidden sm:block relative" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -360,6 +364,29 @@ export default function NavbarTop() {
                         <span className="text-sm text-white/90 group-hover:text-white">{t("navbar.opportunities")}</span>
                         <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                       </Link>
+                      {/* Ver Planes - Solo para profesionales */}
+                      {session?.user.role === "profesional" && (
+                        <Link
+                          href="/pricing"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition group"
+                        >
+                          <svg
+                            className="w-5 h-5 text-[#C9A24D] group-hover:text-yellow-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span className="text-sm text-white/90 group-hover:text-white">💎 {t("navbar.pricing") || "Ver Planes"}</span>
+                        </Link>
+                      )}
                       <Link
                         href="/security-center"
                         onClick={() => setIsUserMenuOpen(false)}
@@ -404,10 +431,48 @@ export default function NavbarTop() {
                       <button
                         onClick={() => {
                           if (typeof window !== "undefined") {
-                            localStorage.removeItem("legal-py-session");
+                            try {
+                              // Limpiar todas las keys específicas de Legal PY
+                              const keysToRemove = [
+                                "legal-py-session",
+                                "legal-py-current-user-id",
+                                "legal-py-view-mode",
+                                "legal-py-cases",
+                                "legal-py-demo-mode",
+                                "legal-py-demo-plan",
+                                "legal-py-reverify-required",
+                                "legal-py-reverify-day",
+                              ];
+                              keysToRemove.forEach((key) => {
+                                try {
+                                  localStorage.removeItem(key);
+                                } catch {
+                                  // ignore
+                                }
+                              });
+                              // Limpiar también keys de biometría
+                              const allKeys = Object.keys(localStorage);
+                              allKeys.forEach((key) => {
+                                if (key.startsWith("legal-py-biometric-") || key.startsWith("legal-py-cedula-")) {
+                                  try {
+                                    localStorage.removeItem(key);
+                                  } catch {
+                                    // ignore
+                                  }
+                                }
+                              });
+                            } catch {
+                              // Si falla, hacer clear completo
+                              try {
+                                localStorage.clear();
+                              } catch {
+                                // ignore
+                              }
+                            }
                             setSession(null);
                             setIsUserMenuOpen(false);
-                            window.location.href = "/";
+                            // Forzar recarga limpia
+                            window.location.href = "/login";
                           }
                         }}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-500/10 transition group text-left"
@@ -433,21 +498,31 @@ export default function NavbarTop() {
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
-                <Link href="/login">
-                    <Button variant="primary" size="sm">
-                    {t("navbar.login")}
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button variant="secondary" size="sm">
-                    {t("navbar.register")}
-                  </Button>
-                </Link>
+                {mounted ? (
+                  <>
+                    <Link href="/login">
+                      <Button variant="primary" size="sm">
+                        {t("navbar.login")}
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button variant="secondary" size="sm">
+                        {t("navbar.register")}
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    {/* Placeholder durante SSR para evitar hydration mismatch */}
+                    <div className="w-20 h-8 bg-white/5 rounded-lg animate-pulse" />
+                    <div className="w-24 h-8 bg-white/5 rounded-lg animate-pulse" />
+                  </>
+                )}
               </div>
             )}
 
             {/* Mobile CTAs - Botones de Autenticación o Menú de Usuario */}
-            {session ? (
+            {mounted && session ? (
               <div className="flex sm:hidden relative" ref={userMenuRef}>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -501,6 +576,54 @@ export default function NavbarTop() {
                       </p>
                     </div>
                       <div className="space-y-2">
+                        {/* Botón Cambiar Cuenta - Agregado para móvil */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsUserMenuOpen(false);
+                            setIsModeModalOpen(true);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                        >
+                          <svg
+                            className="w-6 h-6 text-[#C9A24D]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 4h5l3 3h8v5h-3m-4 0H9m0 0L5 8m4 5L5 16"
+                            />
+                          </svg>
+                          <span className="text-white font-medium">{t("navbar.switch_role")}</span>
+                        </button>
+                        <div className="border-t border-white/10 my-2" />
+                        {/* Ver Planes - Solo para profesionales en móvil */}
+                        {session?.user.role === "profesional" && (
+                          <Link
+                            href="/pricing"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                          >
+                            <svg
+                              className="w-6 h-6 text-[#C9A24D]"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            <span className="text-white font-medium">💎 {t("navbar.pricing") || "Ver Planes"}</span>
+                          </Link>
+                        )}
                         <Link
                           href="/opportunities"
                           onClick={() => setIsUserMenuOpen(false)}
@@ -565,10 +688,48 @@ export default function NavbarTop() {
                         <button
                           onClick={() => {
                             if (typeof window !== "undefined") {
-                              localStorage.removeItem("legal-py-session");
+                              try {
+                                // Limpiar todas las keys específicas de Legal PY
+                                const keysToRemove = [
+                                  "legal-py-session",
+                                  "legal-py-current-user-id",
+                                  "legal-py-view-mode",
+                                  "legal-py-cases",
+                                  "legal-py-demo-mode",
+                                  "legal-py-demo-plan",
+                                  "legal-py-reverify-required",
+                                  "legal-py-reverify-day",
+                                ];
+                                keysToRemove.forEach((key) => {
+                                  try {
+                                    localStorage.removeItem(key);
+                                  } catch {
+                                    // ignore
+                                  }
+                                });
+                                // Limpiar también keys de biometría
+                                const allKeys = Object.keys(localStorage);
+                                allKeys.forEach((key) => {
+                                  if (key.startsWith("legal-py-biometric-") || key.startsWith("legal-py-cedula-")) {
+                                    try {
+                                      localStorage.removeItem(key);
+                                    } catch {
+                                      // ignore
+                                    }
+                                  }
+                                });
+                              } catch {
+                                // Si falla, hacer clear completo
+                                try {
+                                  localStorage.clear();
+                                } catch {
+                                  // ignore
+                                }
+                              }
                               setSession(null);
                               setIsUserMenuOpen(false);
-                              window.location.href = "/";
+                              // Forzar recarga limpia
+                              window.location.href = "/login";
                             }
                           }}
                           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition text-red-400"
@@ -595,16 +756,26 @@ export default function NavbarTop() {
               </div>
             ) : (
               <div className="flex sm:hidden items-center gap-2">
-                <Link href="/login">
-                    <Button variant="primary" size="sm">
-                    {t("navbar.login")}
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button variant="secondary" size="sm">
-                    {t("navbar.register")}
-                  </Button>
-                </Link>
+                {mounted ? (
+                  <>
+                    <Link href="/login">
+                      <Button variant="primary" size="sm">
+                        {t("navbar.login")}
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button variant="secondary" size="sm">
+                        {t("navbar.register")}
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    {/* Placeholder durante SSR para evitar hydration mismatch */}
+                    <div className="w-16 h-8 bg-white/5 rounded-lg animate-pulse" />
+                    <div className="w-20 h-8 bg-white/5 rounded-lg animate-pulse" />
+                  </>
+                )}
               </div>
             )}
           </div>

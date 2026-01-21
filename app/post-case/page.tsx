@@ -1,39 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { calculateCasePriority } from "@/lib/dpt-engine";
 import { LegalCase } from "@/lib/types";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
-import FormField from "@/components/FormField";
 import confetti from "canvas-confetti";
+import Image from "next/image";
+import { mockProfesionales } from "@/lib/mock-data";
+
+type FlowStep = "input" | "scanning" | "professionals" | "success";
 
 export default function PostCasePage() {
   const router = useRouter();
-  const [session, setSession] = useState(getSession());
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [dptResult, setDptResult] = useState<{
-    classification: "ALTA" | "MEDIA" | "BAJA";
-    status: string;
-    isExclusiveGEP: boolean;
-  } | null>(null);
-
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    practiceArea: "CIVIL" as LegalCase["practiceArea"],
-    complexity: "MEDIA" as LegalCase["complexity"],
-    estimatedBudget: "",
-  });
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+  const [mounted, setMounted] = useState(false);
+  const [flowStep, setFlowStep] = useState<FlowStep>("input");
+  const [userInput, setUserInput] = useState("");
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [selectedProfessionals, setSelectedProfessionals] = useState<any[]>([]);
+  const [caseData, setCaseData] = useState<LegalCase | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:mount',message:'PostCasePage mounted',data:{hasSession:!!currentSession,hasMockProfesionales:typeof mockProfesionales !== 'undefined',mockProfesionalesLength:mockProfesionales?.length || 0},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H3'})}).catch(()=>{});
+      // #endregion
 
       if (!currentSession) {
         router.push("/login");
@@ -41,422 +40,295 @@ export default function PostCasePage() {
     }
   }, [router]);
 
+  // Detectar cuando el usuario escribe para mostrar sugerencia de IA
+  useEffect(() => {
+    if (userInput.length > 20) {
+      setShowAiAssistant(true);
+      // Simular análisis de IA
+      const normalized = userInput.toLowerCase();
+      if (normalized.includes("pagaré") || normalized.includes("cheque") || normalized.includes("cobro")) {
+        setAiSuggestion("Parece un caso de Cobro de Guaraníes (Civil). ¿Te ayudo a buscar un especialista en Títulos Ejecutivos?");
+      } else if (normalized.includes("robo") || normalized.includes("asalto") || normalized.includes("penal")) {
+        setAiSuggestion("Parece un caso Penal. ¿Te ayudo a encontrar un penalista verificado?");
+      } else if (normalized.includes("trabajo") || normalized.includes("despido") || normalized.includes("laboral")) {
+        setAiSuggestion("Parece un caso Laboral. ¿Te ayudo a buscar un especialista en Derecho del Trabajo?");
+      } else {
+        setAiSuggestion("Estoy analizando tu caso. ¿Te ayudo a encontrar el profesional adecuado?");
+      }
+    } else {
+      setShowAiAssistant(false);
+      setAiSuggestion(null);
+    }
+  }, [userInput]);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="h-96 bg-white rounded-2xl shadow-lg animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   if (!session) {
     return null;
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleNext = () => {
-    if (step === 1) {
-      if (!formData.title.trim() || !formData.description.trim()) {
-        alert("Por favor completa todos los campos del Paso 1");
-        return;
-      }
-    }
-    if (step === 2) {
-      if (!formData.practiceArea || !formData.complexity) {
-        alert("Por favor selecciona el área de práctica y la complejidad");
-        return;
-      }
-    }
-    setStep(step + 1);
-  };
-
-  const handleBack = () => {
-    setStep(step - 1);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.estimatedBudget || parseFloat(formData.estimatedBudget) <= 0) {
-      alert("Por favor ingresa un presupuesto válido");
+  const handleSubmit = async () => {
+    if (!userInput.trim()) {
+      alert("Por favor, describe tu caso");
       return;
     }
 
-    setLoading(true);
+    // Paso 1: Animación de escaneo
+    setFlowStep("scanning");
 
-    // Simular delay de procesamiento
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // Simular análisis DPT
+    await new Promise((resolve) => setTimeout(resolve, 2500));
 
-    // Calcular prioridad DPT
-    const budget = parseFloat(formData.estimatedBudget);
+    // Clasificar automáticamente basado en el texto
+    const normalized = userInput.toLowerCase();
+    let practiceArea: LegalCase["practiceArea"] = "CIVIL";
+    let complexity: LegalCase["complexity"] = "MEDIA";
+
+    if (normalized.includes("penal") || normalized.includes("robo") || normalized.includes("asalto")) {
+      practiceArea = "PENAL";
+      complexity = "ALTA";
+    } else if (normalized.includes("laboral") || normalized.includes("trabajo") || normalized.includes("despido")) {
+      practiceArea = "LABORAL";
+      complexity = "MEDIA";
+    } else if (normalized.includes("empresa") || normalized.includes("corporativo") || normalized.includes("sociedad")) {
+      practiceArea = "CORPORATIVO";
+      complexity = "ALTA";
+    }
+
+    // Seleccionar profesionales sugeridos (mocks)
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:handleSubmit',message:'Filtering professionals',data:{totalProfesionales:mockProfesionales?.length || 0,practiceArea,complexity},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H3'})}).catch(()=>{});
+    // #endregion
+    const filtered = mockProfesionales
+      .filter((p) => p.categoria === "Abogados")
+      .slice(0, 3);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:handleSubmit',message:'Professionals filtered',data:{filteredCount:filtered.length,professionalIds:filtered.map(p=>p.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H3'})}).catch(()=>{});
+    // #endregion
+    setSelectedProfessionals(filtered);
+
+    // Crear caso
+    const budget = 3000000; // Presupuesto estimado por defecto
     const priority = calculateCasePriority({
-      title: formData.title,
-      description: formData.description,
-      complexity: formData.complexity,
-      practiceArea: formData.practiceArea,
+      title: userInput.substring(0, 50),
+      description: userInput,
+      complexity,
+      practiceArea,
       estimatedBudget: budget,
       status: "OPEN",
     });
 
-    // Determinar clasificación DPT
-    const isHighTicket = formData.complexity === "ALTA" || budget > 5000000;
-    const classification = formData.complexity;
-    const status = priority.exclusiveForGepUntil
-      ? "Exclusivo GEP 24h"
-      : "Abierto a Todos";
-
-    setDptResult({
-      classification,
-      status,
-      isExclusiveGEP: !!priority.exclusiveForGepUntil,
-    });
-
-    // Guardar caso (simulación - en producción se guardaría en BD)
     const newCase: LegalCase = {
       id: `case_${Date.now()}`,
-      title: formData.title,
-      description: formData.description,
-      complexity: formData.complexity,
-      practiceArea: formData.practiceArea,
+      title: userInput.substring(0, 50) || "Caso Legal",
+      description: userInput,
+      complexity,
+      practiceArea,
       estimatedBudget: budget,
       status: "OPEN",
       exclusiveForGepUntil: priority.exclusiveForGepUntil,
       createdAt: new Date().toISOString(),
     };
 
-    // Guardar en localStorage para simulación
+    setCaseData(newCase);
+
+    // Guardar en localStorage
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:122',message:'Saving case to localStorage',data:{caseId:newCase.id,title:newCase.title,complexity:newCase.complexity,budget:newCase.estimatedBudget},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-      // #endregion
       const existingCases = JSON.parse(localStorage.getItem("legal-py-cases") || "[]");
       existingCases.push(newCase);
       localStorage.setItem("legal-py-cases", JSON.stringify(existingCases));
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:125',message:'Case saved successfully',data:{totalCases:existingCases.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-      // #endregion
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:127',message:'ERROR saving case',data:{errorMessage:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-      // #endregion
-      alert("Error al guardar el caso: " + (error instanceof Error ? error.message : String(error)));
-      setLoading(false);
-      return;
+      console.error("Error saving case:", error);
     }
 
-    setLoading(false);
-    setShowSuccessModal(true);
+    // Mostrar profesionales
+    setFlowStep("professionals");
+  };
 
-    // Disparar confeti cuando se muestra el modal
-    setTimeout(() => {
-      // Explosión principal de confeti
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#C9A24D', '#C08457', '#ffffff', '#4ade80', '#60a5fa']
-      });
+  const handleRequestQuote = (professionalId: string) => {
+    // Simular solicitud de presupuesto
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#C9A24D", "#C08457", "#ffffff"],
+    });
 
-      // Segunda explosión después de 300ms para efecto de cascada
-      setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-          colors: ['#C9A24D', '#C08457', '#ffffff']
-        });
-        confetti({
-          particleCount: 50,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-          colors: ['#C9A24D', '#C08457', '#ffffff']
-        });
-      }, 300);
-    }, 100);
+    setFlowStep("success");
 
-    // Redirigir después de 4 segundos (más tiempo para disfrutar el confeti)
     setTimeout(() => {
       router.push("/panel");
-    }, 4000);
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
+      <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">⚖️ Publicar Caso Legal</h1>
-          <p className="text-white/70">
-            Completa el formulario para publicar tu caso. El sistema DPT determinará automáticamente la prioridad.
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
+            ¿Qué necesitas resolver hoy?
+          </h1>
+          <p className="text-lg text-gray-600">
+            Cuéntanos tu caso y nuestro sistema encontrará al profesional perfecto para ti
           </p>
         </div>
 
-        {/* Indicador de pasos */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center flex-1">
-                <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition ${
-                    step >= s
-                      ? "bg-[#C9A24D] border-[#C9A24D] text-black font-bold"
-                      : "bg-white/5 border-white/20 text-white/50"
-                  }`}
-                >
-                  {s}
-                </div>
-                {s < 3 && (
-                  <div
-                    className={`flex-1 h-1 mx-2 transition ${
-                      step > s ? "bg-[#C9A24D]" : "bg-white/10"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-2 text-xs text-white/60">
-            <span>Información</span>
-            <span>Clasificación</span>
-            <span>Presupuesto</span>
-          </div>
-        </div>
-
-        {/* Formulario */}
-        <Card>
-          <form onSubmit={handleSubmit} className="p-6">
-            {/* Paso 1: Título y Descripción */}
-            {step === 1 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-semibold text-white mb-4">Paso 1: Información del Caso</h2>
-                  <FormField label="Título del Caso" htmlFor="title" required>
-                    <input
-                      id="title"
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
-                      placeholder="Ej: Demanda por incumplimiento contractual"
-                      required
-                    />
-                  </FormField>
-                </div>
-
-                <FormField label="Descripción Detallada" htmlFor="description" required>
-                  <textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                    rows={6}
-                    className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D] resize-none"
-                    placeholder="Describe los detalles del caso, situación actual, documentos relevantes, etc."
-                    required
-                  />
-                </FormField>
-
-                <div className="flex justify-end">
-                  <Button type="button" variant="primary" onClick={handleNext}>
-                    Siguiente →
-                  </Button>
+        {/* Magic Input - Paso 1 */}
+        {flowStep === "input" && (
+          <div className="relative">
+            <Card className="p-8 shadow-xl border-2 border-gray-200">
+              <div className="relative">
+                <textarea
+                  ref={inputRef}
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  placeholder="Cuéntanos qué necesitas resolver hoy..."
+                  className="w-full min-h-[200px] px-6 py-4 text-lg rounded-2xl border-2 border-gray-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none resize-none transition-all"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                      handleSubmit();
+                    }
+                  }}
+                />
+                <div className="absolute bottom-4 right-4 text-xs text-gray-400">
+                  {userInput.length > 0 && `${userInput.length} caracteres`}
                 </div>
               </div>
-            )}
 
-            {/* Paso 2: Área de Práctica y Complejidad */}
-            {step === 2 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-semibold text-white mb-4">Paso 2: Clasificación</h2>
-                  <FormField label="Área de Práctica" htmlFor="practiceArea" required>
-                    <select
-                      id="practiceArea"
-                      value={formData.practiceArea}
-                      onChange={(e) => handleInputChange("practiceArea", e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
-                      required
-                    >
-                      <option value="CIVIL">Civil</option>
-                      <option value="PENAL">Penal</option>
-                      <option value="CORPORATIVO">Corporativo</option>
-                      <option value="LABORAL">Laboral</option>
-                      <option value="FAMILIA">Familia</option>
-                    </select>
-                  </FormField>
-                </div>
-
-                <FormField label="Complejidad Estimada" htmlFor="complexity" required>
-                  <select
-                    id="complexity"
-                    value={formData.complexity}
-                    onChange={(e) => handleInputChange("complexity", e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
-                    required
-                  >
-                    <option value="BAJA">Baja</option>
-                    <option value="MEDIA">Media</option>
-                    <option value="ALTA">Alta</option>
-                  </select>
-                  <p className="text-xs text-white/60 mt-1">
-                    La complejidad ALTA o presupuesto mayor a 5,000,000 Gs otorga prioridad exclusiva GEP por 24h
-                  </p>
-                </FormField>
-
-                <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={handleBack}>
-                    ← Anterior
-                  </Button>
-                  <Button type="button" variant="primary" onClick={handleNext}>
-                    Siguiente →
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Paso 3: Presupuesto */}
-            {step === 3 && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-semibold text-white mb-4">Paso 3: Presupuesto</h2>
-                  <FormField label="Presupuesto Estimado (Guaraníes)" htmlFor="estimatedBudget" required>
-                    <input
-                      id="estimatedBudget"
-                      type="number"
-                      value={formData.estimatedBudget}
-                      onChange={(e) => handleInputChange("estimatedBudget", e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-[#C9A24D]"
-                      placeholder="5000000"
-                      min="0"
-                      step="100000"
-                      required
-                    />
-                    <p className="text-xs text-white/60 mt-1">
-                      Presupuesto en Guaraníes. Si es mayor a 5,000,000 Gs, tendrá prioridad exclusiva GEP.
-                    </p>
-                </FormField>
-                </div>
-
-                {/* Resumen */}
-                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                  <h3 className="text-sm font-semibold text-white mb-2">Resumen del Caso</h3>
-                  <div className="space-y-1 text-sm text-white/70">
-                    <p>
-                      <span className="text-white/50">Título:</span> {formData.title || "No especificado"}
-                    </p>
-                    <p>
-                      <span className="text-white/50">Área:</span> {formData.practiceArea}
-                    </p>
-                    <p>
-                      <span className="text-white/50">Complejidad:</span> {formData.complexity}
-                    </p>
-                    <p>
-                      <span className="text-white/50">Presupuesto:</span>{" "}
-                      {formData.estimatedBudget
-                        ? new Intl.NumberFormat("es-PY", {
-                            style: "currency",
-                            currency: "PYG",
-                            minimumFractionDigits: 0,
-                          }).format(parseFloat(formData.estimatedBudget))
-                        : "No especificado"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={handleBack}>
-                    ← Anterior
-                  </Button>
-                  <Button type="submit" variant="primary" disabled={loading}>
-                    {loading ? "Publicando..." : "Publicar Caso"}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </form>
-        </Card>
-
-        {/* Modal de éxito mejorado con animaciones */}
-        {showSuccessModal && dptResult && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-            <Card className="max-w-md w-full mx-4 animate-scale-in">
-              <div className="p-8 text-center">
-                {/* Check animado SVG */}
-                <div className="flex justify-center mb-6">
-                  <svg
-                    className="w-24 h-24 text-green-500"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      className="stroke-green-500/30"
-                      style={{
-                        strokeDasharray: 63,
-                        strokeDashoffset: 63,
-                        animation: 'drawCircle 0.6s ease-out 0.3s forwards'
-                      }}
-                    />
-                    <path
-                      d="M8 12l2 2 4-4"
-                      className="stroke-green-500"
-                      style={{
-                        strokeDasharray: 10,
-                        strokeDashoffset: 10,
-                        animation: 'drawCheck 0.4s ease-out 0.9s forwards'
-                      }}
-                    />
-                  </svg>
-                </div>
-
-                {/* Neuro-copy mejorado */}
-                <h2 className="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] bg-clip-text text-transparent">
-                  ¡Misión Cumplida! 🛡️
-                </h2>
-                <p className="text-white/80 text-lg mb-2 leading-relaxed">
-                  Tu caso ha sido encriptado y enviado a nuestro Motor DPT.
-                </p>
-                <p className="text-white/70 text-base mb-6">
-                  Los mejores profesionales lo verán en segundos.
-                </p>
-
-                <div className="space-y-3 mb-6">
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-white/10 to-white/5 border border-white/20">
-                    <p className="text-xs text-white/60 mb-1 font-medium uppercase tracking-wide">Clasificación DPT</p>
-                    <p className="text-xl font-bold text-white">{dptResult.classification}</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-[#C9A24D]/20 to-[#C08457]/20 border border-[#C9A24D]/40">
-                    <p className="text-xs text-[#C9A24D]/80 mb-1 font-medium uppercase tracking-wide">Estado</p>
-                    <p className="text-xl font-bold text-[#C9A24D]">{dptResult.status}</p>
-                  </div>
-                  {dptResult.isExclusiveGEP && (
-                    <div className="p-4 rounded-lg bg-gradient-to-r from-yellow-500/20 to-[#C9A24D]/20 border-2 border-yellow-400/50 animate-pulse">
-                      <div className="flex items-center justify-center gap-2 mb-1">
-                        <span className="text-2xl">👑</span>
-                        <p className="text-sm font-bold text-yellow-400">Prioridad Exclusiva GEP</p>
-                      </div>
-                      <p className="text-xs text-yellow-300/90">
-                        Durante 24 horas, solo socios GEP pueden ver este caso
-                      </p>
+              {/* Asistente IA apareciendo sutilmente */}
+              {showAiAssistant && aiSuggestion && (
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl animate-fade-in">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center shrink-0">
+                      <span className="text-white text-lg">🤖</span>
                     </div>
-                  )}
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-700 leading-relaxed">{aiSuggestion}</p>
+                    </div>
+                  </div>
                 </div>
+              )}
 
-                <p className="text-sm text-white/60 mb-4 flex items-center justify-center gap-2">
-                  <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-ping"></span>
-                  Redirigiendo al panel...
-                </p>
-                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-[#C9A24D] to-[#C08457] transition-all duration-4000 ease-out" 
-                    style={{ width: "100%" }} 
-                  />
-                </div>
+              <div className="mt-6 flex justify-end">
+                <Button
+                  variant="primary"
+                  onClick={handleSubmit}
+                  disabled={!userInput.trim()}
+                  className="px-8 py-3 text-lg rounded-xl"
+                >
+                  Buscar Profesionales →
+                </Button>
               </div>
             </Card>
           </div>
+        )}
+
+        {/* Animación de Escaneo - Paso 2 */}
+        {flowStep === "scanning" && (
+          <Card className="p-12 shadow-xl text-center">
+            <div className="space-y-6">
+              <div className="relative w-24 h-24 mx-auto">
+                <div className="absolute inset-0 rounded-full border-4 border-blue-200"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+                <div className="absolute inset-4 rounded-full bg-blue-50 flex items-center justify-center">
+                  <span className="text-3xl">🔍</span>
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Escaneando Red de Profesionales...</h2>
+              <p className="text-gray-600">Estamos analizando tu caso y buscando los mejores especialistas</p>
+            </div>
+          </Card>
+        )}
+
+        {/* Profesionales Sugeridos - Paso 3 */}
+        {flowStep === "professionals" && (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Profesionales Sugeridos para tu Caso
+              </h2>
+              <p className="text-gray-600">
+                Hemos encontrado {selectedProfessionals.length} especialistas que pueden ayudarte
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {selectedProfessionals.map((prof) => (
+                <Card key={prof.id} className="p-6 hover:shadow-xl transition-shadow">
+                  <div className="space-y-4">
+                    {/* Foto y Badge */}
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 mx-auto flex items-center justify-center text-white text-2xl font-bold">
+                        {prof.nombre.charAt(0)}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-white flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="text-center">
+                      <h3 className="font-bold text-gray-900 text-lg">{prof.nombre}</h3>
+                      <p className="text-sm text-gray-600">{prof.especialidad}</p>
+                      <div className="flex items-center justify-center gap-1 mt-2">
+                        <span className="text-yellow-400">⭐</span>
+                        <span className="text-sm font-semibold text-gray-700">{prof.rating}</span>
+                        <span className="text-xs text-gray-500">({prof.reviews} reseñas)</span>
+                      </div>
+                    </div>
+
+                    {/* CTA */}
+                    <Button
+                      variant="primary"
+                      onClick={() => handleRequestQuote(prof.id)}
+                      className="w-full rounded-xl py-3"
+                    >
+                      Solicitar Presupuesto
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setFlowStep("input")}
+                className="px-6 py-2"
+              >
+                ← Volver a escribir
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Éxito - Paso 4 */}
+        {flowStep === "success" && (
+          <Card className="p-12 shadow-xl text-center">
+            <div className="space-y-6">
+              <div className="w-20 h-20 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+                <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900">¡Solicitud Enviada!</h2>
+              <p className="text-gray-600">
+                El profesional recibió tu solicitud y te contactará pronto
+              </p>
+            </div>
+          </Card>
         )}
       </div>
     </div>

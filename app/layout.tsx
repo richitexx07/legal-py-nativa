@@ -6,15 +6,17 @@ import BottomNav from "@/components/BottomNav";
 import SmartAssistant from "@/components/SmartAssistant";
 import Footer from "@/components/Footer";
 import DemoControls from "@/components/Demo/DemoControls";
+import BiometricGate from "@/components/Security/BiometricGate";
 
 export const metadata: Metadata = {
   title: "Legal Py",
   description: "La plataforma legal integral de Paraguay",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +33,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="min-h-screen bg-[#0E1B2A] text-white">
         <LanguageProvider>
@@ -52,6 +59,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Demo Controls - Solo en desarrollo */}
           <DemoControls />
+
+          {/* Bloqueo Biométrico - Verificación obligatoria */}
+          <BiometricGate />
         </LanguageProvider>
       </body>
     </html>

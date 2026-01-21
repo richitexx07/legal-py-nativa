@@ -11,10 +11,12 @@ import Button from "@/components/Button";
 
 export default function OpportunitiesPage() {
   const router = useRouter();
-  const [session, setSession] = useState(getSession());
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+  const [mounted, setMounted] = useState(false);
   const [cases, setCases] = useState<LegalCase[]>([]);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
@@ -137,6 +139,20 @@ export default function OpportunitiesPage() {
       setCases(availableCases);
     }
   }, [router]);
+
+  // Durante SSR o antes del mount, mostrar placeholder para evitar hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="mb-8">
+            <div className="h-10 w-64 bg-white/5 rounded-lg animate-pulse mb-2" />
+            <div className="h-5 w-96 bg-white/5 rounded-lg animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!session) {
     return null;
