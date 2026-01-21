@@ -3,7 +3,7 @@
 import Modal from "@/components/Modal";
 import { useLanguage } from "@/context/LanguageContext";
 
-export type ViewMode = "cliente" | "profesional";
+export type ViewMode = "cliente" | "profesional" | "estudiante";
 
 interface RoleModeModalProps {
   isOpen: boolean;
@@ -28,7 +28,8 @@ export default function RoleModeModal({ isOpen, onClose, currentMode, onSelectMo
           {t("roles.modal_subtitle") || "Elegí el modo para adaptar la interfaz (sin perder tus datos)."}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* MODO CLIENTE */}
           <button
             onClick={() => onSelectMode("cliente")}
             className={`group text-left rounded-3xl p-6 border transition-all ${
@@ -57,6 +58,7 @@ export default function RoleModeModal({ isOpen, onClose, currentMode, onSelectMo
             </div>
           </button>
 
+          {/* MODO PROFESIONAL */}
           <button
             onClick={() => onSelectMode("profesional")}
             className={`group text-left rounded-3xl p-6 border transition-all ${
@@ -81,6 +83,35 @@ export default function RoleModeModal({ isOpen, onClose, currentMode, onSelectMo
             <div className="mt-4 rounded-2xl bg-white/5 border border-white/10 p-4">
               <p className="text-xs text-white/60 leading-relaxed">
                 {t("roles.pro_features") || "Verás \"Panel de Oportunidades\", gestión, evaluación DPT y panel profesional."}
+              </p>
+            </div>
+          </button>
+
+          {/* MODO ESTUDIANTE */}
+          <button
+            onClick={() => onSelectMode("estudiante")}
+            className={`group text-left rounded-3xl p-6 border transition-all ${
+              currentMode === "estudiante"
+                ? "bg-emerald-500/10 border-emerald-400/40 shadow-xl"
+                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+            }`}
+            aria-label="Seleccionar modo estudiante"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-2xl font-extrabold text-white">🎓 {t("roles.student_title") || "MODO ESTUDIANTE"}</p>
+                <p className="mt-2 text-sm text-white/70">{t("roles.student_desc")}</p>
+              </div>
+              {currentMode === "estudiante" && (
+                <div className="h-8 w-8 rounded-2xl bg-emerald-400/20 border border-emerald-400/50 flex items-center justify-center">
+                  <span className="text-emerald-300 font-bold">✓</span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 rounded-2xl bg-white/5 border border-white/10 p-4">
+              <p className="text-xs text-white/60 leading-relaxed">
+                {t("student_panel.active_learning") || "Acceso rápido a cursos, especializaciones y pasantías."}
               </p>
             </div>
           </button>

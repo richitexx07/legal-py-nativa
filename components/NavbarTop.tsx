@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Button from "./Button";
 import { useLanguage } from "@/context/LanguageContext";
 import LanguageSelector from "./LanguageSelector";
@@ -22,6 +23,7 @@ export default function NavbarTop() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { t, language, setLanguage } = useLanguage();
+  const router = useRouter();
   const setIdiomaWithLog = (newIdioma: typeof language) => {
     // #region agent log
     fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
@@ -45,7 +47,7 @@ export default function NavbarTop() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedMode = localStorage.getItem("legal-py-view-mode") as ViewMode | null;
-      if (savedMode && (savedMode === "cliente" || savedMode === "profesional")) {
+      if (savedMode && (savedMode === "cliente" || savedMode === "profesional" || savedMode === "estudiante")) {
         setViewMode(savedMode);
       } else if (session?.user.role === "profesional") {
         setViewMode("profesional");
@@ -111,6 +113,7 @@ export default function NavbarTop() {
       }),
     }).catch(() => {});
     // #endregion
+    router.push("/panel");
   };
 
   // Cerrar menú de usuario al hacer click fuera

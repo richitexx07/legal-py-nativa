@@ -20,6 +20,7 @@ export default function PanelAdminPage() {
   const [activeTab, setActiveTab] = useState("gestiones");
   const [viewMode, setViewMode] = useState<ViewMode>("cliente");
   const [isModeModalOpen, setIsModeModalOpen] = useState(false);
+  const [reverifyRequired, setReverifyRequired] = useState(false);
   const [inscripciones, setInscripciones] = useState<InscripcionCurso[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionPasantia[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudCapacitacion[]>([]);
@@ -30,7 +31,7 @@ export default function PanelAdminPage() {
     // Cargar modo de visualización
     if (typeof window !== "undefined") {
       const savedMode = localStorage.getItem("legal-py-view-mode") as ViewMode | null;
-      if (savedMode && (savedMode === "cliente" || savedMode === "profesional")) {
+      if (savedMode && (savedMode === "cliente" || savedMode === "profesional" || savedMode === "estudiante")) {
         setViewMode(savedMode);
       } else if (session?.user.role === "profesional") {
         setViewMode("profesional");
@@ -94,9 +95,49 @@ export default function PanelAdminPage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const s = getSession();
+    const isVerified = !!s?.user.isIdentityVerified || (s?.user.kycTier ?? 0) >= 2;
+
+    const stored = localStorage.getItem("legal-py-reverify-required");
+    if (stored === "true") {
+      setReverifyRequired(!isVerified);
+    } else if (stored === "false") {
+      setReverifyRequired(false);
+    } else {
+      const today = new Date().toISOString().slice(0, 10);
+      const stamp = localStorage.getItem("legal-py-reverify-day");
+      if (stamp !== today) {
+        const should = Math.random() < 0.25 && !isVerified;
+        localStorage.setItem("legal-py-reverify-day", today);
+        localStorage.setItem("legal-py-reverify-required", should ? "true" : "false");
+        setReverifyRequired(should);
+      } else {
+        setReverifyRequired(false);
+      }
+    }
+
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run-panel-2",
+        hypothesisId: "H-REVERIFY",
+        location: "app/panel/page.tsx:reverifyInit",
+        message: "Reverify gating evaluated",
+        data: { isVerified, storedFlag: stored ?? null },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  }, []);
+
+  useEffect(() => {
     const handler = () => {
       const savedMode = localStorage.getItem("legal-py-view-mode") as ViewMode | null;
-      if (savedMode && (savedMode === "cliente" || savedMode === "profesional")) {
+      if (savedMode && (savedMode === "cliente" || savedMode === "profesional" || savedMode === "estudiante")) {
         setViewMode(savedMode);
       }
     };
@@ -180,15 +221,60 @@ export default function PanelAdminPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8 px-4">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Banner de Re-VERIFICACIÓN */}
+        {reverifyRequired && (
+          <div className="rounded-3xl border border-yellow-400/30 bg-yellow-400/10 p-5 backdrop-blur-xl">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="text-white">
+                <p className="font-extrabold">⚠️ Por seguridad, verifica tu identidad para seguir operando.</p>
+                <p className="text-sm text-white/70">
+                  Algunas acciones quedan bloqueadas hasta completar la validación biométrica.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="primary"
+                  className="rounded-2xl"
+                  onClick={() => {
+                    // #region agent log
+                    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        sessionId: "debug-session",
+                        runId: "run-panel-2",
+                        hypothesisId: "H-REVERIFY",
+                        location: "app/panel/page.tsx:reverifyCTA",
+                        message: "User clicked reverify CTA",
+                        data: {},
+                        timestamp: Date.now(),
+                      }),
+                    }).catch(() => {});
+                    // #endregion
+                    router.push("/profile?verify=1");
+                  }}
+                >
+                  Verificar ahora
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Header con modo de visualización */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight">
-              {viewMode === "profesional" ? t("dashboard.panel_title_pro") : t("dashboard.panel_title_client")}
+              {viewMode === "profesional"
+                ? t("dashboard.panel_title_pro")
+                : viewMode === "estudiante"
+                ? t("student_panel.active_learning")
+                : t("dashboard.panel_title_client")}
             </h1>
             <p className="text-lg text-white/70 max-w-2xl leading-relaxed">
               {viewMode === "profesional"
                 ? t("dashboard.panel_desc_pro")
+                : viewMode === "estudiante"
+                ? t("roles.student_desc")
                 : t("dashboard.panel_desc_client")}
             </p>
           </div>
@@ -221,31 +307,52 @@ export default function PanelAdminPage() {
           </button>
         </div>
 
-        {/* Tabs con diseño mejorado */}
-        <div className="flex flex-wrap gap-3 pb-2 border-b border-white/10">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
+        {/* DASHBOARD CLIENTE / PROFESIONAL */}
+        {viewMode !== "estudiante" && (
+          <div className="relative">
+            {reverifyRequired && (
+              <div className="absolute inset-0 z-20 rounded-3xl bg-black/35 backdrop-blur-[2px] flex items-center justify-center p-6">
+                <div className="max-w-lg rounded-3xl border border-yellow-400/30 bg-white/10 p-6 text-center">
+                  <p className="text-white font-extrabold mb-2">Acciones bloqueadas por seguridad</p>
+                  <p className="text-sm text-white/70 mb-4">Completa la validación biométrica para continuar.</p>
+                  <Button
+                    variant="primary"
+                    className="rounded-2xl"
+                    onClick={() => router.push("/profile?verify=1")}
+                  >
+                    Ir a Verificación
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <>
+            {/* Tabs con diseño mejorado */}
+            <div className="flex flex-wrap gap-3 pb-2 border-b border-white/10">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  disabled={reverifyRequired}
+                  className={`
                 relative px-6 py-3 rounded-2xl font-medium text-sm transition-all duration-300
                 ${activeTab === tab.id
                   ? "bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/20"
                   : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80 border border-transparent"}
               `}
-            >
-              <span className="mr-2">{tab.icon}</span>
-              {tab.label}
-              {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-[#C9A24D] rounded-full"></span>
-              )}
-            </button>
-          ))}
-        </div>
+                >
+                  <span className="mr-2">{tab.icon}</span>
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-[#C9A24D] rounded-full"></span>
+                  )}
+                </button>
+              ))}
+            </div>
 
-        {/* Contenido de Tabs con Glassmorphism */}
-        
-        {/* Mis Gestiones Activas / Panel Profesional */}
+            {/* Contenido de Tabs con Glassmorphism */}
+
+            {/* Mis Gestiones Activas / Panel Profesional */}
         {(activeTab === "gestiones" || activeTab === "mis-casos") && (
           <div className="space-y-6">
             {myCases.length === 0 ? (
@@ -374,7 +481,7 @@ export default function PanelAdminPage() {
             })
           )}
         </div>
-      )}
+          )}
 
       {/* Panel de Oportunidades (Modo Profesional) */}
       {activeTab === "oportunidades" && viewMode === "profesional" && (
@@ -391,6 +498,74 @@ export default function PanelAdminPage() {
                   💼 Ver Panel de Oportunidades
                 </Button>
               </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+            </>
+          </div>
+        )}
+
+      {/* DASHBOARD ESTUDIANTE */}
+      {viewMode === "estudiante" && (
+        <div className="space-y-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/cursos">
+              <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-6 shadow-2xl hover:border-emerald-400/60 hover:shadow-emerald-400/30 transition-all cursor-pointer">
+                <div className="text-3xl mb-4">📚</div>
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {t("student_panel.courses") || "Cursos y Capacitación"}
+                </h3>
+                <p className="text-sm text-white/70">
+                  Explora cursos, talleres y capacitaciones legales seleccionadas.
+                </p>
+              </div>
+            </Link>
+
+            <Link href="/especializaciones">
+              <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-6 shadow-2xl hover:border-emerald-400/60 hover:shadow-emerald-400/30 transition-all cursor-pointer">
+                <div className="text-3xl mb-4">🎓</div>
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {t("student_panel.specializations") || "Especializaciones"}
+                </h3>
+                <p className="text-sm text-white/70">
+                  Accede a rutas de especialización en áreas clave del derecho.
+                </p>
+              </div>
+            </Link>
+
+            <Link href="/pasantias">
+              <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-6 shadow-2xl hover:border-emerald-400/60 hover:shadow-emerald-400/30 transition-all cursor-pointer">
+                <div className="text-3xl mb-4">💼</div>
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  {t("student_panel.internships") || "Bolsa de Pasantías"}
+                </h3>
+                <p className="text-sm text-white/70">
+                  Descubre oportunidades de pasantías y primeras experiencias profesionales.
+                </p>
+              </div>
+            </Link>
+          </div>
+
+          {/* Estado de Aprendizaje */}
+          <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-4">{t("student_panel.active_learning")}</h3>
+            <p className="text-sm text-white/70 mb-4">
+              Este es un panel de demostración. Simulamos tu avance general en la ruta de aprendizaje.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm text-white/70">
+                <span>Carga horaria completada</span>
+                <span className="font-semibold text-emerald-300">65%</span>
+              </div>
+              <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full w-[65%] bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.6)] transition-all" />
+              </div>
+              <div className="flex items-center justify-between text-xs text-white/50 mt-1">
+                <span>3 cursos activos</span>
+                <span>1 pasantía en proceso</span>
+              </div>
             </div>
           </div>
         </div>

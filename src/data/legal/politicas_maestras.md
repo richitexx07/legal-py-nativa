@@ -32,8 +32,10 @@ Acceso, Rectificación, Supresión, Oposición, Portabilidad y Limitación. Pued
 * **Notificación de Brechas:** Nos comprometemos a notificar incidentes de seguridad en un plazo máximo de 72 horas.
 
 ### 3. Descargo de Responsabilidad (Disclaimer)
-* **Software "Tal Cual":** No garantizamos resultados específicos en procesos legales.
-* **Uso de IA:** Cualquier asistencia generada por IA es orientativa y no sustituye el criterio profesional.
+* **AUSENCIA DE GARANTÍA:** Se declara explícitamente que **NO EXISTE NINGUNA GARANTÍA**, ni explícita ni implícita, sobre los resultados de los servicios jurídicos contratados a través de la plataforma.
+* **Rol de Intermediario:** Legal PY es una plataforma de intermediación tecnológica. Los asistentes de IA (Justo y Victoria) funcionan exclusivamente como herramientas de filtrado y derivación (embudo), no como asesores legales *per se*.
+* **Verificación Documental:** Los profesionales están sujetos a verificación de documentos civiles y profesionales exigidos por ley. Sin embargo, la plataforma no garantiza la infalibilidad de dicha verificación.
+* **IA y Tecnología:** El uso de herramientas de IA no sustituye el criterio humano.
 
 ## 🟨 NIVEL 2: SEGURIDAD OPERATIVA Y BLINDAJE DE SERVICIOS
 *Reglas específicas para la gestión de casos, documentos y pagos.*

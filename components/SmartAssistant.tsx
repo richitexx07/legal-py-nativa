@@ -83,6 +83,7 @@ export default function SmartAssistant() {
   const [assistant, setAssistant] = useState<AssistantId>("victoria");
   const [input, setInput] = useState("");
   const [recommendedTopic, setRecommendedTopic] = useState<null | "cheques" | "penal" | "default">(null);
+  const [showPostCaseCTA, setShowPostCaseCTA] = useState(false);
 
   const { isSpeaking, isRecording, speak, startRecording, stopRecording } = useElevenLabs();
 
@@ -234,26 +235,106 @@ export default function SmartAssistant() {
 
   const generateAssistantResponse = (userText: string) => {
     const q = normalize(userText);
-    if (q.includes("cheque") && (q.includes("rebot") || q.includes("rechaz"))) {
-      setRecommendedTopic("cheques");
-      return (
-        "Si tu cheque fue rechazado (\"cheque rebotado\"), lo primero es conservar el cheque y el comprobante del rechazo. " +
-        "Luego, evaluá intimación de pago y la vía de cobro (según el banco, fechas y endosos). " +
-        "Si hay urgencia o riesgo de insolvencia, conviene actuar rápido con un abogado para elegir la estrategia correcta."
-      );
-    }
-    if (q.includes("penal") || q.includes("fiscalia") || q.includes("denuncia")) {
+    let classification: "penal" | "civil" | "laboral" | "otro" = "otro";
+
+    // Caso específico: "me robaron" => Penal + CTA Publicar Caso
+    if (q.includes("me robaron") || (q.includes("robo") && q.includes("asalto"))) {
+      classification = "penal";
       setRecommendedTopic("penal");
+      setShowPostCaseCTA(true);
+      // #region agent log
+      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: "debug-session",
+          runId: "run4",
+          hypothesisId: "H-SA-FUNNEL",
+          location: "components/SmartAssistant.tsx:generateAssistantResponse",
+          message: "Funnel classified robbery as penal",
+          data: { inputLen: userText.length, classification },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       return (
-        "Si tu situación es penal, evitá exponer detalles sensibles por chat. " +
-        "Podemos avanzar con una orientación general y, si corresponde, derivarte a un penalista verificado. " +
-        "Decime tu ciudad y si se trata de denuncia, citación o detención."
+        "Entiendo, es un caso Penal. No voy a darte leyes específicas por este canal, pero puedo ayudarte con el siguiente paso. " +
+        "Te recomiendo publicar el caso ahora para derivarte a un penalista verificado mediante el Motor DPT."
       );
     }
+
+    if (q.includes("cheque") && (q.includes("rebot") || q.includes("rechaz"))) {
+      classification = "civil";
+      setRecommendedTopic("cheques");
+      setShowPostCaseCTA(true);
+      // #region agent log
+      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: "debug-session",
+          runId: "run4",
+          hypothesisId: "H-SA-FUNNEL",
+          location: "components/SmartAssistant.tsx:generateAssistantResponse",
+          message: "Funnel classified cheque case",
+          data: { inputLen: userText.length, classification },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      return (
+        "Parece un problema de cobro de cheques (área Civil/Comercial). No voy a citar leyes específicas aquí, " +
+        "pero sí puedo ayudarte a que un profesional lo tome rápido. Publicá el caso y el Motor DPT lo derivará a especialistas en cobro de cheques."
+      );
+    }
+
+    if (q.includes("penal") || q.includes("fiscalia") || q.includes("denuncia")) {
+      classification = "penal";
+      setRecommendedTopic("penal");
+      setShowPostCaseCTA(true);
+      // #region agent log
+      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: "debug-session",
+          runId: "run4",
+          hypothesisId: "H-SA-FUNNEL",
+          location: "components/SmartAssistant.tsx:generateAssistantResponse",
+          message: "Funnel classified generic penal case",
+          data: { inputLen: userText.length, classification },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
+      return (
+        "Identifico que tu situación entra en el área Penal. Este canal no reemplaza una defensa formal, " +
+        "pero sí puede ayudarte a dar el siguiente paso. Publicá el caso y el Motor DPT lo enviará a penalistas verificados."
+      );
+    }
+
+    classification = "otro";
     setRecommendedTopic("default");
+    setShowPostCaseCTA(true);
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run4",
+        hypothesisId: "H-SA-FUNNEL",
+        location: "components/SmartAssistant.tsx:generateAssistantResponse",
+        message: "Funnel generic classification",
+        data: { inputLen: userText.length, classification },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
     return (
-      "Puedo ayudarte a ordenar tu caso y recomendarte profesionales verificados. " +
-      "Contame en 1 frase: materia (penal/civil/laboral) y tu ciudad."
+      "Voy a actuar como IA de filtrado. No responderé con leyes específicas, pero sí voy a clasificar tu problema " +
+      "y recomendarte publicar un caso para que el Motor DPT lo asigne al perfil correcto. Contame en 1 frase el tipo de problema (civil/penal/laboral) y tu ciudad."
     );
   };
 
@@ -300,7 +381,7 @@ export default function SmartAssistant() {
             setIsOpen(true);
             setIsMinimized(false);
           }}
-          className="fixed bottom-24 right-4 z-40 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
+          className="fixed bottom-24 right-6 z-40 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
           aria-label="Abrir asistente inteligente"
         >
           <div className="h-10 w-10 rounded-2xl bg-black/10 flex items-center justify-center">
@@ -328,7 +409,7 @@ export default function SmartAssistant() {
           {isMinimized ? (
             <button
               onClick={restoreWidget}
-              className="absolute bottom-24 right-4 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
+              className="absolute bottom-24 right-6 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/30 transition-all hover:scale-[1.02] flex items-center gap-3"
               aria-label="Restaurar asistente"
             >
               <div className="h-10 w-10 rounded-2xl bg-black/10 flex items-center justify-center">
@@ -342,10 +423,10 @@ export default function SmartAssistant() {
             </button>
           ) : (
             <div
-              className="absolute bottom-24 right-4 w-[360px] max-w-[92vw]"
+              className="absolute bottom-24 right-6 w-[360px] max-w-[92vw]"
               onClick={(e) => e.stopPropagation()}
             >
-          <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/5 backdrop-blur-2xl shadow-2xl">
+          <div className="relative overflow-hidden rounded-3xl border border-[#C9A24D]/60 bg-white/10 backdrop-blur-2xl shadow-[0_0_35px_rgba(201,162,77,0.45)]">
             {/* Header */}
             <div className={`p-5 border-b border-white/10 bg-gradient-to-r ${assistantMeta.accent}`}>
               <div className="flex items-start justify-between gap-3">
@@ -373,6 +454,14 @@ export default function SmartAssistant() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
+              </div>
+
+              {/* Disclaimer fijo en cabecera */}
+              <div className="mt-3 rounded-2xl bg-yellow-400/15 border border-yellow-300/60 px-3 py-2 flex items-center gap-2">
+                <span className="text-xs">⚠️</span>
+                <p className="text-[11px] text-yellow-100 font-semibold leading-snug">
+                  {t("ai_assistant.disclaimer") || "⚠️ IA de Filtrado - No es consejo legal"}
+                </p>
               </div>
 
               {/* Acciones: Minimizar */}
@@ -473,6 +562,38 @@ export default function SmartAssistant() {
                     ))}
                   </div>
                 </Card>
+              )}
+
+              {/* CTA de embudo: Publicar Caso */}
+              {showPostCaseCTA && (
+                <div className="mt-4">
+                  <Button
+                    variant="primary"
+                    className="w-full rounded-2xl bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black font-semibold shadow-lg hover:shadow-[#C9A24D]/40"
+                    onClick={() => {
+                      // #region agent log
+                      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          sessionId: "debug-session",
+                          runId: "run4",
+                          hypothesisId: "H-SA-FUNNEL-CTA",
+                          location: "components/SmartAssistant.tsx:ctaPostCase",
+                          message: "User clicked Publish Case from funnel CTA",
+                          data: { userRole: role, topic: recommendedTopic },
+                          timestamp: Date.now(),
+                        }),
+                      }).catch(() => {});
+                      // #endregion
+                      if (typeof window !== "undefined") {
+                        window.location.href = "/post-case";
+                      }
+                    }}
+                  >
+                    ⚡ Publicar Caso
+                  </Button>
+                </div>
               )}
             </div>
 

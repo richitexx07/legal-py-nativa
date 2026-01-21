@@ -64,6 +64,13 @@ export interface ClientProfile {
   firstName: string;
   lastName: string;
   phone?: string;
+  bio?: string;
+  socials?: {
+    website?: string;
+    instagram?: string;
+    linkedin?: string;
+    x?: string;
+  };
   documentType?: "cedula" | "pasaporte" | "dni";
   documentNumber?: string;
   dateOfBirth?: string; // ISO 8601 date string
@@ -106,6 +113,12 @@ export interface ProfessionalProfile {
   documentNumber?: string;
   professionalLicense?: string; // Número de matrícula
   bio?: string;
+  socials?: {
+    website?: string;
+    instagram?: string;
+    linkedin?: string;
+    x?: string;
+  };
   languages: string[]; // Idiomas que maneja
   avatar?: string;
   verificationStatus: VerificationStatus;
@@ -127,6 +140,13 @@ export interface StudentProfile {
   career?: string; // Carrera que estudia
   yearOfStudy?: number; // Año de estudio (1-5)
   phone?: string;
+  bio?: string;
+  socials?: {
+    website?: string;
+    instagram?: string;
+    linkedin?: string;
+    x?: string;
+  };
   dateOfBirth?: string; // ISO 8601 date string
   address?: {
     street?: string;

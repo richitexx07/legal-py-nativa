@@ -174,7 +174,7 @@ export default function Home() {
       <section className="space-y-8 py-12">
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-            {t("common.how_it_works") || "Cómo Funciona"}
+            {t("how_it_works.title") || "Cómo Funciona"}
           </h2>
           <p className="text-white/70 text-lg max-w-2xl mx-auto">
             {t("common.process_steps") || "Proceso simple y seguro en 3 pasos"}
@@ -196,9 +196,9 @@ export default function Home() {
               <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#C9A24D] text-black font-bold text-sm flex items-center justify-center">
                 1
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{t("hero.step1") || "Publicas tu Caso"}</h3>
+              <h3 className="text-xl font-bold text-white mb-3">{t("how_it_works.step1_title") || "Publicas tu Caso"}</h3>
               <p className="text-white/70 text-sm leading-relaxed">
-                {t("hero.step1_desc") || "Describe tu situación legal de forma segura y confidencial. Nuestro sistema protege tu información con encriptación de nivel bancario."}
+                {t("how_it_works.step1_desc") || "Describe tu situación de forma segura. Encriptación nivel bancario."}
               </p>
             </Card>
           </div>
@@ -217,9 +217,9 @@ export default function Home() {
               <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-blue-500 text-white font-bold text-sm flex items-center justify-center">
                 2
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{t("hero.step2") || "Nuestro Motor DPT Filtra"}</h3>
+              <h3 className="text-xl font-bold text-white mb-3">{t("how_it_works.step2_title") || "Nuestro Motor DPT Filtra"}</h3>
               <p className="text-white/70 text-sm leading-relaxed">
-                {t("hero.step2_desc") || "Nuestro algoritmo de Derivación Priorizada por Perfil Técnico analiza complejidad, especialidad y experiencia para encontrar la mejor coincidencia."}
+                {t("how_it_works.step2_desc") || "Nuestro algoritmo de Derivación Priorizada por Perfil Técnico analiza complejidad y especialidad."}
               </p>
             </Card>
           </div>
@@ -238,9 +238,9 @@ export default function Home() {
               <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-green-500 text-white font-bold text-sm flex items-center justify-center">
                 3
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{t("hero.step3") || "Recibes Solución Experta"}</h3>
+              <h3 className="text-xl font-bold text-white mb-3">{t("how_it_works.step3_title") || "Recibes Solución Experta"}</h3>
               <p className="text-white/70 text-sm leading-relaxed">
-                {t("hero.step3_desc") || "Te conectamos directamente con profesionales verificados y especializados. Sin intermediarios, sin comisiones ocultas."}
+                {t("how_it_works.step3_desc") || "Conexión directa con profesionales verificados. Sin comisiones ocultas."}
               </p>
             </Card>
           </div>
