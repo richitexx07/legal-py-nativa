@@ -26,7 +26,7 @@ export default function InformePage() {
     // Generar PDF del informe ajustado a Paraguay
     const contenido = `
 INFORME EJECUTIVO LEGAL PY - VALUACIÓN PARAGUAYA
-Versión 2.2 - Ajustado al Mercado Paraguayo
+Versión 2.3 - Ajustado al Mercado Paraguayo con Costos Operativos Reales
 Fecha: ${new Date().toLocaleDateString('es-PY')}
 
 ===============================================================================
@@ -57,18 +57,67 @@ Justificación:
 ${valuationParaguay.valuacionFinal.justificacion}
 
 ===============================================================================
-2. ROI PARA INVERSORES
+2. COSTOS OPERATIVOS REALES
 ===============================================================================
 
-Inversor Tradicional:
+Desglose de costos necesarios para operación y escalabilidad:
+
+Marketing y Publicidad (Empresa Tercerizada):
+- Costo mensual: ${formatGuaranies(valuationParaguay.costosOperativos.marketingMensual)}
+- Costo anual: ${formatGuaranies(valuationParaguay.costosOperativos.marketingAnual)}
+- Incluye: Gestión de redes sociales, publicidad digital, generación de leads,
+  tráfico frío, ventas, escalabilidad y crecimiento orgánico
+
+Desarrollo (Equipo de Desarrolladores):
+- Costo mensual: ${formatGuaranies(valuationParaguay.costosOperativos.desarrolloMensual)}
+- Costo primeros 6 meses: ${formatGuaranies(valuationParaguay.costosOperativos.desarrollo6Meses)}
+- Incluye: Salarios de desarrolladores, mantenimiento de aplicaciones,
+  nuevas funcionalidades, soporte técnico
+
+Operaciones y Logística:
+- Costo mensual: ${formatGuaranies(valuationParaguay.costosOperativos.operacionesMensual)}
+- Costo anual: ${formatGuaranies(valuationParaguay.costosOperativos.operacionesAnual)}
+- Incluye: Infraestructura, logística, gestión operativa, cumplimiento
+
+Software y Hardware:
+- Costo inicial: ${formatGuaranies(valuationParaguay.costosOperativos.softwareHardware)}
+- Incluye: Licencias de software, servidores, equipos, herramientas
+
+Mano de Obra General:
+- Costo mensual: ${formatGuaranies(valuationParaguay.costosOperativos.manoObraMensual)}
+- Costo anual: ${formatGuaranies(valuationParaguay.costosOperativos.manoObraAnual)}
+- Incluye: Personal de soporte, administración, atención al cliente
+
+TOTAL COSTOS PRIMER AÑO: ${formatGuaranies(valuationParaguay.costosOperativos.totalPrimerAno)}
+
+===============================================================================
+3. INVERSIÓN NECESARIA Y ROI
+===============================================================================
+
+Inversión Mínima (6 meses operación):
+- Monto: ${formatGuaranies(valuationParaguay.inversionRealista.minimo6Meses)}
+- Permite: Operación básica durante 6 meses
+
+Inversión Recomendada (12 meses operación completa):
+- Monto: ${formatGuaranies(valuationParaguay.inversionRealista.recomendada12Meses)}
+- Permite: Operación completa con buffer de seguridad
+- Incluye: Marketing continuo, desarrollo, operaciones completas
+
+Inversión Óptima (18 meses con escalabilidad):
+- Monto: ${formatGuaranies(valuationParaguay.inversionRealista.optima18Meses)}
+- Permite: Escalabilidad agresiva y expansión de mercado
+
+Inversor Tradicional (Recomendada 12 meses):
 - Inversión inicial: ${formatGuaranies(valuationParaguay.roiInversor.inversionInicial)}
 - Valor esperado (3 años): ${formatGuaranies(valuationParaguay.roiInversor.valorEsperado3Anos.min)} - ${formatGuaranies(valuationParaguay.roiInversor.valorEsperado3Anos.max)}
 - ROI: ${valuationParaguay.roiInversor.porcentaje.min}% - ${valuationParaguay.roiInversor.porcentaje.max}%
+- Tiempo de recuperación: 18-24 meses
 
 Inversor GEP (Gold Enterprise Partner):
 - Inversión inicial: ${formatGuaranies(valuationParaguay.roiGep.inversionGep)}
 - Valor esperado (3 años): ${formatGuaranies(valuationParaguay.roiGep.valorEsperado3Anos.min)} - ${formatGuaranies(valuationParaguay.roiGep.valorEsperado3Anos.max)}
 - ROI: ${valuationParaguay.roiGep.porcentaje.min}% - ${valuationParaguay.roiGep.porcentaje.max}%
+- Ventajas: Acceso prioritario a casos de alto valor, participación estratégica
 
 ===============================================================================
 3. ¿POR QUÉ SER INVERSOR GEP?
@@ -213,12 +262,16 @@ para inversores y socios estratégicos.
                       <span className="text-white/60 text-xs ml-2">($315K - $525K USD)</span>
                     </li>
                     <li>
-                      <strong className="text-[#C9A24D]">ROI Inversor:</strong> 315% - 420%
-                      <span className="text-white/60 text-xs ml-2">(ajustado mercado PY)</span>
+                      <strong className="text-[#C9A24D]">ROI Inversor:</strong> {valuationParaguay.roiInversor.porcentaje.min}% - {valuationParaguay.roiInversor.porcentaje.max}%
+                      <span className="text-white/60 text-xs ml-2">(ajustado con costos reales)</span>
                     </li>
                     <li>
-                      <strong className="text-[#C9A24D]">ROI GEP:</strong> 28,800% - 48,000%
-                      <span className="text-white/60 text-xs ml-2">(ajustado mercado PY)</span>
+                      <strong className="text-[#C9A24D]">ROI GEP:</strong> {valuationParaguay.roiGep.porcentaje.min}% - {valuationParaguay.roiGep.porcentaje.max}%
+                      <span className="text-white/60 text-xs ml-2">(ajustado con costos reales)</span>
+                    </li>
+                    <li>
+                      <strong className="text-[#C9A24D]">Inversión necesaria:</strong> {formatGuaranies(valuationParaguay.inversionRealista.recomendada12Meses)}
+                      <span className="text-white/60 text-xs ml-2">(12 meses operación completa)</span>
                     </li>
                     <li>
                       <strong className="text-[#C9A24D]">Usuarios Año 1:</strong> 2,500 activos
@@ -266,6 +319,124 @@ para inversores y socios estratégicos.
                 >
                   📥 Descargar Informe Ejecutivo Legal PY 2026.pdf
                 </Link>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Costos Operativos Reales */}
+        <Card className="p-6 mb-6 border-2 border-red-500/30 bg-gradient-to-br from-red-500/10 to-orange-500/5">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-red-400 mb-2">
+                💼 Costos Operativos Reales - Desglose Completo
+              </h2>
+              <p className="text-sm text-white/70 mb-4">
+                Inversión necesaria para operación completa durante 12 meses, incluyendo todos los costos operativos y de escalabilidad
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Marketing */}
+              <div className="p-5 rounded-lg bg-white/10 border border-red-400/30">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  📱 Marketing y Publicidad
+                </h3>
+                <div className="space-y-2 text-sm text-white/90">
+                  <p><strong className="text-red-400">Mensual:</strong> {formatGuaranies(valuationParaguay.costosOperativos.marketingMensual)}</p>
+                  <p><strong className="text-red-400">Anual:</strong> {formatGuaranies(valuationParaguay.costosOperativos.marketingAnual)}</p>
+                  <p className="text-xs text-white/70 mt-2">
+                    Incluye: Empresa tercerizada encargada de redes sociales, publicidad digital, generación de leads, tráfico frío, ventas y escalabilidad
+                  </p>
+                </div>
+              </div>
+
+              {/* Desarrollo */}
+              <div className="p-5 rounded-lg bg-white/10 border border-blue-400/30">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  💻 Desarrollo de Aplicaciones
+                </h3>
+                <div className="space-y-2 text-sm text-white/90">
+                  <p><strong className="text-blue-400">Mensual:</strong> {formatGuaranies(valuationParaguay.costosOperativos.desarrolloMensual)}</p>
+                  <p><strong className="text-blue-400">6 meses:</strong> {formatGuaranies(valuationParaguay.costosOperativos.desarrollo6Meses)}</p>
+                  <p className="text-xs text-white/70 mt-2">
+                    Incluye: Honorarios de desarrolladores, mantenimiento de aplicaciones, nuevas funcionalidades, soporte técnico
+                  </p>
+                </div>
+              </div>
+
+              {/* Operaciones */}
+              <div className="p-5 rounded-lg bg-white/10 border border-green-400/30">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  🏢 Operaciones y Logística
+                </h3>
+                <div className="space-y-2 text-sm text-white/90">
+                  <p><strong className="text-green-400">Mensual:</strong> {formatGuaranies(valuationParaguay.costosOperativos.operacionesMensual)}</p>
+                  <p><strong className="text-green-400">Anual:</strong> {formatGuaranies(valuationParaguay.costosOperativos.operacionesAnual)}</p>
+                  <p className="text-xs text-white/70 mt-2">
+                    Incluye: Infraestructura, logística, gestión operativa, cumplimiento normativo
+                  </p>
+                </div>
+              </div>
+
+              {/* Software y Hardware */}
+              <div className="p-5 rounded-lg bg-white/10 border border-purple-400/30">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  🖥️ Software y Hardware
+                </h3>
+                <div className="space-y-2 text-sm text-white/90">
+                  <p><strong className="text-purple-400">Inicial:</strong> {formatGuaranies(valuationParaguay.costosOperativos.softwareHardware)}</p>
+                  <p className="text-xs text-white/70 mt-2">
+                    Incluye: Licencias de software, servidores, equipos, herramientas de desarrollo, mantenimiento
+                  </p>
+                </div>
+              </div>
+
+              {/* Mano de Obra */}
+              <div className="p-5 rounded-lg bg-white/10 border border-yellow-400/30 md:col-span-2">
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                  👥 Mano de Obra General
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2 text-sm text-white/90">
+                    <p><strong className="text-yellow-400">Mensual:</strong> {formatGuaranies(valuationParaguay.costosOperativos.manoObraMensual)}</p>
+                    <p><strong className="text-yellow-400">Anual:</strong> {formatGuaranies(valuationParaguay.costosOperativos.manoObraAnual)}</p>
+                  </div>
+                  <div className="text-xs text-white/70">
+                    Incluye: Personal de soporte, administración, atención al cliente, gestión de casos, recursos humanos
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Total y Opciones de Inversión */}
+            <div className="mt-6 p-6 rounded-lg bg-[#0E1B2A]/80 border-2 border-[#C9A24D]/50">
+              <h3 className="text-xl font-bold text-white mb-4">📊 Total Costos Operativos y Opciones de Inversión</h3>
+              <div className="grid md:grid-cols-3 gap-4 mb-4">
+                <div className="p-4 rounded-lg bg-white/5 border border-white/20">
+                  <h4 className="font-semibold text-white mb-2 text-sm">Mínimo (6 meses)</h4>
+                  <p className="text-2xl font-bold text-orange-400">{formatGuaranies(valuationParaguay.inversionRealista.minimo6Meses)}</p>
+                  <p className="text-xs text-white/60 mt-1">Operación básica</p>
+                </div>
+                <div className="p-4 rounded-lg bg-[#C9A24D]/20 border-2 border-[#C9A24D]/50">
+                  <h4 className="font-semibold text-white mb-2 text-sm">✅ Recomendada (12 meses)</h4>
+                  <p className="text-2xl font-bold text-[#C9A24D]">{formatGuaranies(valuationParaguay.inversionRealista.recomendada12Meses)}</p>
+                  <p className="text-xs text-white/60 mt-1">Operación completa + buffer</p>
+                </div>
+                <div className="p-4 rounded-lg bg-white/5 border border-white/20">
+                  <h4 className="font-semibold text-white mb-2 text-sm">Óptima (18 meses)</h4>
+                  <p className="text-2xl font-bold text-green-400">{formatGuaranies(valuationParaguay.inversionRealista.optima18Meses)}</p>
+                  <p className="text-xs text-white/60 mt-1">Escalabilidad agresiva</p>
+                </div>
+              </div>
+              <div className="p-4 rounded-lg bg-red-500/20 border border-red-500/40">
+                <p className="text-sm text-white/90">
+                  <strong className="text-white">Total Costos Primer Año:</strong> {formatGuaranies(valuationParaguay.costosOperativos.totalPrimerAno)}
+                </p>
+                <p className="text-xs text-white/70 mt-2">
+                  Esta cifra incluye todos los costos operativos necesarios para mantener la plataforma funcionando durante 12 meses completos, 
+                  incluyendo marketing continuo, desarrollo activo, operaciones y mano de obra.
+                </p>
               </div>
             </div>
           </div>
@@ -387,21 +558,21 @@ para inversores y socios estratégicos.
             {/* ROI Ajustado */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                <h4 className="font-semibold text-white mb-3">📈 ROI Inversor (Ajustado PY)</h4>
+                <h4 className="font-semibold text-white mb-3">📈 ROI Inversor (Con Costos Reales)</h4>
                 <div className="space-y-2 text-sm">
-                  <p className="text-white/80">Inversión inicial: <strong className="text-white">G. 750.000.000</strong></p>
-                  <p className="text-white/80">Valor esperado (3 años): <strong className="text-white">G. 2.362.500.000 - G. 3.150.000.000</strong></p>
-                  <p className="text-2xl font-bold text-[#C9A24D] pt-2">315% - 420%</p>
-                  <p className="text-xs text-white/60">vs. 472%-630% en mercado internacional (ajustado por riesgo PY)</p>
+                  <p className="text-white/80">Inversión inicial: <strong className="text-white">{formatGuaranies(valuationParaguay.roiInversor.inversionInicial)}</strong></p>
+                  <p className="text-white/80">Valor esperado (3 años): <strong className="text-white">{formatGuaranies(valuationParaguay.roiInversor.valorEsperado3Anos.min)} - {formatGuaranies(valuationParaguay.roiInversor.valorEsperado3Anos.max)}</strong></p>
+                  <p className="text-2xl font-bold text-[#C9A24D] pt-2">{valuationParaguay.roiInversor.porcentaje.min}% - {valuationParaguay.roiInversor.porcentaje.max}%</p>
+                  <p className="text-xs text-white/60">ROI ajustado considerando inversión real necesaria para operación completa</p>
                 </div>
               </div>
               <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                <h4 className="font-semibold text-white mb-3">👑 ROI GEP (Ajustado PY)</h4>
+                <h4 className="font-semibold text-white mb-3">👑 ROI GEP (Con Costos Reales)</h4>
                 <div className="space-y-2 text-sm">
-                  <p className="text-white/80">Inversión GEP: <strong className="text-white">G. 10.000.000</strong></p>
-                  <p className="text-white/80">Valor esperado (3 años): <strong className="text-white">G. 2.880.000.000 - G. 4.800.000.000</strong></p>
-                  <p className="text-2xl font-bold text-[#C9A24D] pt-2">28,800% - 48,000%</p>
-                  <p className="text-xs text-white/60">vs. 43,200%-72,000% en mercado internacional</p>
+                  <p className="text-white/80">Inversión GEP: <strong className="text-white">{formatGuaranies(valuationParaguay.roiGep.inversionGep)}</strong></p>
+                  <p className="text-white/80">Valor esperado (3 años): <strong className="text-white">{formatGuaranies(valuationParaguay.roiGep.valorEsperado3Anos.min)} - {formatGuaranies(valuationParaguay.roiGep.valorEsperado3Anos.max)}</strong></p>
+                  <p className="text-2xl font-bold text-[#C9A24D] pt-2">{valuationParaguay.roiGep.porcentaje.min}% - {valuationParaguay.roiGep.porcentaje.max}%</p>
+                  <p className="text-xs text-white/60">Participación estratégica con inversión ajustada a costos operativos reales</p>
                 </div>
               </div>
             </div>
@@ -554,10 +725,11 @@ para inversores y socios estratégicos.
                     <p className="text-sm text-white/90 leading-relaxed mb-3">
                       Con una inversión de solo <strong className="text-[#C9A24D]">{formatGuaranies(valuationParaguay.roiGep.inversionGep)}</strong>, 
                       un inversor GEP puede obtener retornos de <strong className="text-[#C9A24D]">{valuationParaguay.roiGep.porcentaje.min}% - {valuationParaguay.roiGep.porcentaje.max}%</strong> en 3 años. 
-                      Esto representa multiplicar la inversión inicial entre <strong>288x y 480x</strong>.
+                      Esto representa multiplicar la inversión inicial entre <strong>{Math.round((valuationParaguay.roiGep.valorEsperado3Anos.min / valuationParaguay.roiGep.inversionGep) / 1000)}x y {Math.round((valuationParaguay.roiGep.valorEsperado3Anos.max / valuationParaguay.roiGep.inversionGep) / 1000)}x</strong>.
                     </p>
                     <p className="text-xs text-white/70 italic">
-                      Comparación: Un inversor tradicional necesita G. 750M para obtener 315%-420%. Un GEP con solo G. 10M obtiene 28,800%-48,000%.
+                      Comparación: Un inversor tradicional necesita {formatGuaranies(valuationParaguay.roiInversor.inversionInicial)} para obtener {valuationParaguay.roiInversor.porcentaje.min}%-{valuationParaguay.roiInversor.porcentaje.max}%. 
+                      Un GEP con {formatGuaranies(valuationParaguay.roiGep.inversionGep)} obtiene {valuationParaguay.roiGep.porcentaje.min}%-{valuationParaguay.roiGep.porcentaje.max}%.
                     </p>
                   </div>
                 </div>
@@ -642,9 +814,10 @@ para inversores y socios estratégicos.
                   <div>
                     <h3 className="text-xl font-bold text-white mb-2">7. Alineación con Perfil de Inversor Paraguayo</h3>
                     <p className="text-sm text-white/90 leading-relaxed mb-3">
-                      El modelo GEP está diseñado específicamente para inversores paraguayos: <strong className="text-[#C9A24D]">mínimo desembolso inicial</strong> 
-                      ({formatGuaranies(valuationParaguay.roiGep.inversionGep)}), retornos proyectados en <strong>3 años</strong> 
-                      (alineado con expectativas de Family Offices locales), y modelo de negocio <strong>tangible</strong> con ingresos recurrentes demostrables.
+                      El modelo GEP está diseñado específicamente para inversores paraguayos: <strong className="text-[#C9A24D]">desembolso inicial accesible</strong> 
+                      ({formatGuaranies(valuationParaguay.roiGep.inversionGep)} - {Math.round(valuationParaguay.roiGep.inversionGep / valuationParaguay.roiInversor.inversionInicial * 100)}% del inversor tradicional), 
+                      retornos proyectados en <strong>3 años</strong> (alineado con expectativas de Family Offices locales), y modelo de negocio <strong>tangible</strong> 
+                      con ingresos recurrentes demostrables.
                     </p>
                     <p className="text-xs text-white/70 italic">
                       Adaptado a la realidad local: Inversores paraguayos prefieren modelos con retorno claro y horizonte temporal definido.
@@ -689,8 +862,8 @@ para inversores y socios estratégicos.
                 <div className="p-5 rounded-lg bg-[#C9A24D]/20 border-2 border-[#C9A24D]/50">
                   <h4 className="font-bold text-lg text-white mb-4">👑 Inversor GEP</h4>
                   <ul className="space-y-2 text-sm text-white/90">
-                    <li>• <strong>Inversión:</strong> {formatGuaranies(valuationParaguay.roiGep.inversionGep)} <span className="text-[#C9A24D]">(75x menor)</span></li>
-                    <li>• <strong>ROI esperado:</strong> {valuationParaguay.roiGep.porcentaje.min}% - {valuationParaguay.roiGep.porcentaje.max}% <span className="text-[#C9A24D]">(91x mayor ROI %)</span></li>
+                    <li>• <strong>Inversión:</strong> {formatGuaranies(valuationParaguay.roiGep.inversionGep)} <span className="text-[#C9A24D]">({Math.round(valuationParaguay.roiInversor.inversionInicial / valuationParaguay.roiGep.inversionGep)}x menor)</span></li>
+                    <li>• <strong>ROI esperado:</strong> {valuationParaguay.roiGep.porcentaje.min}% - {valuationParaguay.roiGep.porcentaje.max}% <span className="text-[#C9A24D]">({Math.round(valuationParaguay.roiGep.porcentaje.min / valuationParaguay.roiInversor.porcentaje.max)}x mayor ROI %)</span></li>
                     <li>• <strong>Acceso:</strong> Prioridad exclusiva 24-48h en casos de alto valor</li>
                     <li>• <strong>Tiempo retorno:</strong> 3 años</li>
                     <li>• <strong>Ventajas adicionales:</strong> Prioridad en evaluación, acceso casos internacionales, construcción de marca</li>
@@ -700,8 +873,9 @@ para inversores y socios estratégicos.
               <div className="mt-6 p-4 rounded-lg bg-[#C9A24D]/30 border border-[#C9A24D]/50">
                 <p className="text-sm text-white/90 text-center">
                   <strong className="text-white">Conclusión:</strong> El modelo GEP ofrece <strong className="text-[#C9A24D]">mayor eficiencia de capital</strong> 
-                  con una inversión 75 veces menor pero un ROI porcentual 91 veces superior, además de ventajas estratégicas exclusivas 
-                  que no están disponibles para inversores tradicionales.
+                  con una inversión {Math.round(valuationParaguay.roiInversor.inversionInicial / valuationParaguay.roiGep.inversionGep)} veces menor 
+                  pero un ROI porcentual {Math.round(valuationParaguay.roiGep.porcentaje.min / valuationParaguay.roiInversor.porcentaje.max)} veces superior, 
+                  además de ventajas estratégicas exclusivas que no están disponibles para inversores tradicionales.
                 </p>
               </div>
             </div>

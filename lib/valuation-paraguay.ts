@@ -38,6 +38,27 @@ export interface ValuationParaguay {
     justificacion: string;
   };
   
+  // Costos operativos reales
+  costosOperativos: {
+    marketingMensual: number;
+    marketingAnual: number;
+    desarrolloMensual: number;
+    desarrollo6Meses: number;
+    operacionesMensual: number;
+    operacionesAnual: number;
+    softwareHardware: number;
+    manoObraMensual: number;
+    manoObraAnual: number;
+    totalPrimerAno: number;
+  };
+  
+  // Inversión realista necesaria
+  inversionRealista: {
+    minimo6Meses: number;
+    recomendada12Meses: number;
+    optima18Meses: number;
+  };
+  
   // ROI Inversor
   roiInversor: {
     inversionInicial: number; // guaraníes
@@ -102,27 +123,66 @@ export const valuationParaguay: ValuationParaguay = {
     el perfil de riesgo país y las expectativas de inversores locales (Ángeles, Family Offices, Fondos locales).`,
   },
   
+  // Costos operativos reales de la startup
+  costosOperativos: {
+    // Marketing/Publicidad (empresa tercerizada)
+    marketingMensual: 6000000, // G. 6.000.000/mes
+    marketingAnual: 6000000 * 12, // G. 72.000.000/año
+    
+    // Desarrollo (desarrolladores)
+    desarrolloMensual: 20000000, // G. 20.000.000/mes (equipo de 2-3 devs)
+    desarrollo6Meses: 20000000 * 6, // G. 120.000.000 (primeros 6 meses críticos)
+    
+    // Operaciones y logística
+    operacionesMensual: 8000000, // G. 8.000.000/mes
+    operacionesAnual: 8000000 * 12, // G. 96.000.000/año
+    
+    // Software y hardware
+    softwareHardware: 25000000, // G. 25.000.000 inicial + mantenimiento
+    
+    // Mano de obra general (soporte, administración, etc.)
+    manoObraMensual: 12000000, // G. 12.000.000/mes
+    manoObraAnual: 12000000 * 12, // G. 144.000.000/año
+    
+    // Total primer año (operaciones completas)
+    totalPrimerAno: (6000000 * 12) + (20000000 * 6) + (8000000 * 12) + 25000000 + (12000000 * 12),
+  },
+  
+  // Inversión realista necesaria para operar 12 meses y escalar
+  inversionRealista: {
+    // Inversión mínima para 6 meses de operación
+    minimo6Meses: (6000000 * 6) + (20000000 * 6) + (8000000 * 6) + 25000000 + (12000000 * 6),
+    
+    // Inversión recomendada para 12 meses (operaciones completas + buffer)
+    recomendada12Meses: (6000000 * 12) + (20000000 * 6) + (8000000 * 12) + 25000000 + (12000000 * 12) + 50000000, // +50M buffer
+    
+    // Inversión óptima para escalar (18 meses)
+    optima18Meses: (6000000 * 18) + (20000000 * 9) + (8000000 * 18) + 30000000 + (12000000 * 18) + 80000000, // +80M para escalabilidad
+  },
+  
   roiInversor: {
-    inversionInicial: 750000000, // G. 750.000.000
+    // Ajustado a inversión realista
+    inversionInicial: 457000000, // G. 457.000.000 (inversión recomendada 12 meses)
     valorEsperado3Anos: {
       min: 2362500000,
       max: 3150000000,
     },
     porcentaje: {
-      min: 315,
-      max: 420,
+      min: 417, // ROI ajustado: (2.362.500.000 - 457.000.000) / 457.000.000 * 100
+      max: 590, // ROI ajustado: (3.150.000.000 - 457.000.000) / 457.000.000 * 100
     },
   },
   
   roiGep: {
-    inversionGep: 10000000, // G. 10.000.000
+    // Inversión GEP ajustada (participación menor pero realista)
+    inversionGep: 50000000, // G. 50.000.000 (realista para socio estratégico)
     valorEsperado3Anos: {
-      min: 2880000000, // G. 2.880.000.000
-      max: 4800000000, // G. 4.800.000.000
+      min: 720000000, // Participación proporcional ajustada
+      max: 1200000000, // Participación proporcional ajustada
     },
     porcentaje: {
-      min: 28800,
-      max: 48000,
+      min: 1340, // ROI ajustado: (720.000.000 - 50.000.000) / 50.000.000 * 100
+      max: 2300, // ROI ajustado: (1.200.000.000 - 50.000.000) / 50.000.000 * 100
     },
   },
 };
