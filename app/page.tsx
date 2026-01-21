@@ -11,11 +11,11 @@ import Badge from "@/components/Badge";
 import Timeline, { TimelineEvent } from "@/components/Timeline";
 import { mockProfesionales, mockCategorias, mockCasos } from "@/lib/mock-data";
 import Image from "next/image";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 import { getSession } from "@/lib/auth";
 
 export default function Home() {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const router = useRouter();
   const [session, setSession] = useState(getSession());
 
@@ -174,10 +174,10 @@ export default function Home() {
       <section className="space-y-8 py-12">
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-            Cómo Funciona
+            {t("common.how_it_works") || "Cómo Funciona"}
           </h2>
           <p className="text-white/70 text-lg max-w-2xl mx-auto">
-            Proceso simple y seguro en 3 pasos
+            {t("common.process_steps") || "Proceso simple y seguro en 3 pasos"}
           </p>
         </div>
         
@@ -196,9 +196,9 @@ export default function Home() {
               <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#C9A24D] text-black font-bold text-sm flex items-center justify-center">
                 1
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Publicas tu Caso</h3>
+              <h3 className="text-xl font-bold text-white mb-3">{t("hero.step1") || "Publicas tu Caso"}</h3>
               <p className="text-white/70 text-sm leading-relaxed">
-                Describe tu situación legal de forma segura y confidencial. Nuestro sistema protege tu información con encriptación de nivel bancario.
+                {t("hero.step1_desc") || "Describe tu situación legal de forma segura y confidencial. Nuestro sistema protege tu información con encriptación de nivel bancario."}
               </p>
             </Card>
           </div>
@@ -217,9 +217,9 @@ export default function Home() {
               <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-blue-500 text-white font-bold text-sm flex items-center justify-center">
                 2
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Nuestro Motor DPT Filtra</h3>
+              <h3 className="text-xl font-bold text-white mb-3">{t("hero.step2") || "Nuestro Motor DPT Filtra"}</h3>
               <p className="text-white/70 text-sm leading-relaxed">
-                Nuestro algoritmo de Derivación Priorizada por Perfil Técnico analiza complejidad, especialidad y experiencia para encontrar la mejor coincidencia.
+                {t("hero.step2_desc") || "Nuestro algoritmo de Derivación Priorizada por Perfil Técnico analiza complejidad, especialidad y experiencia para encontrar la mejor coincidencia."}
               </p>
             </Card>
           </div>
@@ -238,9 +238,9 @@ export default function Home() {
               <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-green-500 text-white font-bold text-sm flex items-center justify-center">
                 3
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Recibes Solución Experta</h3>
+              <h3 className="text-xl font-bold text-white mb-3">{t("hero.step3") || "Recibes Solución Experta"}</h3>
               <p className="text-white/70 text-sm leading-relaxed">
-                Te conectamos directamente con profesionales verificados y especializados. Sin intermediarios, sin comisiones ocultas.
+                {t("hero.step3_desc") || "Te conectamos directamente con profesionales verificados y especializados. Sin intermediarios, sin comisiones ocultas."}
               </p>
             </Card>
           </div>

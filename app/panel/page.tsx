@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
@@ -14,6 +15,7 @@ import { LegalCase } from "@/lib/types";
 import { generateCaseHash, truncateHash, copyToClipboard } from "@/lib/security";
 
 export default function PanelAdminPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("gestiones");
   const [viewMode, setViewMode] = useState<ViewMode>("cliente");
@@ -137,13 +139,13 @@ export default function PanelAdminPage() {
       const exclusiveUntil = new Date(caseData.exclusiveForGepUntil);
       const now = new Date();
       if (exclusiveUntil > now) {
-        return { label: "En revisión DPT", variant: "terracota" as const };
+        return { label: t("dashboard.status_review"), variant: "terracota" as const };
       }
     }
     if (caseData.status === "ASSIGNED") {
-      return { label: "Asignado", variant: "accent" as const };
+      return { label: t("dashboard.status_assigned"), variant: "accent" as const };
     }
-    return { label: "Abierto", variant: "outline" as const };
+    return { label: t("dashboard.status_open"), variant: "outline" as const };
   };
 
   const getComplexityBadge = (complexity: LegalCase["complexity"]) => {
@@ -182,26 +184,26 @@ export default function PanelAdminPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight">
-              {viewMode === "profesional" ? "Panel Profesional" : "Mi Panel de Gestión"}
+              {viewMode === "profesional" ? t("dashboard.panel_title_pro") : t("dashboard.panel_title_client")}
             </h1>
             <p className="text-lg text-white/70 max-w-2xl leading-relaxed">
               {viewMode === "profesional"
-                ? "Gestiona tus oportunidades, casos asignados y tu desarrollo profesional."
-                : "Gestiona tus casos legales, inscripciones y solicitudes de forma segura y transparente."}
+                ? t("dashboard.panel_desc_pro")
+                : t("dashboard.panel_desc_client")}
             </p>
           </div>
           {/* Botón rápido según modo */}
           {viewMode === "cliente" && (
             <Link href="/post-case">
               <Button variant="primary" className="rounded-2xl px-6 py-3 text-base font-semibold shadow-xl hover:shadow-2xl transition-all">
-                ⚖️ Publicar Caso
+                ⚖️ {t("dashboard.publish_case_btn")}
               </Button>
             </Link>
           )}
           {viewMode === "profesional" && (
             <Link href="/opportunities">
               <Button variant="primary" className="rounded-2xl px-6 py-3 text-base font-semibold shadow-xl hover:shadow-2xl transition-all">
-                💼 Ver Oportunidades
+                💼 {t("dashboard.view_opportunities_btn")}
               </Button>
             </Link>
           )}
@@ -212,10 +214,10 @@ export default function PanelAdminPage() {
           <button
             onClick={() => setIsModeModalOpen(true)}
             className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/90 hover:bg-white/10 transition"
-            aria-label="Cambiar modo"
+            aria-label={t("navbar.switch_role")}
           >
             <span className="text-base">{viewMode === "cliente" ? "👤" : "💼"}</span>
-            <span className="font-semibold">Cambiar modo</span>
+            <span className="font-semibold">{t("navbar.switch_role")}</span>
           </button>
         </div>
 
@@ -250,18 +252,18 @@ export default function PanelAdminPage() {
               <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
                 <div className="text-center">
                   <div className="text-7xl mb-6 animate-bounce">📋</div>
-                  <h3 className="text-2xl font-bold text-white mb-3">No tienes gestiones activas</h3>
+                  <h3 className="text-2xl font-bold text-white mb-3">{t("dashboard.no_cases")}</h3>
                   <p className="text-lg text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
                     {viewMode === "profesional"
-                      ? "Aún no tienes casos asignados. Explora las oportunidades disponibles y aplica a casos que coincidan con tu perfil."
-                      : "Publica tu primer caso legal y comienza a recibir propuestas de profesionales verificados."}
+                      ? t("dashboard.no_cases_pro_desc") || "Aún no tienes casos asignados. Explora las oportunidades disponibles y aplica a casos que coincidan con tu perfil."
+                      : t("dashboard.no_cases_client_desc") || "Publica tu primer caso legal y comienza a recibir propuestas de profesionales verificados."}
                   </p>
                   <Button 
                     variant="primary" 
                     onClick={() => router.push(viewMode === "profesional" ? "/opportunities" : "/post-case")}
                     className="rounded-2xl px-8 py-4 text-base font-semibold"
                   >
-                    {viewMode === "profesional" ? "💼 Explorar Oportunidades" : "⚖️ Publicar Mi Primer Caso"}
+                    {viewMode === "profesional" ? `💼 ${t("dashboard.explore_opportunities") || "Explorar Oportunidades"}` : `⚖️ ${t("dashboard.publish_first")}`}
                   </Button>
                 </div>
               </div>

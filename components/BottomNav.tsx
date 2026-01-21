@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useI18n } from "./I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface NavItem {
   href: string;
-  labelKey: keyof { inicio: string; buscar: string; agenda: string; mensajes: string; perfil: string };
+  labelKey: "inicio" | "buscar" | "agenda" | "mensajes" | "perfil";
   icon: React.ReactNode;
 }
 
@@ -85,7 +85,24 @@ const navItems: NavItem[] = [
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const { t } = useI18n();
+  const { t } = useLanguage();
+
+  const labelFor = (key: NavItem["labelKey"]) => {
+    switch (key) {
+      case "inicio":
+        return t("navbar.home");
+      case "buscar":
+        return t("common.search");
+      case "agenda":
+        return t("dashboard.active_cases");
+      case "mensajes":
+        return t("navbar.messages");
+      case "perfil":
+        return t("navbar.my_panel");
+      default:
+        return key;
+    }
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#0E1B2A]/90 backdrop-blur md:hidden">
@@ -101,7 +118,7 @@ export default function BottomNav() {
               }`}
             >
               {item.icon}
-              <span className="text-xs font-medium">{t.bottomNav[item.labelKey]}</span>
+              <span className="text-xs font-medium">{labelFor(item.labelKey)}</span>
             </Link>
           );
         })}

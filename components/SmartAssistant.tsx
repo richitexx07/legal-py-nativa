@@ -8,6 +8,7 @@ import Badge from "@/components/Badge";
 import { getSession } from "@/lib/auth";
 import { mockProfesionales } from "@/lib/mock-data";
 import { AssistantId, useElevenLabs } from "@/hooks/useElevenLabs";
+import { useLanguage } from "@/context/LanguageContext";
 
 type MessageRole = "user" | "assistant";
 
@@ -73,6 +74,7 @@ function recommendProfessionalsForTopic(topic: "cheques" | "penal" | "default") 
 }
 
 export default function SmartAssistant() {
+  const { t } = useLanguage();
   const session = getSession();
   const role = session?.user.role ?? "cliente";
 
@@ -94,8 +96,7 @@ export default function SmartAssistant() {
     {
       id: uid(),
       role: "assistant",
-      text:
-        "Soy tu asistente inteligente de Legal PY. Puedo orientarte y recomendarte profesionales verificados según tu caso.",
+      text: t("assistant.welcome_default") || "Soy tu asistente inteligente de Legal PY. Puedo orientarte y recomendarte profesionales verificados según tu caso.",
     },
   ]);
 
@@ -141,7 +142,10 @@ export default function SmartAssistant() {
         }),
       }).catch(() => {});
       // #endregion
-      speak({ assistant, text: `Hola, soy ${assistantMeta.name}. ¿En qué te puedo ayudar?` });
+      const welcomeText = assistant === "justo" 
+        ? t("assistant.welcome_justo")
+        : t("assistant.welcome_victoria");
+      speak({ assistant, text: welcomeText });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -222,7 +226,10 @@ export default function SmartAssistant() {
       }),
     }).catch(() => {});
     // #endregion
-    speak({ assistant: next, text: `Perfecto. Soy ${getAssistantCopy(next).name}. Te escucho.` });
+    const welcomeText = next === "justo" 
+      ? t("assistant.welcome_justo")
+      : t("assistant.welcome_victoria");
+    speak({ assistant: next, text: welcomeText });
   };
 
   const generateAssistantResponse = (userText: string) => {
@@ -300,8 +307,8 @@ export default function SmartAssistant() {
             <span className="text-lg">💡</span>
           </div>
           <div className="text-left">
-            <p className="text-sm font-extrabold leading-tight">¿Necesitas Consejo Legal?</p>
-            <p className="text-xs font-medium opacity-80">Habla con un Asistente</p>
+            <p className="text-sm font-extrabold leading-tight">{t("assistant.cta_title") || "¿Necesitas Consejo Legal?"}</p>
+            <p className="text-xs font-medium opacity-80">{t("assistant.cta_subtitle") || "Habla con un Asistente"}</p>
           </div>
           <div className="ml-2 h-2 w-2 rounded-full bg-green-600 animate-pulse" />
         </button>
@@ -329,7 +336,7 @@ export default function SmartAssistant() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-extrabold leading-tight">{assistantMeta.name}</p>
-                <p className="text-xs font-medium opacity-80">Continuar</p>
+                <p className="text-xs font-medium opacity-80">{t("common.continue") || "Continuar"}</p>
               </div>
               <div className="ml-2 h-2 w-2 rounded-full bg-green-600 animate-pulse" />
             </button>
@@ -350,7 +357,7 @@ export default function SmartAssistant() {
                     <div className="flex items-center gap-2">
                       <h3 className="text-white font-extrabold truncate">{assistantMeta.name}</h3>
                       <Badge variant="outline" className="text-xs">
-                        {role === "profesional" ? "Modo Profesional" : "Modo Cliente"}
+                        {role === "profesional" ? t("roles.pro_mode") : t("roles.client_mode")}
                       </Badge>
                     </div>
                     <p className="text-xs text-white/70 truncate">{assistantMeta.tagline}</p>
@@ -360,7 +367,7 @@ export default function SmartAssistant() {
                 <button
                   onClick={() => closeWidget("x")}
                   className="rounded-2xl p-2 hover:bg-white/10 transition"
-                  aria-label="Cerrar asistente"
+                  aria-label={t("assistant.close_label")}
                 >
                   <svg className="h-5 w-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -373,9 +380,9 @@ export default function SmartAssistant() {
                 <button
                   onClick={minimizeWidget}
                   className="text-xs text-white/80 hover:text-white transition rounded-xl px-3 py-1 bg-white/5 border border-white/10 hover:bg-white/10"
-                  aria-label="Minimizar asistente"
+                  aria-label={t("assistant.minimize_label")}
                 >
-                  Minimizar
+                  {t("common.minimize") || "Minimizar"}
                 </button>
               </div>
 
@@ -515,7 +522,7 @@ export default function SmartAssistant() {
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Describe tu situación… (ej: cheque rebotado)"
+                  placeholder={t("assistant.input_placeholder")}
                   className="flex-1 h-11 rounded-2xl bg-white/10 px-4 text-sm text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-[#C9A24D]/60"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {

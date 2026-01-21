@@ -9,7 +9,7 @@ import Badge from "@/components/Badge";
 import Tabs from "@/components/Tabs";
 import DocumentList, { Document } from "@/components/DocumentList";
 import { mockProfesionales } from "@/lib/mock-data";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 import { getSession } from "@/lib/auth";
 import {
   getProfessionalReputation,
@@ -149,7 +149,7 @@ export default function ProfesionalPage({ params }: PageProps) {
     }),
   }).catch(() => {});
   // #endregion
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const profesional = mockProfesionales.find((p) => p.id === id);
   const session = getSession();
 

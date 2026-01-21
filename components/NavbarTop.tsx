@@ -4,11 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import Button from "./Button";
-import { useI18n } from "./I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 import LanguageSelector from "./LanguageSelector";
 import LoginModal from "./LoginModal";
 import RoleModeModal, { ViewMode } from "./RoleModeModal";
 import { getSession } from "@/lib/auth";
+import NotificationBell from "./Notifications/NotificationBell";
 
 export default function NavbarTop() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -17,9 +18,28 @@ export default function NavbarTop() {
   const [session, setSession] = useState(getSession());
   const [viewMode, setViewMode] = useState<ViewMode>("cliente");
   const [isModeModalOpen, setIsModeModalOpen] = useState(false);
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { t, idioma, setIdioma } = useI18n();
+  const { t, language, setLanguage } = useLanguage();
+  const setIdiomaWithLog = (newIdioma: typeof language) => {
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run-i18n-2",
+        hypothesisId: "H-I18N-NAVBAR-SET",
+        location: "components/NavbarTop.tsx:setIdiomaWithLog",
+        message: "Navbar requested language change",
+        data: { from: language, to: newIdioma },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    setLanguage(newIdioma);
+  };
 
   // Cargar modo de visualización desde localStorage
   useEffect(() => {
@@ -43,11 +63,29 @@ export default function NavbarTop() {
     }
   }, [isLoginModalOpen]);
 
-  // Verificar sesión al montar y cuando cambie
+  // Verificar sesión y userId al montar
   useEffect(() => {
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
+      const userId = localStorage.getItem("legal-py-current-user-id") || null;
+      setMockUserId(userId);
+      
+      // #region agent log
+      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: "debug-session",
+          runId: "run1",
+          hypothesisId: "H2",
+          location: "components/NavbarTop.tsx:Notifications",
+          message: "Navbar notifications render",
+          data: { hasUserId: !!userId },
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
     }
   }, []);
 
@@ -95,9 +133,9 @@ export default function NavbarTop() {
   const navItems = [
     { href: "/", label: t("navbar.home") },
     { href: "/profesionales", label: t("navbar.professionals") },
-    { href: "/cursos", label: "Cursos" },
-    { href: "/especializaciones", label: "Especializaciones" },
-    { href: "/pasantias", label: "Pasantías" },
+    { href: "/cursos", label: t("navbar.courses") },
+    { href: "/especializaciones", label: t("navbar.specializations") },
+    { href: "/pasantias", label: t("navbar.internships") },
     { href: "/gestores", label: t("navbar.gestores") },
     { href: "/ujieres", label: t("navbar.ujieres") },
     { href: "/casos", label: t("navbar.cases") },
@@ -132,10 +170,10 @@ export default function NavbarTop() {
               <button
                 onClick={() => setIsModeModalOpen(true)}
                 className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/90 hover:bg-white/10 transition"
-                aria-label="Cambiar modo"
+                aria-label={t("navbar.switch_role")}
               >
                 <span className="text-base">{viewMode === "cliente" ? "👤" : "💼"}</span>
-                <span className="hidden xl:inline font-semibold">Cambiar modo</span>
+                <span className="hidden xl:inline font-semibold">{t("navbar.switch_role")}</span>
                 <svg className="h-4 w-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -163,58 +201,30 @@ export default function NavbarTop() {
           <div className="flex items-center gap-4 shrink-0">
             {/* Language Selector */}
             <div className="hidden sm:block">
-              <LanguageSelector currentLanguage={idioma} onLanguageChange={setIdioma} />
+              <LanguageSelector currentLanguage={language} onLanguageChange={setIdiomaWithLog} />
             </div>
 
             {/* Notifications */}
-            {(() => {
-              // Obtener userId del session si está disponible
-              const mockUserId =
-                typeof window !== "undefined"
-                  ? localStorage.getItem("legal-py-current-user-id") || null
-                  : null;
-
-              // #region agent log
-              fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  sessionId: "debug-session",
-                  runId: "run1",
-                  hypothesisId: "H2",
-                  location: "components/NavbarTop.tsx:Notifications",
-                  message: "Navbar notifications render",
-                  data: { hasUserId: !!mockUserId },
-                  timestamp: Date.now(),
-                }),
-              }).catch(() => {});
-              // #endregion
-              
-              if (mockUserId) {
-                // Dynamic import para evitar problemas de SSR
-                const NotificationBell = require("@/components/Notifications/NotificationBell").default;
-                return <NotificationBell userId={mockUserId} />;
-              }
-              
-              return (
-                <button
-                  onClick={() => {
-                    window.location.href = "/login";
-                  }}
-                  className="relative rounded-lg p-2 hover:bg-white/5 transition transform translate-y-[3px]"
-                  aria-label="Notificaciones"
-                >
-                  <svg className="h-6 w-6 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                  </svg>
-                </button>
-              );
-            })()}
+            {mockUserId ? (
+              <NotificationBell userId={mockUserId} />
+            ) : (
+              <button
+                onClick={() => {
+                  window.location.href = "/login";
+                }}
+                className="relative rounded-lg p-2 hover:bg-white/5 transition transform translate-y-[3px]"
+                aria-label={t("navbar.notifications")}
+              >
+                <svg className="h-6 w-6 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+              </button>
+            )}
 
             {/* Divisor Vertical */}
             <div className="hidden sm:block h-6 w-px bg-white/10" aria-hidden="true" />
@@ -268,7 +278,7 @@ export default function NavbarTop() {
                         )}
                         {/* Tooltip */}
                         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                          Identidad Verificada Biométricamente
+                          {t("security.verified_tooltip")}
                           <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                         </div>
                       </div>
@@ -308,7 +318,7 @@ export default function NavbarTop() {
                             )}
                             {/* Tooltip */}
                             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                              Identidad Verificada Biométricamente
+                              {t("security.verified_tooltip")}
                               <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                             </div>
                           </div>
@@ -344,7 +354,7 @@ export default function NavbarTop() {
                             d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                           />
                         </svg>
-                        <span className="text-sm text-white/90 group-hover:text-white">Panel de Oportunidades</span>
+                        <span className="text-sm text-white/90 group-hover:text-white">{t("navbar.opportunities")}</span>
                         <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                       </Link>
                       <Link
@@ -365,7 +375,7 @@ export default function NavbarTop() {
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                           />
                         </svg>
-                        <span className="text-sm text-white/90 group-hover:text-white">Centro de Seguridad</span>
+                        <span className="text-sm text-white/90 group-hover:text-white">{t("navbar.security")}</span>
                       </Link>
                       <Link
                         href="/panel"
@@ -385,7 +395,7 @@ export default function NavbarTop() {
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                           />
                         </svg>
-                        <span className="text-sm text-white/70 group-hover:text-white/90">Mi Panel</span>
+                        <span className="text-sm text-white/70 group-hover:text-white/90">{t("navbar.my_panel")}</span>
                       </Link>
                       <div className="border-t border-white/10 my-2" />
                       <button
@@ -412,7 +422,7 @@ export default function NavbarTop() {
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                           />
                         </svg>
-                        <span className="text-sm text-red-400 group-hover:text-red-300">Cerrar Sesión</span>
+                        <span className="text-sm text-red-400 group-hover:text-red-300">{t("navbar.logout")}</span>
                       </button>
                     </div>
                   </div>
@@ -421,13 +431,13 @@ export default function NavbarTop() {
             ) : (
               <div className="hidden sm:flex items-center gap-2">
                 <Link href="/login">
-                  <Button variant="primary" size="sm">
-                    Ingresar
+                    <Button variant="primary" size="sm">
+                    {t("navbar.login")}
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button variant="secondary" size="sm">
-                    Registrarse
+                    {t("navbar.register")}
                   </Button>
                 </Link>
               </div>
@@ -470,7 +480,7 @@ export default function NavbarTop() {
                             )}
                             {/* Tooltip */}
                             <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                              Identidad Verificada Biométricamente
+                              {t("security.verified_tooltip")}
                               <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                             </div>
                           </div>
@@ -506,7 +516,7 @@ export default function NavbarTop() {
                               d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                             />
                           </svg>
-                          <span className="text-white font-medium">Panel de Oportunidades</span>
+                          <span className="text-white font-medium">{t("navbar.opportunities")}</span>
                           <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                         </Link>
                         <Link
@@ -527,7 +537,7 @@ export default function NavbarTop() {
                               d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                             />
                           </svg>
-                          <span className="text-white font-medium">Centro de Seguridad</span>
+                          <span className="text-white font-medium">{t("navbar.security")}</span>
                         </Link>
                         <Link
                           href="/panel"
@@ -547,7 +557,7 @@ export default function NavbarTop() {
                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                             />
                           </svg>
-                          <span className="text-white/90">Mi Panel</span>
+                          <span className="text-white/90">{t("navbar.my_panel")}</span>
                         </Link>
                         <button
                           onClick={() => {
@@ -573,7 +583,7 @@ export default function NavbarTop() {
                               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                             />
                           </svg>
-                          <span className="font-medium">Cerrar Sesión</span>
+                          <span className="font-medium">{t("navbar.logout")}</span>
                         </button>
                       </div>
                     </div>
@@ -583,13 +593,13 @@ export default function NavbarTop() {
             ) : (
               <div className="flex sm:hidden items-center gap-2">
                 <Link href="/login">
-                  <Button variant="primary" size="sm">
-                    Ingresar
+                    <Button variant="primary" size="sm">
+                    {t("navbar.login")}
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button variant="secondary" size="sm">
-                    Registrarse
+                    {t("navbar.register")}
                   </Button>
                 </Link>
               </div>

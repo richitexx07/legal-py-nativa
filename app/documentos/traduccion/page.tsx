@@ -3,12 +3,12 @@
 import { useState } from "react";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 
 type TranslationStatus = "idle" | "processing" | "completed";
 
 export default function TraduccionPage() {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [sourceLang, setSourceLang] = useState("es");
   const [targetLang, setTargetLang] = useState("en");

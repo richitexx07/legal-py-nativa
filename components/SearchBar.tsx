@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Button from "./Button";
-import { useI18n } from "./I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface SearchBarProps {
   onSearch?: (service: string, location: string) => void;
@@ -15,9 +15,10 @@ export default function SearchBar({
   placeholder,
   locationPlaceholder,
 }: SearchBarProps) {
-  const { t } = useI18n();
-  const finalPlaceholder = placeholder || t("home.search_placeholder");
-  const finalLocationPlaceholder = locationPlaceholder || t("home.location_placeholder");
+  const { t } = useLanguage();
+  // Fallback a las props si existen; si no, usamos claves comunes.
+  const finalPlaceholder = placeholder || t("common.search");
+  const finalLocationPlaceholder = locationPlaceholder || t("common.filter");
   const [service, setService] = useState("");
   const [location, setLocation] = useState("");
 

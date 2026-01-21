@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { I18nProvider } from "@/components/I18nProvider";
+import { LanguageProvider } from "@/context/LanguageContext";
 import NavbarTop from "@/components/NavbarTop";
 import BottomNav from "@/components/BottomNav";
 import SmartAssistant from "@/components/SmartAssistant";
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
       <body className="min-h-screen bg-[#0E1B2A] text-white">
-        <I18nProvider>
+        <LanguageProvider>
           {/* Top Navigation - Desktop */}
           <NavbarTop />
 
@@ -52,7 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Demo Controls - Solo en desarrollo */}
           <DemoControls />
-        </I18nProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

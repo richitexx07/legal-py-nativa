@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
@@ -10,7 +10,7 @@ import Image from "next/image";
 import { mockProfesionales, mockCategorias } from "@/lib/mock-data";
 
 function ProfesionalesContent() {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const categoriaParam = searchParams.get("categoria");
 
@@ -34,7 +34,7 @@ function ProfesionalesContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-white">
-            {categoriaInfo ? categoriaInfo.titulo : t("professionals.list_title")}
+            {categoriaInfo ? categoriaInfo.titulo : t("navbar.professionals")}
           </h1>
           <p className="text-white/70 mt-1">
             {categoriaInfo

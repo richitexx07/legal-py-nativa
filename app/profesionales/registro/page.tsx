@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 
 export default function RegistroProfesional() {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",

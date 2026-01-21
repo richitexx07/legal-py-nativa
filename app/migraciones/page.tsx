@@ -8,7 +8,7 @@ import Badge from "@/components/Badge";
 import Link from "next/link";
 import Image from "next/image";
 import { mockProfesionales } from "@/lib/mock-data";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Gestion {
   id: string;
@@ -105,7 +105,7 @@ const gestionesCompletas: Gestion[] = [
 ];
 
 function GestionesMigratoriasContent() {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const gestionSeleccionadaParam = searchParams.get("gestion");
 

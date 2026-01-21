@@ -6,7 +6,7 @@ import { isCaseAvailableForUser, getTimeUntilRelease } from "@/lib/dpt-engine";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface CaseCardProps {
   legalCase: LegalCase;
@@ -15,7 +15,7 @@ interface CaseCardProps {
 }
 
 export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps) {
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const isGEP = userTier === 3;
   const isAvailable = isCaseAvailableForUser(userTier, legalCase);
@@ -38,7 +38,7 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
 
   // Formatear tiempo restante
   const formatTimeRemaining = (ms: number | null): string => {
-    if (ms === null || ms <= 0) return t("common.open");
+    if (ms === null || ms <= 0) return t("dashboard.status_open");
 
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));

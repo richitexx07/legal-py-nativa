@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
-import { useI18n } from "@/components/I18nProvider";
+import { useLanguage } from "@/context/LanguageContext";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import { mockProfesionales } from "@/lib/mock-data";
@@ -16,7 +16,7 @@ interface PageProps {
 
 export default function VideollamadaPage({ params }: PageProps) {
   const { id } = use(params);
-  const { t } = useI18n();
+  const { t } = useLanguage();
   const [callStatus, setCallStatus] = useState<CallStatus>("idle");
 
   const profesional = mockProfesionales.find((p) => p.id === id);
