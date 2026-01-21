@@ -113,7 +113,7 @@ export function useElevenLabs() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sessionId: "debug-session",
-        runId: "run1",
+        runId: "run2",
         hypothesisId: "H-REC",
         location: "hooks/useElevenLabs.ts:startRecording",
         message: "Hold-to-speak started (mock)",
@@ -132,7 +132,7 @@ export function useElevenLabs() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sessionId: "debug-session",
-        runId: "run1",
+        runId: "run2",
         hypothesisId: "H-REC",
         location: "hooks/useElevenLabs.ts:stopRecording",
         message: "Hold-to-speak ended (mock)",

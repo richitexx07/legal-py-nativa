@@ -101,6 +101,25 @@ export default function SmartAssistant() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // #region agent log
+    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: "run2",
+        hypothesisId: "H-SA-MOUNT",
+        location: "components/SmartAssistant.tsx:mount",
+        message: "SmartAssistant mounted",
+        data: { hasSession: !!session, userRole: role },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length, isOpen]);
 
