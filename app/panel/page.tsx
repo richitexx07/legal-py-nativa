@@ -6,16 +6,18 @@ import { useRouter } from "next/navigation";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
-import Tabs from "@/components/Tabs";
+import RoleSwitch from "@/components/RoleSwitch";
 import { InscripcionCurso, PostulacionPasantia, SolicitudCapacitacion } from "@/lib/educacion-data";
 import { mockCursos, mockPasantias } from "@/lib/educacion-data";
 import { getSession } from "@/lib/auth";
 import { LegalCase } from "@/lib/types";
 import { generateCaseHash, truncateHash, copyToClipboard } from "@/lib/security";
+import { ViewMode } from "@/components/RoleSwitch";
 
 export default function PanelAdminPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("gestiones");
+  const [viewMode, setViewMode] = useState<ViewMode>("cliente");
   const [inscripciones, setInscripciones] = useState<InscripcionCurso[]>([]);
   const [postulaciones, setPostulaciones] = useState<PostulacionPasantia[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudCapacitacion[]>([]);
@@ -23,6 +25,16 @@ export default function PanelAdminPage() {
   const [session, setSession] = useState(getSession());
 
   useEffect(() => {
+    // Cargar modo de visualización
+    if (typeof window !== "undefined") {
+      const savedMode = localStorage.getItem("legal-py-view-mode") as ViewMode | null;
+      if (savedMode && (savedMode === "cliente" || savedMode === "profesional")) {
+        setViewMode(savedMode);
+      } else if (session?.user.role === "profesional") {
+        setViewMode("profesional");
+      }
+    }
+
     // Cargar datos del localStorage
     const insc = JSON.parse(localStorage.getItem("inscripcionesCursos") || "[]");
     const post = JSON.parse(localStorage.getItem("postulacionesPasantias") || "[]");
@@ -128,90 +140,170 @@ export default function PanelAdminPage() {
     return colors[complexity];
   };
 
-  const tabs = [
-    { id: "gestiones", label: `Mis Gestiones Activas (${myCases.length})` },
-    { id: "inscripciones", label: `Inscripciones (${inscripciones.length})` },
-    { id: "postulaciones", label: `Postulaciones (${postulaciones.length})` },
-    { id: "solicitudes", label: `Solicitudes (${solicitudes.length})` },
-  ];
+  // Tabs adaptados según el modo
+  const getTabs = () => {
+    if (viewMode === "profesional") {
+      return [
+        { id: "oportunidades", label: `Panel de Oportunidades`, icon: "💼" },
+        { id: "mis-casos", label: `Mis Casos (${myCases.length})`, icon: "⚖️" },
+        { id: "inscripciones", label: `Inscripciones (${inscripciones.length})`, icon: "📚" },
+        { id: "postulaciones", label: `Postulaciones (${postulaciones.length})`, icon: "📝" },
+      ];
+    }
+    return [
+      { id: "gestiones", label: `Mis Gestiones Activas (${myCases.length})`, icon: "📋" },
+      { id: "inscripciones", label: `Inscripciones (${inscripciones.length})`, icon: "📚" },
+      { id: "postulaciones", label: `Postulaciones (${postulaciones.length})`, icon: "📝" },
+      { id: "solicitudes", label: `Solicitudes (${solicitudes.length})`, icon: "🎓" },
+    ];
+  };
+
+  const tabs = getTabs();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2">
-          Panel de Administración
-        </h1>
-        <p className="text-white/70">
-          Gestión de inscripciones, postulaciones y solicitudes de capacitación.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8 px-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header con modo de visualización */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight">
+              {viewMode === "profesional" ? "Panel Profesional" : "Mi Panel de Gestión"}
+            </h1>
+            <p className="text-lg text-white/70 max-w-2xl leading-relaxed">
+              {viewMode === "profesional"
+                ? "Gestiona tus oportunidades, casos asignados y tu desarrollo profesional."
+                : "Gestiona tus casos legales, inscripciones y solicitudes de forma segura y transparente."}
+            </p>
+          </div>
+          {/* Botón rápido según modo */}
+          {viewMode === "cliente" && (
+            <Link href="/post-case">
+              <Button variant="primary" className="rounded-2xl px-6 py-3 text-base font-semibold shadow-xl hover:shadow-2xl transition-all">
+                ⚖️ Publicar Caso
+              </Button>
+            </Link>
+          )}
+          {viewMode === "profesional" && (
+            <Link href="/opportunities">
+              <Button variant="primary" className="rounded-2xl px-6 py-3 text-base font-semibold shadow-xl hover:shadow-2xl transition-all">
+                💼 Ver Oportunidades
+              </Button>
+            </Link>
+          )}
+        </div>
 
-      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        {/* Role Switch en el Panel */}
+        <div className="flex justify-end mb-6">
+          <RoleSwitch currentMode={viewMode} onModeChange={setViewMode} />
+        </div>
 
-      {/* Mis Gestiones Activas */}
-      {activeTab === "gestiones" && (
-        <div className="space-y-4">
-          {myCases.length === 0 ? (
-            <Card>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📋</div>
-                <h3 className="text-xl font-semibold text-white mb-2">No tienes gestiones activas</h3>
-                <p className="text-white/70 mb-6">
-                  Publica tu primer caso legal y comienza a recibir propuestas de profesionales.
-                </p>
-                <Button variant="primary" onClick={() => router.push("/post-case")}>
-                  ⚖️ Publicar Mi Primer Caso
-                </Button>
+        {/* Tabs con diseño mejorado */}
+        <div className="flex flex-wrap gap-3 pb-2 border-b border-white/10">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                relative px-6 py-3 rounded-2xl font-medium text-sm transition-all duration-300
+                ${activeTab === tab.id
+                  ? "bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/20"
+                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80 border border-transparent"}
+              `}
+            >
+              <span className="mr-2">{tab.icon}</span>
+              {tab.label}
+              {activeTab === tab.id && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-[#C9A24D] rounded-full"></span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Contenido de Tabs con Glassmorphism */}
+        
+        {/* Mis Gestiones Activas / Panel Profesional */}
+        {(activeTab === "gestiones" || activeTab === "mis-casos") && (
+          <div className="space-y-6">
+            {myCases.length === 0 ? (
+              <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
+                <div className="text-center">
+                  <div className="text-7xl mb-6 animate-bounce">📋</div>
+                  <h3 className="text-2xl font-bold text-white mb-3">No tienes gestiones activas</h3>
+                  <p className="text-lg text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
+                    {viewMode === "profesional"
+                      ? "Aún no tienes casos asignados. Explora las oportunidades disponibles y aplica a casos que coincidan con tu perfil."
+                      : "Publica tu primer caso legal y comienza a recibir propuestas de profesionales verificados."}
+                  </p>
+                  <Button 
+                    variant="primary" 
+                    onClick={() => router.push(viewMode === "profesional" ? "/opportunities" : "/post-case")}
+                    className="rounded-2xl px-8 py-4 text-base font-semibold"
+                  >
+                    {viewMode === "profesional" ? "💼 Explorar Oportunidades" : "⚖️ Publicar Mi Primer Caso"}
+                  </Button>
+                </div>
               </div>
-            </Card>
           ) : (
             myCases.map((caseData) => {
               const statusBadge = getCaseStatusBadge(caseData);
               const complexityStyle = getComplexityBadge(caseData.complexity);
               return (
-                <Card key={caseData.id}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h3 className="font-semibold text-[#C9A24D]">{caseData.title}</h3>
-                        <Badge variant={statusBadge.variant} className="text-xs relative">
-                          {statusBadge.label === "En revisión DPT" && (
-                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                            </span>
-                          )}
-                          {statusBadge.label}
-                        </Badge>
-                        <Badge variant="outline" className={`text-xs ${complexityStyle.bg} ${complexityStyle.text} border-current`}>
-                          Prioridad: {caseData.complexity}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-white/70 mb-3 line-clamp-2">{caseData.description}</p>
-                      <div className="flex flex-wrap gap-4 text-sm">
-                        <div>
-                          <span className="text-white/50">Área:</span>{" "}
-                          <span className="text-white/80">{caseData.practiceArea}</span>
+                <div
+                  key={caseData.id}
+                  className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl hover:shadow-[#C9A24D]/20 hover:border-[#C9A24D]/30 transition-all duration-300 group"
+                >
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#C9A24D] transition-colors">{caseData.title}</h3>
+                          <p className="text-base text-white/70 leading-relaxed line-clamp-2">{caseData.description}</p>
                         </div>
-                        <div>
-                          <span className="text-white/50">Presupuesto:</span>{" "}
-                          <span className="text-[#C9A24D] font-semibold">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant={statusBadge.variant} className="text-xs px-3 py-1.5 rounded-xl relative">
+                            {statusBadge.label === "En revisión DPT" && (
+                              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                              </span>
+                            )}
+                            {statusBadge.label}
+                          </Badge>
+                          <Badge variant="outline" className={`text-xs px-3 py-1.5 rounded-xl ${complexityStyle.bg} ${complexityStyle.text} border-current`}>
+                            Prioridad: {caseData.complexity}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Grid de información */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+                        <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                          <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Área</p>
+                          <p className="text-base text-white font-semibold">{caseData.practiceArea}</p>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                          <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Presupuesto</p>
+                          <p className="text-base text-[#C9A24D] font-bold">
                             {new Intl.NumberFormat("es-PY", {
                               style: "currency",
                               currency: "PYG",
                               minimumFractionDigits: 0,
                             }).format(caseData.estimatedBudget)}
-                          </span>
+                          </p>
                         </div>
-                        <div>
-                          <span className="text-white/50">Publicado:</span>{" "}
-                          <span className="text-white/80">
-                            {new Date(caseData.createdAt).toLocaleDateString("es-PY")}
-                          </span>
+                        <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                          <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Publicado</p>
+                          <p className="text-base text-white/80 font-semibold">
+                            {new Date(caseData.createdAt).toLocaleDateString("es-PY", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric"
+                            })}
+                          </p>
                         </div>
                       </div>
                       {/* Huella Digital del Caso (Hash) */}
-                      <div className="mt-4 p-3 rounded-lg bg-white/5 border border-white/10">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
                             <span className="text-xs text-white/60 font-mono shrink-0">Huella Digital del Caso (Hash):</span>
@@ -237,35 +329,65 @@ export default function PanelAdminPage() {
                         </div>
                       </div>
                       {caseData.exclusiveForGepUntil && (
-                        <div className="mt-3 p-2 rounded-lg bg-[#C9A24D]/10 border border-[#C9A24D]/30">
-                          <p className="text-xs text-[#C9A24D]">
-                            👑 Caso con prioridad exclusiva GEP hasta{" "}
-                            {new Date(caseData.exclusiveForGepUntil).toLocaleString("es-PY")}
+                        <div className="p-4 rounded-2xl bg-gradient-to-r from-[#C9A24D]/20 to-[#C08457]/20 border border-[#C9A24D]/30 backdrop-blur-sm">
+                          <p className="text-sm text-[#C9A24D] font-medium flex items-center gap-2">
+                            <span className="text-lg">👑</span>
+                            Caso con prioridad exclusiva GEP hasta{" "}
+                            {new Date(caseData.exclusiveForGepUntil).toLocaleString("es-PY", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
                           </p>
                         </div>
                       )}
                     </div>
                   </div>
-                </Card>
+                </div>
               );
             })
           )}
         </div>
       )}
 
+      {/* Panel de Oportunidades (Modo Profesional) */}
+      {activeTab === "oportunidades" && viewMode === "profesional" && (
+        <div className="space-y-6">
+          <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
+            <div className="text-center">
+              <div className="text-7xl mb-6">💼</div>
+              <h3 className="text-2xl font-bold text-white mb-3">Explora Oportunidades</h3>
+              <p className="text-lg text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
+                Descubre casos legales que coinciden con tu perfil y especialidad.
+              </p>
+              <Link href="/opportunities">
+                <Button variant="primary" className="rounded-2xl px-8 py-4 text-base font-semibold">
+                  💼 Ver Panel de Oportunidades
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Inscripciones */}
       {activeTab === "inscripciones" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {inscripciones.length === 0 ? (
-            <Card>
-              <div className="text-center py-8">
-                <p className="text-white/70">No hay inscripciones registradas.</p>
+            <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
+              <div className="text-center">
+                <p className="text-lg text-white/70">No hay inscripciones registradas.</p>
               </div>
-            </Card>
+            </div>
           ) : (
             inscripciones.map((insc) => (
-              <Card key={insc.id}>
-                <div className="flex items-start justify-between gap-4">
+              <div
+                key={insc.id}
+                className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl hover:shadow-[#C9A24D]/20 hover:border-[#C9A24D]/30 transition-all duration-300"
+              >
+                <div className="flex items-start justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-[#C9A24D]">{getCursoNombre(insc.cursoId)}</h3>
@@ -296,7 +418,7 @@ export default function PanelAdminPage() {
                     </p>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))
           )}
         </div>
@@ -304,17 +426,20 @@ export default function PanelAdminPage() {
 
       {/* Postulaciones */}
       {activeTab === "postulaciones" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {postulaciones.length === 0 ? (
-            <Card>
-              <div className="text-center py-8">
-                <p className="text-white/70">No hay postulaciones registradas.</p>
+            <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
+              <div className="text-center">
+                <p className="text-lg text-white/70">No hay postulaciones registradas.</p>
               </div>
-            </Card>
+            </div>
           ) : (
             postulaciones.map((post) => (
-              <Card key={post.id}>
-                <div className="flex items-start justify-between gap-4">
+              <div
+                key={post.id}
+                className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl hover:shadow-[#C9A24D]/20 hover:border-[#C9A24D]/30 transition-all duration-300"
+              >
+                <div className="flex items-start justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-[#C9A24D]">{getPasantiaNombre(post.pasantiaId)}</h3>
@@ -343,7 +468,7 @@ export default function PanelAdminPage() {
                     </p>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))
           )}
         </div>
@@ -351,17 +476,20 @@ export default function PanelAdminPage() {
 
       {/* Solicitudes */}
       {activeTab === "solicitudes" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {solicitudes.length === 0 ? (
-            <Card>
-              <div className="text-center py-8">
-                <p className="text-white/70">No hay solicitudes registradas.</p>
+            <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
+              <div className="text-center">
+                <p className="text-lg text-white/70">No hay solicitudes registradas.</p>
               </div>
-            </Card>
+            </div>
           ) : (
             solicitudes.map((sol) => (
-              <Card key={sol.id}>
-                <div className="flex items-start justify-between gap-4">
+              <div
+                key={sol.id}
+                className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl hover:shadow-[#C9A24D]/20 hover:border-[#C9A24D]/30 transition-all duration-300"
+              >
+                <div className="flex items-start justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-[#C9A24D]">
@@ -399,17 +527,17 @@ export default function PanelAdminPage() {
                     </p>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))
           )}
         </div>
       )}
 
-      {/* Botón Flotante "Publicar Caso" */}
-      {session && (
+      {/* Botón Flotante "Publicar Caso" - Solo visible en modo Cliente */}
+      {session && viewMode === "cliente" && (
         <Link
           href="/post-case"
-          className="fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6 flex items-center gap-2 px-6 py-4 rounded-full bg-[#C9A24D] hover:bg-[#b8943f] text-black font-semibold shadow-lg transition hover:scale-105"
+          className="fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6 flex items-center gap-2 px-6 py-4 rounded-2xl bg-[#C9A24D] hover:bg-[#b8943f] text-black font-semibold shadow-xl hover:shadow-2xl transition-all hover:scale-105"
         >
           <svg
             className="w-6 h-6"
@@ -428,6 +556,7 @@ export default function PanelAdminPage() {
           <span className="sm:hidden">⚖️</span>
         </Link>
       )}
+        </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import Button from "./Button";
 import { useI18n } from "./I18nProvider";
 import LanguageSelector from "./LanguageSelector";
 import LoginModal from "./LoginModal";
+import RoleSwitch, { ViewMode } from "./RoleSwitch";
 import { getSession } from "@/lib/auth";
 
 export default function NavbarTop() {
@@ -14,9 +15,22 @@ export default function NavbarTop() {
   const [buttonPosition, setButtonPosition] = useState({ top: 0, right: 0 });
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [session, setSession] = useState(getSession());
+  const [viewMode, setViewMode] = useState<ViewMode>("cliente");
   const buttonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { t, idioma, setIdioma } = useI18n();
+
+  // Cargar modo de visualización desde localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedMode = localStorage.getItem("legal-py-view-mode") as ViewMode | null;
+      if (savedMode && (savedMode === "cliente" || savedMode === "profesional")) {
+        setViewMode(savedMode);
+      } else if (session?.user.role === "profesional") {
+        setViewMode("profesional");
+      }
+    }
+  }, [session]);
 
   useEffect(() => {
     if (isLoginModalOpen && buttonRef.current) {
@@ -87,6 +101,13 @@ export default function NavbarTop() {
               <span className="text-xl font-extrabold text-[#C9A24D]">Legal</span>
               <span className="text-xl font-extrabold">Py</span>
             </Link>
+
+            {/* Role Switch - Solo visible cuando hay sesión */}
+            {session && (
+              <div className="hidden lg:block">
+                <RoleSwitch currentMode={viewMode} onModeChange={setViewMode} />
+              </div>
+            )}
 
             {/* Desktop Navigation */}
             <nav className="hidden md:block min-w-0">
