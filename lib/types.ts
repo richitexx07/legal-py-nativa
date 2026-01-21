@@ -231,7 +231,20 @@ export interface LegalCase {
   title: string;
   description: string;
   complexity: "BAJA" | "MEDIA" | "ALTA";
-  practiceArea: "CIVIL" | "PENAL" | "CORPORATIVO" | "LABORAL" | "FAMILIA";
+  practiceArea: 
+    | "CORPORATIVO_EAS"
+    | "MIGRACIONES_INVERSIONISTAS"
+    | "DUE_DILIGENCE"
+    | "MARCAS_DINAPI"
+    | "SOFTWARE_DERECHOS"
+    | "SUMARIOS_ADUANEROS"
+    | "LOGISTICA_FLUVIAL"
+    | "COBRO_EJECUTIVO"
+    | "FAMILIA_SUCESIONES"
+    | "CIVIL" // Legacy support
+    | "PENAL" // Legacy support
+    | "LABORAL" // Legacy support
+    | "FAMILIA"; // Legacy support
   estimatedBudget: number; // En Guaraníes
   status: "OPEN" | "ASSIGNED" | "CLOSED";
   exclusiveForGepUntil: string | null; // ISO Date string - Fecha límite de exclusividad GEP

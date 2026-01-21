@@ -33,7 +33,7 @@ export default function OpportunitiesPage() {
           title: "Fusión Corporativa Multinacional",
           description: "Asesoramiento legal completo para fusión entre dos empresas multinacionales con presencia en 5 países. Requiere expertise en derecho corporativo internacional, regulaciones financieras y compliance.",
           complexity: "ALTA",
-          practiceArea: "CORPORATIVO",
+          practiceArea: "CORPORATIVO_EAS",
           estimatedBudget: 15000000, // 15 millones Gs
           status: "OPEN",
         },
@@ -41,7 +41,7 @@ export default function OpportunitiesPage() {
           title: "Defensa Penal de Alto Perfil",
           description: "Caso penal complejo que involucra múltiples jurisdicciones y requiere conocimiento especializado en derecho penal internacional y extradición.",
           complexity: "ALTA",
-          practiceArea: "PENAL",
+          practiceArea: "COBRO_EJECUTIVO", // Legacy: manteniendo PENAL como ejemplo, pero debería ser actualizado
           estimatedBudget: 8000000, // 8 millones Gs
           status: "OPEN",
         },
@@ -50,7 +50,7 @@ export default function OpportunitiesPage() {
           title: "Demanda Laboral por Despido Injustificado",
           description: "Cliente busca representación legal para demanda por despido injustificado. Caso estándar de derecho laboral.",
           complexity: "MEDIA",
-          practiceArea: "LABORAL",
+          practiceArea: "FAMILIA_SUCESIONES", // Legacy: manteniendo LABORAL como ejemplo
           estimatedBudget: 3000000, // 3 millones Gs
           status: "OPEN",
         },
@@ -58,7 +58,7 @@ export default function OpportunitiesPage() {
           title: "Divorcio Contencioso con Bienes",
           description: "Proceso de divorcio contencioso con división de bienes gananciales. Requiere experiencia en derecho de familia.",
           complexity: "MEDIA",
-          practiceArea: "FAMILIA",
+          practiceArea: "FAMILIA_SUCESIONES",
           estimatedBudget: 2500000, // 2.5 millones Gs
           status: "OPEN",
         },
@@ -66,7 +66,7 @@ export default function OpportunitiesPage() {
           title: "Contrato de Arrendamiento Comercial",
           description: "Asesoramiento para redacción y revisión de contrato de arrendamiento comercial. Caso de complejidad baja.",
           complexity: "BAJA",
-          practiceArea: "CIVIL",
+          practiceArea: "COBRO_EJECUTIVO",
           estimatedBudget: 1500000, // 1.5 millones Gs
           status: "OPEN",
         },

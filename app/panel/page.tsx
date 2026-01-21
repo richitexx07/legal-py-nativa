@@ -13,6 +13,7 @@ import { mockCursos, mockPasantias } from "@/lib/educacion-data";
 import { getSession } from "@/lib/auth";
 import { LegalCase } from "@/lib/types";
 import { generateCaseHash, truncateHash, copyToClipboard } from "@/lib/security";
+import MetricsWidget from "@/components/Dashboard/MetricsWidget";
 
 export default function PanelAdminPage() {
   const { t } = useLanguage();
@@ -411,6 +412,15 @@ export default function PanelAdminPage() {
             {/* Mis Gestiones Activas / Panel Profesional */}
         {(activeTab === "gestiones" || activeTab === "mis-casos") && (
           <div className="space-y-6">
+            {/* Widget de Métricas para Plan Empresarial/GEP */}
+            {viewMode === "profesional" && (() => {
+              const demoPlan = typeof window !== "undefined" ? localStorage.getItem("legal-py-demo-plan") : null;
+              const userPlan = demoPlan || (session?.user.kycTier === 3 ? "gep" : null);
+              if (userPlan === "empresarial" || userPlan === "gep") {
+                return <MetricsWidget plan={userPlan as "empresarial" | "gep"} />;
+              }
+              return null;
+            })()}
             {myCases.length === 0 ? (
               <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
                 <div className="text-center">

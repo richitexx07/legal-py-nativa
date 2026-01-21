@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { calculateCasePriority } from "@/lib/dpt-engine";
 import { LegalCase } from "@/lib/types";
+import { PRACTICE_AREAS, PracticeArea, getPracticeAreasByCategory } from "@/lib/practice-areas";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import confetti from "canvas-confetti";
 import Image from "next/image";
 import { mockProfesionales } from "@/lib/mock-data";
 
-type FlowStep = "input" | "scanning" | "professionals" | "success";
+type FlowStep = "input" | "selectArea" | "scanning" | "professionals" | "success";
 
 export default function PostCasePage() {
   const router = useRouter();
@@ -19,10 +20,12 @@ export default function PostCasePage() {
   const [mounted, setMounted] = useState(false);
   const [flowStep, setFlowStep] = useState<FlowStep>("input");
   const [userInput, setUserInput] = useState("");
+  const [selectedPracticeArea, setSelectedPracticeArea] = useState<PracticeArea | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [selectedProfessionals, setSelectedProfessionals] = useState<any[]>([]);
   const [caseData, setCaseData] = useState<LegalCase | null>(null);
+  const [hoveredArea, setHoveredArea] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -30,9 +33,6 @@ export default function PostCasePage() {
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:mount',message:'PostCasePage mounted',data:{hasSession:!!currentSession,hasMockProfesionales:typeof mockProfesionales !== 'undefined',mockProfesionalesLength:mockProfesionales?.length || 0},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H3'})}).catch(()=>{});
-      // #endregion
 
       if (!currentSession) {
         router.push("/login");
@@ -44,16 +44,23 @@ export default function PostCasePage() {
   useEffect(() => {
     if (userInput.length > 20) {
       setShowAiAssistant(true);
-      // Simular análisis de IA
       const normalized = userInput.toLowerCase();
-      if (normalized.includes("pagaré") || normalized.includes("cheque") || normalized.includes("cobro")) {
-        setAiSuggestion("Parece un caso de Cobro de Guaraníes (Civil). ¿Te ayudo a buscar un especialista en Títulos Ejecutivos?");
-      } else if (normalized.includes("robo") || normalized.includes("asalto") || normalized.includes("penal")) {
-        setAiSuggestion("Parece un caso Penal. ¿Te ayudo a encontrar un penalista verificado?");
-      } else if (normalized.includes("trabajo") || normalized.includes("despido") || normalized.includes("laboral")) {
-        setAiSuggestion("Parece un caso Laboral. ¿Te ayudo a buscar un especialista en Derecho del Trabajo?");
+      
+      // Sugerencias mejoradas basadas en las nuevas categorías
+      if (normalized.includes("pagaré") || normalized.includes("cheque") || normalized.includes("cobro") || normalized.includes("ejecutivo")) {
+        setAiSuggestion("Parece un caso de Cobro Ejecutivo. Te sugerimos la categoría 'Cobro de Pagarés y Cheques'.");
+      } else if (normalized.includes("marca") || normalized.includes("registro") || normalized.includes("dinapi")) {
+        setAiSuggestion("Parece un caso de Propiedad Intelectual. Te sugerimos 'Registro de Marcas (DINAPI)'.");
+      } else if (normalized.includes("empresa") || normalized.includes("eas") || normalized.includes("constitución") || normalized.includes("sociedad")) {
+        setAiSuggestion("Parece un caso Corporativo. Te sugerimos 'Constitución de EAS' o 'Due Diligence'.");
+      } else if (normalized.includes("inversor") || normalized.includes("residencia") || normalized.includes("radicación") || normalized.includes("migración")) {
+        setAiSuggestion("Parece un caso de Migraciones para Inversionistas. Te sugerimos 'Radicación y Residencia para Inversionistas'.");
+      } else if (normalized.includes("aduana") || normalized.includes("sumario") || normalized.includes("importación")) {
+        setAiSuggestion("Parece un caso de Comercio Exterior. Te sugerimos 'Sumarios Aduaneros'.");
+      } else if (normalized.includes("divorcio") || normalized.includes("sucesión") || normalized.includes("familia")) {
+        setAiSuggestion("Parece un caso de Familia. Te sugerimos 'Sucesiones y Divorcios'.");
       } else {
-        setAiSuggestion("Estoy analizando tu caso. ¿Te ayudo a encontrar el profesional adecuado?");
+        setAiSuggestion("Estoy analizando tu caso. En el siguiente paso podrás seleccionar el área de práctica más adecuada.");
       }
     } else {
       setShowAiAssistant(false);
@@ -75,53 +82,58 @@ export default function PostCasePage() {
     return null;
   }
 
-  const handleSubmit = async () => {
+  const handleInputSubmit = () => {
     if (!userInput.trim()) {
       alert("Por favor, describe tu caso");
       return;
     }
+    setFlowStep("selectArea");
+  };
 
-    // Paso 1: Animación de escaneo
+  const handleAreaSelect = (area: PracticeArea) => {
+    setSelectedPracticeArea(area);
     setFlowStep("scanning");
+    processCase(area);
+  };
 
+  const processCase = async (area: PracticeArea) => {
     // Simular análisis DPT
     await new Promise((resolve) => setTimeout(resolve, 2500));
 
-    // Clasificar automáticamente basado en el texto
-    const normalized = userInput.toLowerCase();
-    let practiceArea: LegalCase["practiceArea"] = "CIVIL";
+    // Determinar complejidad basada en la categoría
     let complexity: LegalCase["complexity"] = "MEDIA";
-
-    if (normalized.includes("penal") || normalized.includes("robo") || normalized.includes("asalto")) {
-      practiceArea = "PENAL";
+    if (area.category === "HIGH_TICKET") {
       complexity = "ALTA";
-    } else if (normalized.includes("laboral") || normalized.includes("trabajo") || normalized.includes("despido")) {
-      practiceArea = "LABORAL";
+    } else if (area.category === "CASH_FLOW") {
       complexity = "MEDIA";
-    } else if (normalized.includes("empresa") || normalized.includes("corporativo") || normalized.includes("sociedad")) {
-      practiceArea = "CORPORATIVO";
-      complexity = "ALTA";
+    } else if (area.category === "VOLUME") {
+      complexity = "BAJA";
     }
 
-    // Seleccionar profesionales sugeridos (mocks)
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:handleSubmit',message:'Filtering professionals',data:{totalProfesionales:mockProfesionales?.length || 0,practiceArea,complexity},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H3'})}).catch(()=>{});
-    // #endregion
+    // Presupuesto estimado basado en categoría
+    let budget = 3000000; // Default
+    if (area.category === "HIGH_TICKET") {
+      budget = 8000000;
+    } else if (area.category === "CASH_FLOW") {
+      budget = 5000000;
+    } else if (area.category === "VOLUME") {
+      budget = 2000000;
+    } else if (area.category === "NICHE") {
+      budget = 4000000;
+    }
+
+    // Seleccionar profesionales sugeridos
     const filtered = mockProfesionales
       .filter((p) => p.categoria === "Abogados")
       .slice(0, 3);
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/post-case/page.tsx:handleSubmit',message:'Professionals filtered',data:{filteredCount:filtered.length,professionalIds:filtered.map(p=>p.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H3'})}).catch(()=>{});
-    // #endregion
     setSelectedProfessionals(filtered);
 
     // Crear caso
-    const budget = 3000000; // Presupuesto estimado por defecto
     const priority = calculateCasePriority({
       title: userInput.substring(0, 50),
       description: userInput,
       complexity,
-      practiceArea,
+      practiceArea: area.id as LegalCase["practiceArea"],
       estimatedBudget: budget,
       status: "OPEN",
     });
@@ -131,7 +143,7 @@ export default function PostCasePage() {
       title: userInput.substring(0, 50) || "Caso Legal",
       description: userInput,
       complexity,
-      practiceArea,
+      practiceArea: area.id as LegalCase["practiceArea"],
       estimatedBudget: budget,
       status: "OPEN",
       exclusiveForGepUntil: priority.exclusiveForGepUntil,
@@ -154,7 +166,6 @@ export default function PostCasePage() {
   };
 
   const handleRequestQuote = (professionalId: string) => {
-    // Simular solicitud de presupuesto
     confetti({
       particleCount: 100,
       spread: 70,
@@ -169,9 +180,39 @@ export default function PostCasePage() {
     }, 2000);
   };
 
+  const getCategoryLabel = (category: PracticeArea["category"]) => {
+    switch (category) {
+      case "HIGH_TICKET":
+        return "High Ticket";
+      case "VOLUME":
+        return "Volumen";
+      case "NICHE":
+        return "Nicho";
+      case "CASH_FLOW":
+        return "Cash Flow";
+      default:
+        return "";
+    }
+  };
+
+  const getCategoryColor = (category: PracticeArea["category"]) => {
+    switch (category) {
+      case "HIGH_TICKET":
+        return "bg-gradient-to-r from-yellow-500 to-orange-500";
+      case "VOLUME":
+        return "bg-gradient-to-r from-blue-500 to-cyan-500";
+      case "NICHE":
+        return "bg-gradient-to-r from-purple-500 to-pink-500";
+      case "CASH_FLOW":
+        return "bg-gradient-to-r from-green-500 to-emerald-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto px-4 max-w-5xl">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
@@ -196,7 +237,7 @@ export default function PostCasePage() {
                   style={{ fontFamily: "'Inter', sans-serif" }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                      handleSubmit();
+                      handleInputSubmit();
                     }
                   }}
                 />
@@ -222,18 +263,119 @@ export default function PostCasePage() {
               <div className="mt-6 flex justify-end">
                 <Button
                   variant="primary"
-                  onClick={handleSubmit}
+                  onClick={handleInputSubmit}
                   disabled={!userInput.trim()}
                   className="px-8 py-3 text-lg rounded-xl"
                 >
-                  Buscar Profesionales →
+                  Continuar → Seleccionar Área
                 </Button>
               </div>
             </Card>
           </div>
         )}
 
-        {/* Animación de Escaneo - Paso 2 */}
+        {/* Selección de Área de Práctica - Paso 2 */}
+        {flowStep === "selectArea" && (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Selecciona el Área de Práctica
+              </h2>
+              <p className="text-gray-600">
+                Elige la categoría que mejor describe tu necesidad legal
+              </p>
+            </div>
+
+            {/* Categorías agrupadas */}
+            {(["HIGH_TICKET", "VOLUME", "NICHE", "CASH_FLOW"] as const).map((category) => {
+              const areas = getPracticeAreasByCategory(category);
+              if (areas.length === 0) return null;
+
+              return (
+                <div key={category} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-1 w-12 ${getCategoryColor(category)} rounded-full`}></div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {category === "HIGH_TICKET" && "🏢 Corporativo & Inversiones (High Ticket)"}
+                      {category === "VOLUME" && "📊 Propiedad Intelectual (Volumen)"}
+                      {category === "NICHE" && "🌐 Comercio Exterior (Nicho Aduanas)"}
+                      {category === "CASH_FLOW" && "💰 Litigios & Recuperación (Cash Flow)"}
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {areas.map((area) => (
+                      <div
+                        key={area.id}
+                        className="relative"
+                        onMouseEnter={() => setHoveredArea(area.id)}
+                        onMouseLeave={() => setHoveredArea(null)}
+                      >
+                        <button
+                          onClick={() => handleAreaSelect(area)}
+                          className={`w-full p-6 rounded-2xl border-2 transition-all text-left ${
+                            hoveredArea === area.id
+                              ? "border-blue-500 bg-blue-50 shadow-lg scale-[1.02]"
+                              : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
+                          }`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="text-4xl shrink-0">{area.icon}</div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-gray-900 text-lg mb-1">{area.name}</h4>
+                              <p className="text-sm text-gray-600 mb-2">{area.description}</p>
+                              <div className="flex items-center gap-2 mt-3">
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold text-white ${getCategoryColor(area.category)}`}>
+                                  {getCategoryLabel(area.category)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+
+                        {/* Tooltip */}
+                        {hoveredArea === area.id && (
+                          <div className="absolute z-10 left-0 right-0 top-full mt-2 p-4 bg-gray-900 text-white rounded-xl shadow-2xl animate-fade-in">
+                            <div className="flex items-start gap-2">
+                              <span className="text-yellow-400">💡</span>
+                              <div>
+                                <p className="font-semibold mb-1">{area.tooltip}</p>
+                                {area.examples.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-gray-700">
+                                    <p className="text-xs text-gray-400 mb-1">Ejemplos:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {area.examples.slice(0, 3).map((ex, idx) => (
+                                        <span key={idx} className="text-xs bg-gray-800 px-2 py-1 rounded">
+                                          {ex}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="text-center mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setFlowStep("input")}
+                className="px-6 py-2"
+              >
+                ← Volver a escribir
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Animación de Escaneo - Paso 3 */}
         {flowStep === "scanning" && (
           <Card className="p-12 shadow-xl text-center">
             <div className="space-y-6">
@@ -250,7 +392,7 @@ export default function PostCasePage() {
           </Card>
         )}
 
-        {/* Profesionales Sugeridos - Paso 3 */}
+        {/* Profesionales Sugeridos - Paso 4 */}
         {flowStep === "professionals" && (
           <div className="space-y-6">
             <div className="text-center mb-8">
@@ -260,13 +402,18 @@ export default function PostCasePage() {
               <p className="text-gray-600">
                 Hemos encontrado {selectedProfessionals.length} especialistas que pueden ayudarte
               </p>
+              {selectedPracticeArea && (
+                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full">
+                  <span className="text-2xl">{selectedPracticeArea.icon}</span>
+                  <span className="font-semibold text-gray-900">{selectedPracticeArea.name}</span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {selectedProfessionals.map((prof) => (
                 <Card key={prof.id} className="p-6 hover:shadow-xl transition-shadow">
                   <div className="space-y-4">
-                    {/* Foto y Badge */}
                     <div className="relative">
                       <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 mx-auto flex items-center justify-center text-white text-2xl font-bold">
                         {prof.nombre.charAt(0)}
@@ -278,18 +425,16 @@ export default function PostCasePage() {
                       </div>
                     </div>
 
-                    {/* Info */}
                     <div className="text-center">
                       <h3 className="font-bold text-gray-900 text-lg">{prof.nombre}</h3>
                       <p className="text-sm text-gray-600">{prof.especialidad}</p>
                       <div className="flex items-center justify-center gap-1 mt-2">
                         <span className="text-yellow-400">⭐</span>
                         <span className="text-sm font-semibold text-gray-700">{prof.rating}</span>
-                        <span className="text-xs text-gray-500">({prof.reviews} reseñas)</span>
+                        <span className="text-xs text-gray-500">({prof.reviews || 0} reseñas)</span>
                       </div>
                     </div>
 
-                    {/* CTA */}
                     <Button
                       variant="primary"
                       onClick={() => handleRequestQuote(prof.id)}
@@ -305,16 +450,16 @@ export default function PostCasePage() {
             <div className="text-center mt-8">
               <Button
                 variant="outline"
-                onClick={() => setFlowStep("input")}
+                onClick={() => setFlowStep("selectArea")}
                 className="px-6 py-2"
               >
-                ← Volver a escribir
+                ← Cambiar Área
               </Button>
             </div>
           </div>
         )}
 
-        {/* Éxito - Paso 4 */}
+        {/* Éxito - Paso 5 */}
         {flowStep === "success" && (
           <Card className="p-12 shadow-xl text-center">
             <div className="space-y-6">

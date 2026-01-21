@@ -19,10 +19,12 @@ export default function NavbarTop() {
   const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("cliente");
   const [isModeModalOpen, setIsModeModalOpen] = useState(false);
+  const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const toolsMenuRef = useRef<HTMLDivElement>(null);
   const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
   const setIdiomaWithLog = (newIdioma: typeof language) => {
@@ -135,10 +137,37 @@ export default function NavbarTop() {
     };
   }, [isUserMenuOpen]);
 
+  // Cerrar menú de herramientas al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(event.target as Node)) {
+        setIsToolsMenuOpen(false);
+      }
+    };
+
+    if (isToolsMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isToolsMenuOpen]);
+
   const navItems = [
     { href: "/", label: t("navbar.home") },
     { href: "/profesionales", label: t("navbar.professionals") },
     { href: "/cursos", label: t("navbar.courses") },
+    { 
+      href: "#", 
+      label: "🛠️ Herramientas", 
+      isDropdown: true,
+      submenu: [
+        { href: "https://www.csj.gov.py/consultas/", label: "Consulta de Expedientes (CSJ)", external: true },
+        { href: "https://www.dinapi.gov.py/", label: "Consulta de Marcas (DINAPI)", external: true },
+        { href: "https://leyes.com.py/", label: "Leyes.com.py (Biblioteca)", external: true },
+      ]
+    },
     { href: "/especializaciones", label: t("navbar.specializations") },
     { href: "/pasantias", label: t("navbar.internships") },
     { href: "/gestores", label: t("navbar.gestores") },
@@ -188,16 +217,67 @@ export default function NavbarTop() {
             {/* Desktop Navigation */}
             <nav className="hidden md:block min-w-0">
               <ul className="flex items-center gap-2 flex-wrap min-w-0">
-                {navItems.map((item) => (
-                  <li key={item.href} className="shrink-0">
-                    <Link
-                      href={item.href}
-                      className="block px-3 py-2 rounded-lg text-sm text-white/80 hover:text-[#C9A24D] hover:bg-white/5 transition-all duration-200 whitespace-nowrap"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+                {navItems.map((item) => {
+                  if (item.isDropdown && item.submenu) {
+                    return (
+                      <li key={item.href} className="shrink-0 relative" ref={toolsMenuRef}>
+                        <button
+                          onClick={() => setIsToolsMenuOpen(!isToolsMenuOpen)}
+                          className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-white/80 hover:text-[#C9A24D] hover:bg-white/5 transition-all duration-200 whitespace-nowrap"
+                        >
+                          {item.label}
+                          <svg
+                            className={`w-4 h-4 transition-transform ${isToolsMenuOpen ? "rotate-180" : ""}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {isToolsMenuOpen && (
+                          <div className="absolute top-full left-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+                            <div className="p-2">
+                              {item.submenu.map((subItem) => (
+                                <a
+                                  key={subItem.href}
+                                  href={subItem.href}
+                                  target={subItem.external ? "_blank" : undefined}
+                                  rel={subItem.external ? "noopener noreferrer" : undefined}
+                                  onClick={() => setIsToolsMenuOpen(false)}
+                                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-white/90 hover:bg-slate-700 hover:text-white transition-all group"
+                                >
+                                  <span className="text-lg">{subItem.label.includes("CSJ") ? "⚖️" : subItem.label.includes("DINAPI") ? "™️" : "📚"}</span>
+                                  <div className="flex-1">
+                                    <p className="font-medium">{subItem.label}</p>
+                                    {subItem.external && (
+                                      <p className="text-xs text-slate-400">Abre en nueva pestaña</p>
+                                    )}
+                                  </div>
+                                  {subItem.external && (
+                                    <svg className="w-4 h-4 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                  )}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={item.href} className="shrink-0">
+                      <Link
+                        href={item.href}
+                        className="block px-3 py-2 rounded-lg text-sm text-white/80 hover:text-[#C9A24D] hover:bg-white/5 transition-all duration-200 whitespace-nowrap"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
           </div>
