@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { I18nProvider } from "@/components/I18nProvider";
 import NavbarTop from "@/components/NavbarTop";
 import BottomNav from "@/components/BottomNav";
-import FloatingChatButton from "@/components/FloatingChatButton";
+import SmartAssistant from "@/components/SmartAssistant";
 import Footer from "@/components/Footer";
 import DemoControls from "@/components/Demo/DemoControls";
 
@@ -47,8 +47,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Bottom Navigation - Mobile Only */}
           <BottomNav />
 
-          {/* Floating Chat Button - All Devices */}
-          <FloatingChatButton />
+          {/* Smart Assistants - All Devices */}
+          <SmartAssistant />
 
           {/* Demo Controls - Solo en desarrollo */}
           <DemoControls />
