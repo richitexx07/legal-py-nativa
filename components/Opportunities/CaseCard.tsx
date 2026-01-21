@@ -21,7 +21,7 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
 
   // Actualizar contador regresivo cada segundo
   useEffect(() => {
-    if (!isGEP && isExclusiveGEP) {
+    if (isExclusiveGEP) {
       const updateTimer = () => {
         const remaining = getTimeUntilRelease(legalCase);
         setTimeRemaining(remaining);
@@ -32,7 +32,7 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
 
       return () => clearInterval(interval);
     }
-  }, [legalCase, isGEP, isExclusiveGEP]);
+  }, [legalCase, isExclusiveGEP]);
 
   // Formatear tiempo restante
   const formatTimeRemaining = (ms: number | null): string => {
@@ -77,17 +77,32 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
   };
 
   return (
-    <Card className={`relative overflow-hidden ${!isAvailable && !isGEP ? "opacity-75" : ""}`}>
-      {/* Overlay borroso para casos exclusivos GEP (solo para no-GEP) */}
+    <Card 
+      className={`relative overflow-hidden transition-all duration-300 ${
+        isGEP && isExclusiveGEP 
+          ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/20 hover:shadow-yellow-400/30" 
+          : !isAvailable && !isGEP 
+          ? "opacity-75" 
+          : ""
+      }`}
+    >
+      {/* Overlay borroso mejorado para casos exclusivos GEP (solo para no-GEP) */}
       {!isGEP && isExclusiveGEP && isAvailable === false && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-md z-10 flex flex-col items-center justify-center p-4">
           <div className="text-center">
-            <div className="text-4xl mb-2">🔒</div>
-            <p className="text-white font-semibold mb-2">Solo Socios GEP</p>
-            <p className="text-sm text-white/80 mb-3">Este caso tiene prioridad exclusiva</p>
-            <div className="inline-block px-3 py-1 rounded-lg bg-[#C9A24D]/20 border border-[#C9A24D]/50">
+            {/* Candado con animación de pulse/shake */}
+            <div className="text-5xl mb-3 animate-pulse hover:animate-[shake_0.5s_ease-in-out_infinite]">
+              🔒
+            </div>
+            <p className="text-white font-semibold mb-2 text-lg">Solo Socios GEP</p>
+            <p className="text-sm text-white/80 mb-1">Este caso tiene prioridad exclusiva</p>
+            {/* Tooltip */}
+            <p className="text-xs text-[#C9A24D] italic mb-4 px-4 py-2 rounded-lg bg-[#C9A24D]/10 border border-[#C9A24D]/30">
+              Disponible solo para la élite GEP
+            </p>
+            <div className="inline-block px-4 py-2 rounded-lg bg-[#C9A24D]/20 border-2 border-[#C9A24D]/50 animate-pulse">
               <p className="text-xs text-[#C9A24D] font-medium">
-                Se libera en: <span className="font-bold">{formatTimeRemaining(timeRemaining)}</span>
+                Se libera en: <span className="font-bold text-base">{formatTimeRemaining(timeRemaining)}</span>
               </p>
             </div>
           </div>
@@ -100,9 +115,18 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">{legalCase.title}</h3>
             {isGEP && isExclusiveGEP && (
-              <Badge variant="accent" className="bg-[#C9A24D] text-black text-xs mb-2">
-                👑 Prioridad GEP
-              </Badge>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <Badge variant="accent" className="bg-gradient-to-r from-yellow-400 to-[#C9A24D] text-black text-xs animate-pulse">
+                  👑 Prioridad GEP
+                </Badge>
+                {/* Etiqueta animada de tiempo restante para GEP */}
+                <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500/20 to-[#C9A24D]/20 border border-yellow-400/50">
+                  <span className="text-xs">💎</span>
+                  <span className="text-xs font-bold text-yellow-400">
+                    Tu Prioridad: <span className="text-yellow-300">{formatTimeRemaining(timeRemaining)}</span> restantes
+                  </span>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -125,11 +149,17 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
           )}
         </div>
 
-        {/* Descripción */}
-        <p className="text-sm text-white/70 line-clamp-3">{legalCase.description}</p>
+        {/* Descripción - Aplicar blur si es exclusivo y no-GEP */}
+        <p className={`text-sm text-white/70 line-clamp-3 ${
+          !isGEP && isExclusiveGEP && isAvailable === false ? "blur-sm" : ""
+        }`}>
+          {legalCase.description}
+        </p>
 
-        {/* Presupuesto */}
-        <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+        {/* Presupuesto - Aplicar blur si es exclusivo y no-GEP */}
+        <div className={`p-3 rounded-lg bg-white/5 border border-white/10 transition-all ${
+          !isGEP && isExclusiveGEP && isAvailable === false ? "blur-sm" : ""
+        }`}>
           <p className="text-xs text-white/60 mb-1">Presupuesto Estimado</p>
           <p className="text-lg font-bold text-[#C9A24D]">{formatBudget(legalCase.estimatedBudget)}</p>
         </div>

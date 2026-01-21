@@ -234,6 +234,39 @@ export default function OpportunitiesPage() {
           </p>
         </div>
       </div>
+
+      {/* Banner Sticky de Upsell para usuarios Nivel 1 (FOMO) */}
+      {userTier === 1 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-[#C9A24D]/95 to-[#C08457]/95 backdrop-blur-md border-t-2 border-yellow-400 shadow-2xl animate-slide-up">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
+              <div className="flex items-center gap-3">
+                <div className="text-3xl animate-pulse">🔒</div>
+                <div>
+                  <p className="text-white font-bold text-base sm:text-lg">
+                    ¿Cansado de ver candados? Desbloquea el Mercado High-Ticket.
+                  </p>
+                  <p className="text-white/90 text-xs sm:text-sm mt-1">
+                    Accede a casos exclusivos de alto valor que otros profesionales no pueden ver.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  // Simular modal de contacto para hacerse Socio GEP
+                  const contactInfo = "Contacto GEP:\n\nEmail: gep@legalpy.com\nTeléfono: +595 XX XXX XXXX\n\nUn asesor se comunicará contigo para explicarte los beneficios y el proceso de convertirse en Socio GEP.";
+                  alert(contactInfo);
+                  // En producción, esto abriría un modal de contacto real
+                }}
+                className="whitespace-nowrap bg-white text-black hover:bg-white/90 font-bold px-6 py-3 shadow-lg hover:scale-105 transition-transform"
+              >
+                👑 Hacerme Socio GEP
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

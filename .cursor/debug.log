@@ -832,3 +832,144 @@
 {"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957204529}
 {"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957204630}
 {"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957204834}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957361858}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957361861}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957361911}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957361943}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"components/Footer.tsx:Footer","message":"Footer rendered with policy links","data":{},"timestamp":1768957361947}
+{"location":"components/Demo/DemoControls.tsx:15","message":"DemoControls init","data":{"hostname":"legal-py-nativa.vercel.app"},"timestamp":1768957361949,"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}
+{"location":"components/Demo/DemoControls.tsx:19","message":"DemoControls visibility set","data":{"isDev":false,"showDemoControls":false,"isVisible":false},"timestamp":1768957361951,"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957361952}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957370263}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957370411}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383041}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383042}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383054}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383055}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383057}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383058}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383063}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383064}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383069}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383070}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383074}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383075}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383083}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383084}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383088}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383089}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383093}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383094}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383104}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383105}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383110}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383112}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383116}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383117}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383121}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383122}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383125}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383126}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383132}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383134}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383140}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383141}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383146}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383147}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383151}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383152}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383155}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383156}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383163}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383167}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383168}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383164}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383172}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383173}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383176}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383177}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383180}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383181}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383185}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383186}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383189}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383190}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383195}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383197}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383203}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957383204}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383208}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383241}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383252}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383254}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"components/Footer.tsx:Footer","message":"Footer rendered with policy links","data":{},"timestamp":1768957383256}
+{"location":"components/Demo/DemoControls.tsx:15","message":"DemoControls init","data":{"hostname":"legal-py-nativa.vercel.app"},"timestamp":1768957383257,"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}
+{"location":"components/Demo/DemoControls.tsx:19","message":"DemoControls visibility set","data":{"isDev":false,"showDemoControls":false,"isVisible":false},"timestamp":1768957383258,"sessionId":"debug-session","runId":"run1","hypothesisId":"H4"}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957383259}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957447880}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957447890}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957447917}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957455331}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957455360}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957658990}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957658997}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957658991}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957659086}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957659089}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957659092}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957682324}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957682321}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957682332}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957701745}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957803638}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957803707}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957831808}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957838216}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957838366}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957838401}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957847195}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957847282}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957847290}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957862956}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957863048}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957863051}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957868675}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957875630}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957875730}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957875734}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H3","location":"lib/auth.ts:getSession","message":"getSession called in browser","data":{},"timestamp":1768957888607}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896434}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896455}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896532}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896603}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896648}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896684}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896549}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896582}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896632}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896669}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896721}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896753}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896791}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957896952}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898010}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898049}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898074}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898110}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898148}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898190}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898229}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957897681}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957897807}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898300}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898134}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898184}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898223}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898565}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957898307}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957899343}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957899459}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957899519}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957899568}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957899684}
+{"sessionId":"debug-session","runId":"run1","hypothesisId":"H2","location":"components/NavbarTop.tsx:Notifications","message":"Navbar notifications render","data":{"hasUserId":false},"timestamp":1768957899867}

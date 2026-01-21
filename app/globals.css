@@ -49,6 +49,29 @@ body {
   background: #4a5f76;
 }
 
+/* Animación de shake para candado */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px) rotate(-2deg); }
+  20%, 40%, 60%, 80% { transform: translateX(3px) rotate(2deg); }
+}
+
+/* Animación de slide-up para banner sticky */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
 /* Firefox */
 html {
   scrollbar-width: thin;
