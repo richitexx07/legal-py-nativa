@@ -172,8 +172,53 @@ export default function NavbarTop() {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#C9A24D] flex items-center justify-center text-white font-semibold">
+                  <div className="w-8 h-8 rounded-full bg-[#C9A24D] flex items-center justify-center text-white font-semibold relative">
                     {session.user.email.charAt(0).toUpperCase()}
+                    {/* Badge de verificación pequeño en la esquina del avatar */}
+                    {session.user.kycTier >= 2 && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-[#13253A]">
+                        {session.user.kycTier === 2 ? (
+                          <div className="w-full h-full rounded-full bg-blue-500 flex items-center justify-center">
+                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="w-full h-full rounded-full bg-gradient-to-br from-yellow-400 to-[#C9A24D] flex items-center justify-center shadow-md">
+                            <svg className="w-2.5 h-2.5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {/* Email visible con badge al lado */}
+                  <div className="hidden md:flex items-center gap-2">
+                    <span className="text-sm text-white/90 truncate max-w-[120px]">{session.user.email}</span>
+                    {/* Badge de verificación al lado del email */}
+                    {session.user.kycTier >= 2 && (
+                      <div className="group relative">
+                        {session.user.kycTier === 2 ? (
+                          <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-[#C9A24D] flex items-center justify-center shadow-lg">
+                            <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                        {/* Tooltip */}
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                          Identidad Verificada Biométricamente
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <svg
                     className={`w-4 h-4 text-white/70 transition-transform ${isUserMenuOpen ? "rotate-180" : ""}`}
@@ -189,7 +234,32 @@ export default function NavbarTop() {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-64 rounded-lg bg-[#13253A] border border-white/10 shadow-xl z-50">
                     <div className="p-4 border-b border-white/10">
-                      <p className="text-sm font-semibold text-white">{session.user.email}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-white flex-1 truncate">{session.user.email}</p>
+                        {/* Badge de verificación para Nivel 2 o 3 */}
+                        {session.user.kycTier >= 2 && (
+                          <div className="group relative shrink-0">
+                            {session.user.kycTier === 2 ? (
+                              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-[#C9A24D] flex items-center justify-center shadow-lg">
+                                <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            )}
+                            {/* Tooltip */}
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                              Identidad Verificada Biométricamente
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <p className="text-xs text-white/60 mt-1">
                         Nivel {session.user.kycTier} -{" "}
                         {session.user.kycTier === 0
@@ -325,19 +395,44 @@ export default function NavbarTop() {
                 {isUserMenuOpen && (
                   <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setIsUserMenuOpen(false)}>
                     <div className="absolute bottom-0 left-0 right-0 bg-[#13253A] border-t border-white/10 rounded-t-2xl p-4">
-                      <div className="mb-4 pb-4 border-b border-white/10">
+                    <div className="mb-4 pb-4 border-b border-white/10">
+                      <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-white">{session.user.email}</p>
-                        <p className="text-xs text-white/60 mt-1">
-                          Nivel {session.user.kycTier} -{" "}
-                          {session.user.kycTier === 0
-                            ? "Visitante"
-                            : session.user.kycTier === 1
-                            ? "Básico"
-                            : session.user.kycTier === 2
-                            ? "Verificado"
-                            : "GEP/Corp"}
-                        </p>
+                        {/* Badge de verificación para Nivel 2 o 3 */}
+                        {session.user.kycTier >= 2 && (
+                          <div className="group relative">
+                            {session.user.kycTier === 2 ? (
+                              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-[#C9A24D] flex items-center justify-center shadow-lg">
+                                <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                            )}
+                            {/* Tooltip */}
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                              Identidad Verificada Biométricamente
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                          </div>
+                        )}
                       </div>
+                      <p className="text-xs text-white/60 mt-1">
+                        Nivel {session.user.kycTier} -{" "}
+                        {session.user.kycTier === 0
+                          ? "Visitante"
+                          : session.user.kycTier === 1
+                          ? "Básico"
+                          : session.user.kycTier === 2
+                          ? "Verificado"
+                          : "GEP/Corp"}
+                      </p>
+                    </div>
                       <div className="space-y-2">
                         <Link
                           href="/opportunities"

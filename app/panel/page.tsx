@@ -11,6 +11,7 @@ import { InscripcionCurso, PostulacionPasantia, SolicitudCapacitacion } from "@/
 import { mockCursos, mockPasantias } from "@/lib/educacion-data";
 import { getSession } from "@/lib/auth";
 import { LegalCase } from "@/lib/types";
+import { generateCaseHash, truncateHash, copyToClipboard } from "@/lib/security";
 
 export default function PanelAdminPage() {
   const router = useRouter();
@@ -207,6 +208,32 @@ export default function PanelAdminPage() {
                           <span className="text-white/80">
                             {new Date(caseData.createdAt).toLocaleDateString("es-PY")}
                           </span>
+                        </div>
+                      </div>
+                      {/* Huella Digital del Caso (Hash) */}
+                      <div className="mt-4 p-3 rounded-lg bg-white/5 border border-white/10">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="text-xs text-white/60 font-mono shrink-0">Huella Digital del Caso (Hash):</span>
+                            <code className="text-xs text-[#C9A24D] font-mono truncate">
+                              {truncateHash(generateCaseHash(caseData.id, caseData.title, caseData.createdAt))}
+                            </code>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              const fullHash = generateCaseHash(caseData.id, caseData.title, caseData.createdAt);
+                              const success = await copyToClipboard(fullHash);
+                              if (success) {
+                                alert("Hash copiado al portapapeles");
+                              }
+                            }}
+                            className="shrink-0 p-1.5 rounded hover:bg-white/10 transition group"
+                            title="Copiar hash completo"
+                          >
+                            <svg className="w-4 h-4 text-white/60 group-hover:text-[#C9A24D] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                       {caseData.exclusiveForGepUntil && (

@@ -44,17 +44,26 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/legal-center" className="text-sm text-white/70 hover:text-[#C9A24D] transition-colors">
+                <Link href="/legal-center" className="text-sm text-white/70 hover:text-[#C9A24D] transition-colors flex items-center gap-2 group">
+                  <svg className="w-3.5 h-3.5 text-white/50 group-hover:text-[#C9A24D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
                   Centro de Transparencia & Legal
                 </Link>
               </li>
               <li>
-                <Link href="/legal/privacy" className="text-sm text-white/70 hover:text-[#C9A24D] transition-colors">
+                <Link href="/legal/privacy" className="text-sm text-white/70 hover:text-[#C9A24D] transition-colors flex items-center gap-2 group">
+                  <svg className="w-3.5 h-3.5 text-white/50 group-hover:text-[#C9A24D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
                   {t.footer.privacidad}
                 </Link>
               </li>
               <li>
-                <Link href="/legal/terms" className="text-sm text-white/70 hover:text-[#C9A24D] transition-colors">
+                <Link href="/legal/terms" className="text-sm text-white/70 hover:text-[#C9A24D] transition-colors flex items-center gap-2 group">
+                  <svg className="w-3.5 h-3.5 text-white/50 group-hover:text-[#C9A24D] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
                   Términos y Condiciones
                 </Link>
               </li>
