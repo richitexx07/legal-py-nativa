@@ -8,6 +8,7 @@ import { LegalCase } from "@/lib/types";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import FormField from "@/components/FormField";
+import confetti from "canvas-confetti";
 
 export default function PostCasePage() {
   const router = useRouter();
@@ -141,10 +142,39 @@ export default function PostCasePage() {
     setLoading(false);
     setShowSuccessModal(true);
 
-    // Redirigir después de 2 segundos
+    // Disparar confeti cuando se muestra el modal
+    setTimeout(() => {
+      // Explosión principal de confeti
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#C9A24D', '#C08457', '#ffffff', '#4ade80', '#60a5fa']
+      });
+
+      // Segunda explosión después de 300ms para efecto de cascada
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#C9A24D', '#C08457', '#ffffff']
+        });
+        confetti({
+          particleCount: 50,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#C9A24D', '#C08457', '#ffffff']
+        });
+      }, 300);
+    }, 100);
+
+    // Redirigir después de 4 segundos (más tiempo para disfrutar el confeti)
     setTimeout(() => {
       router.push("/panel");
-    }, 2000);
+    }, 4000);
   };
 
   return (
@@ -342,33 +372,87 @@ export default function PostCasePage() {
           </form>
         </Card>
 
-        {/* Modal de éxito */}
+        {/* Modal de éxito mejorado con animaciones */}
         {showSuccessModal && dptResult && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <Card className="max-w-md w-full mx-4">
-              <div className="p-6 text-center">
-                <div className="text-6xl mb-4">✅</div>
-                <h2 className="text-2xl font-bold text-white mb-4">¡Caso Publicado!</h2>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+            <Card className="max-w-md w-full mx-4 animate-scale-in">
+              <div className="p-8 text-center">
+                {/* Check animado SVG */}
+                <div className="flex justify-center mb-6">
+                  <svg
+                    className="w-24 h-24 text-green-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      className="stroke-green-500/30"
+                      style={{
+                        strokeDasharray: 63,
+                        strokeDashoffset: 63,
+                        animation: 'drawCircle 0.6s ease-out 0.3s forwards'
+                      }}
+                    />
+                    <path
+                      d="M8 12l2 2 4-4"
+                      className="stroke-green-500"
+                      style={{
+                        strokeDasharray: 10,
+                        strokeDashoffset: 10,
+                        animation: 'drawCheck 0.4s ease-out 0.9s forwards'
+                      }}
+                    />
+                  </svg>
+                </div>
+
+                {/* Neuro-copy mejorado */}
+                <h2 className="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] bg-clip-text text-transparent">
+                  ¡Misión Cumplida! 🛡️
+                </h2>
+                <p className="text-white/80 text-lg mb-2 leading-relaxed">
+                  Tu caso ha sido encriptado y enviado a nuestro Motor DPT.
+                </p>
+                <p className="text-white/70 text-base mb-6">
+                  Los mejores profesionales lo verán en segundos.
+                </p>
+
                 <div className="space-y-3 mb-6">
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-sm text-white/60 mb-1">Clasificación DPT</p>
-                    <p className="text-lg font-semibold text-white">{dptResult.classification}</p>
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-white/10 to-white/5 border border-white/20">
+                    <p className="text-xs text-white/60 mb-1 font-medium uppercase tracking-wide">Clasificación DPT</p>
+                    <p className="text-xl font-bold text-white">{dptResult.classification}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-sm text-white/60 mb-1">Estado</p>
-                    <p className="text-lg font-semibold text-[#C9A24D]">{dptResult.status}</p>
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-[#C9A24D]/20 to-[#C08457]/20 border border-[#C9A24D]/40">
+                    <p className="text-xs text-[#C9A24D]/80 mb-1 font-medium uppercase tracking-wide">Estado</p>
+                    <p className="text-xl font-bold text-[#C9A24D]">{dptResult.status}</p>
                   </div>
                   {dptResult.isExclusiveGEP && (
-                    <div className="p-3 rounded-lg bg-[#C9A24D]/10 border border-[#C9A24D]/30">
-                      <p className="text-sm text-[#C9A24D]">
-                        👑 Este caso tiene prioridad exclusiva para socios GEP durante 24 horas
+                    <div className="p-4 rounded-lg bg-gradient-to-r from-yellow-500/20 to-[#C9A24D]/20 border-2 border-yellow-400/50 animate-pulse">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <span className="text-2xl">👑</span>
+                        <p className="text-sm font-bold text-yellow-400">Prioridad Exclusiva GEP</p>
+                      </div>
+                      <p className="text-xs text-yellow-300/90">
+                        Durante 24 horas, solo socios GEP pueden ver este caso
                       </p>
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-white/70 mb-4">Redirigiendo al panel...</p>
+
+                <p className="text-sm text-white/60 mb-4 flex items-center justify-center gap-2">
+                  <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-ping"></span>
+                  Redirigiendo al panel...
+                </p>
                 <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                  <div className="h-full bg-[#C9A24D] animate-pulse" style={{ width: "100%" }} />
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#C9A24D] to-[#C08457] transition-all duration-4000 ease-out" 
+                    style={{ width: "100%" }} 
+                  />
                 </div>
               </div>
             </Card>
