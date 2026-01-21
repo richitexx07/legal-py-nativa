@@ -13,6 +13,7 @@ import {
   StudentProfile,
   ProfileCompletionData,
   AuthMethod,
+  LegalCase,
 } from "./types";
 
 /**

@@ -14,6 +14,7 @@ const plans = [
       "Recibe respuestas ordenadas en tu panel",
       "Historial básico de gestiones por 6 meses",
     ],
+    gep: false,
   },
   {
     name: "Profesional",
@@ -26,6 +27,7 @@ const plans = [
       "Recibe clientes mientras duermes gracias al Motor DPT",
       "Recordatorios inteligentes para no perder plazos",
     ],
+    gep: false,
   },
   {
     name: "Empresarial",
@@ -38,6 +40,7 @@ const plans = [
       "Tablero unificado de casos y tiempos de respuesta",
       "Reportes ejecutivos listos para enviar a socios",
     ],
+    gep: false,
   },
   {
     name: "GEP (Gold Enterprise)",
