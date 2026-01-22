@@ -180,8 +180,8 @@ export default function BiometricGate() {
 
     // 6. Si NO es /subscribe pero es otra ruta crítica: verificar skip primero
     if (isCritical && !isSubscribe) {
-      const hasSkipped = getBiometricSkipped();
-      if (hasSkipped) {
+      // Reutilizar hasSkipped ya declarado arriba
+      if (hasSkipped === "true") {
         // #region agent log
         fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-critical-with-skip',message:'Critical route but skip active - hiding modal',data:{pathname,isCritical,hasSkipped},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
         // #endregion
@@ -193,14 +193,13 @@ export default function BiometricGate() {
       return;
     }
 
-    // 7. Si NO es ruta crítica: verificar si el usuario ya hizo skip
-    const hasSkipped = getBiometricSkipped();
+    // 7. Si NO es ruta crítica: verificar si el usuario ya hizo skip (reutilizar hasSkipped ya declarado)
 
     // #region agent log
     fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-skip-check',message:'Skip flag check',data:{pathname,hasSkipped,skipValue:sessionStorage.getItem('biometric_skipped')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
     // #endregion
 
-    if (hasSkipped) {
+    if (hasSkipped === "true") {
       // Ya hizo skip, no mostrar automáticamente
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-skip-active',message:'Skip active - hiding modal',data:{pathname,hasSkipped},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
