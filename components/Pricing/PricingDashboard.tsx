@@ -272,19 +272,25 @@ function PlanCard({
         flex flex-col
         transition-all duration-300 hover:shadow-xl
         ${isGep ? "gep-card bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#0a0a0a] border-[#C9A24D]/50" : ""}
-        ${isHighlight ? "scale-105 shadow-2xl shadow-[#C9A24D]/20 border-[#C9A24D]/60 bg-[#13253A]" : ""}
-        ${!isGep && !isHighlight ? "bg-[#13253A] border-white/15 hover:border-[#C9A24D]/30" : ""}
+        ${isHighlight ? "scale-105 shadow-2xl shadow-[#C9A24D]/30 border-[#C9A24D]/70 bg-gradient-to-br from-[#13253A] via-[#1a3045] to-[#13253A] ring-2 ring-[#C9A24D]/20" : ""}
+        ${!isGep && !isHighlight ? "bg-[#13253A] border-white/15 hover:border-[#C9A24D]/30 hover:scale-[1.02]" : ""}
       `}
     >
       {plan.badge && (
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, type: "spring" }}
           className={`
-            absolute -top-0.5 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-b-xl text-xs font-bold shadow-lg
-            ${isHighlight ? "bg-gradient-to-r from-[#C9A24D] to-[#d4af5a] text-black" : "bg-white/10 text-[#C9A24D]"}
+            absolute -top-0.5 left-1/2 -translate-x-1/2 px-5 py-2 rounded-b-xl text-xs font-extrabold shadow-2xl z-10
+            ${isHighlight ? "bg-gradient-to-r from-[#C9A24D] via-[#d4af5a] to-[#C9A24D] text-black animate-pulse" : "bg-white/10 text-[#C9A24D] backdrop-blur-sm"}
           `}
         >
-          ⭐ {plan.badge}
-        </div>
+          <span className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            {plan.badge}
+          </span>
+        </motion.div>
       )}
 
       <div className={`p-6 md:p-8 flex flex-col flex-1 ${isGep ? "text-white" : "text-white"}`}>
@@ -317,22 +323,25 @@ function PlanCard({
           ))}
         </ul>
 
-        {/* Bloque Seguridad */}
+        {/* Bloque Seguridad - Beneficio Tangible */}
         {plan.security.length > 0 && (
-          <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/10">
-            <p className="text-xs font-semibold text-[#C9A24D] uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Shield className="w-3.5 h-3.5" /> Seguridad
-            </p>
-            <ul className="space-y-2">
-              {plan.security.map((s, i) => (
-                <li key={i} className="flex items-center gap-2 text-xs text-white/75">
-                  <span className="text-[#C9A24D]/80">
-                    <SecurityIcon type={s.icon} />
-                  </span>
-                  {s.label}
-                </li>
-              ))}
-            </ul>
+          <div className="mt-6 p-4 rounded-xl bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-green-500/10 border border-green-500/20 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-green-500/5 to-transparent animate-pulse" />
+            <div className="relative">
+              <p className="text-xs font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-green-400" /> Seguridad como Beneficio
+              </p>
+              <ul className="space-y-2.5">
+                {plan.security.map((s, i) => (
+                  <li key={i} className="flex items-center gap-2.5 text-xs text-white/90">
+                    <span className="text-green-400/90 shrink-0">
+                      <SecurityIcon type={s.icon} />
+                    </span>
+                    <span className="font-medium">{s.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
 
@@ -344,22 +353,48 @@ function PlanCard({
           <p className="text-sm text-white/85">{plan.iaLabel}</p>
         </div>
 
-        {/* CTA */}
+        {/* CTA con Embedded Commands - Neuroventas */}
         <div className="mt-8 pt-6 border-t border-white/10">
-          <Button
-            variant="primary"
-            size="lg"
-            className="w-full rounded-xl py-3.5 font-semibold bg-[#C9A24D] hover:bg-[#d4af5a] text-black transition-all hover:shadow-lg hover:shadow-[#C9A24D]/25"
-            onClick={() => onCtaClick(plan)}
-            aria-label={plan.ctaAria}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            {plan.cta}
-            <ChevronRight className="w-4 h-4 ml-2 inline-block" />
-          </Button>
+            <Button
+              variant="primary"
+              size="lg"
+              className={`w-full rounded-xl py-4 font-bold text-base bg-gradient-to-r from-[#C9A24D] to-[#d4af5a] hover:from-[#d4af5a] hover:to-[#C9A24D] text-black transition-all hover:shadow-xl hover:shadow-[#C9A24D]/40 ${
+                isHighlight ? "ring-2 ring-[#C9A24D]/50 ring-offset-2 ring-offset-[#13253A]" : ""
+              }`}
+              onClick={() => onCtaClick(plan)}
+              aria-label={plan.ctaAria}
+            >
+              <span className="flex items-center justify-center gap-2">
+                {plan.cta}
+                <ChevronRight className="w-5 h-5 inline-block animate-pulse" />
+              </span>
+            </Button>
+          </motion.div>
           {isHighlight && !isGep && (
-            <p className="mt-3 text-xs text-white/55 text-center">
-              Recomendado para estudios que quieren crecer con control y seguridad.
-            </p>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mt-3 text-xs text-[#C9A24D]/90 text-center font-medium"
+            >
+              ⚡ Recomendado para estudios que quieren crecer con control y seguridad
+            </motion.p>
+          )}
+          {plan.id === "edtech" && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-3 p-3 rounded-lg bg-[#C9A24D]/15 border border-[#C9A24D]/30"
+            >
+              <p className="text-xs font-semibold text-[#C9A24D] text-center">
+                🎓 Promo: Si luego contratas plan Profesional, obtienes descuento especial
+              </p>
+            </motion.div>
           )}
         </div>
       </div>
@@ -387,9 +422,15 @@ function GepCard({ onCtaClick }: { onCtaClick: () => void }) {
               GEP – Gold Enterprise Partner
             </h2>
           </div>
-          <p className="text-white/70 mb-6 max-w-2xl">
-            Exclusividad total. Cupos limitados. Sin White Label. Precio bajo conversación estratégica.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-white/80 mb-6 max-w-2xl text-base leading-relaxed"
+          >
+            <span className="font-semibold text-[#C9A24D]">Exclusividad total.</span> Cupos limitados. Sin White Label. 
+            <span className="italic"> Precio bajo conversación estratégica.</span>
+          </motion.p>
           <ul className="space-y-3">
             {plan.benefits.map((b, i) => (
               <li key={i} className="flex items-start gap-3">
@@ -513,19 +554,37 @@ export default function PricingDashboard() {
           transition={{ duration: 0.4 }}
           className="text-center max-w-3xl mx-auto mb-12 md:mb-16"
         >
-          <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-4">
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-4 bg-gradient-to-r from-white via-[#C9A24D]/90 to-white bg-clip-text text-transparent"
+          >
             Planes premium para cada etapa
-          </h1>
-          <p className="text-lg md:text-xl text-white/70">
-            Beneficios claros, seguridad tangible y asistencia IA (Justo & Victoria) en cada plan.
-            Elegí el que potencia tu actividad legal.
-          </p>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-lg md:text-xl text-white/80 leading-relaxed"
+          >
+            Beneficios claros, <span className="text-green-400 font-semibold">seguridad tangible</span> y asistencia IA 
+            <span className="text-[#C9A24D] font-semibold"> (Justo & Victoria)</span> en cada plan.
+            <br className="hidden md:block" />
+            <span className="text-white/90">Elegí el que potencia tu actividad legal.</span>
+          </motion.p>
         </motion.header>
 
-        {/* Grid de planes con precio */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {PLANS.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} onCtaClick={handleCta} />
+        {/* Grid de planes con precio - Profesional destacado */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 relative">
+          {PLANS.map((plan, index) => (
+            <motion.div
+              key={plan.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+            >
+              <PlanCard plan={plan} onCtaClick={handleCta} />
+            </motion.div>
           ))}
         </div>
 

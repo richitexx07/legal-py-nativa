@@ -164,25 +164,68 @@ select:focus option:checked {
   color: #000000 !important;
 }
 
-/* GEP – bordes dorados animados */
+/* GEP – bordes dorados animados (mejorado) */
 @keyframes gep-border-glow {
   0%, 100% {
-    box-shadow: 0 0 12px rgba(201, 162, 77, 0.35),
-      inset 0 0 20px rgba(201, 162, 77, 0.05);
+    box-shadow: 
+      0 0 15px rgba(201, 162, 77, 0.4),
+      0 0 30px rgba(201, 162, 77, 0.2),
+      inset 0 0 20px rgba(201, 162, 77, 0.05),
+      0 0 0 2px rgba(201, 162, 77, 0.3);
   }
   50% {
-    box-shadow: 0 0 20px rgba(201, 162, 77, 0.5),
-      inset 0 0 24px rgba(201, 162, 77, 0.08);
+    box-shadow: 
+      0 0 25px rgba(201, 162, 77, 0.6),
+      0 0 50px rgba(201, 162, 77, 0.3),
+      inset 0 0 30px rgba(201, 162, 77, 0.1),
+      0 0 0 2px rgba(201, 162, 77, 0.5);
   }
 }
 
 @keyframes gep-glow-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%, 100% { 
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes gep-border-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .gep-card {
   animation: gep-border-glow 3s ease-in-out infinite;
+  position: relative;
+}
+
+.gep-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    transparent 30%,
+    rgba(201, 162, 77, 0.3) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: gep-border-sweep 3s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .gep-glow {
@@ -191,10 +234,12 @@ select:focus option:checked {
   border-radius: inherit;
   background: linear-gradient(
     135deg,
-    transparent 40%,
-    rgba(201, 162, 77, 0.08) 50%,
-    transparent 60%
+    transparent 30%,
+    rgba(201, 162, 77, 0.12) 50%,
+    transparent 70%
   );
-  animation: gep-glow-pulse 4s ease-in-out infinite;
+  background-size: 200% 200%;
+  animation: gep-glow-pulse 4s ease-in-out infinite, gep-border-sweep 5s linear infinite;
   pointer-events: none;
+  z-index: 0;
 }

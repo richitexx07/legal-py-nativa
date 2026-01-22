@@ -13,6 +13,7 @@ import BiometricVerificationModal from "@/components/Security/BiometricVerificat
 import Snackbar from "@/components/Snackbar";
 import { mockProfesionales } from "@/lib/mock-data";
 import Image from "next/image";
+import { useUserState } from "@/hooks/useUserState";
 
 type FlowStep = "input" | "processing" | "professionals" | "success";
 
@@ -31,24 +32,34 @@ export default function PostCasePage() {
   const [mounted, setMounted] = useState(false);
   const [flowStep, setFlowStep] = useState<FlowStep>("input");
   const [userInput, setUserInput] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
   const [anonymizedProfessionals, setAnonymizedProfessionals] = useState<AnonymizedProfessional[]>([]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [notification, setNotification] = useState<{ message: string; type: "info" | "success" } | null>(null);
   
   // Hook para verificación biométrica en acciones críticas
   const { showModal, setShowModal, isVerifying, handleVerify, userId } = useBiometricCheck();
+  
+  // Hook para estados progresivos de usuario
+  const userState = useUserState();
 
+  // Inicializar en cliente
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+    
+    const init = () => {
+      setMounted(true);
       const currentSession = getSession();
       setSession(currentSession);
 
+      // Estado 0 (Visitante): redirigir a login
       if (!currentSession) {
-        router.push("/login");
+        router.push("/login?redirect=/post-case");
       }
-    }
+    };
+    
+    init();
+    // Estado 1 (Registrado sin plan): permitir ver pero mostrar bloqueo informativo
+    // Estado 2 (Con plan): permitir crear caso con biometría
   }, [router]);
 
   // Simular notificaciones cuando un profesional ve el caso
@@ -89,12 +100,30 @@ export default function PostCasePage() {
     return null;
   }
 
-  const handleInputSubmit = async () => {
+  const handleInputSubmit = async (skipBiometric = false) => {
     if (!userInput.trim()) {
       return;
     }
 
-    setIsProcessing(true);
+    // Action-Based Security Gate: Verificar si requiere biometría
+    if (!skipBiometric && userState.requiresBiometricForAction("create_case")) {
+      // Mostrar modal biométrico antes de crear el caso
+      setShowModal(true);
+      return;
+    }
+
+    // Si no tiene plan, mostrar mensaje informativo
+    if (!userState.canCreateCases) {
+      setNotification({
+        message: userState.showActionBlockedMessage("crear casos"),
+        type: "info",
+      });
+      setTimeout(() => {
+        router.push("/pricing");
+      }, 2000);
+      return;
+    }
+
     setFlowStep("processing");
 
     // Simular procesamiento con IA (1-2 segundos)
@@ -159,7 +188,6 @@ export default function PostCasePage() {
       console.error("Error saving case:", error);
     }
 
-    setIsProcessing(false);
     setFlowStep("professionals");
   };
 
@@ -244,7 +272,10 @@ export default function PostCasePage() {
               <div className="mt-8 flex flex-col items-center gap-4">
                 <Button
                   variant="primary"
-                  onClick={handleInputSubmit}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleInputSubmit(false);
+                  }}
                   disabled={!userInput.trim()}
                   className="px-12 py-4 text-lg rounded-xl font-semibold"
                 >
@@ -386,16 +417,42 @@ export default function PostCasePage() {
         />
       )}
 
-      {/* Modal biométrico para acciones críticas */}
-      {showModal && (
+      {/* Modal biométrico para acciones críticas - Solo si tiene plan */}
+      {showModal && userState.state === "with_plan" && (
         <BiometricVerificationModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          onVerify={handleVerify}
-          isMandatory={false}
+          onVerify={(selfieDataUrl) => {
+            // Si la biometría fue exitosa (hay selfieDataUrl), proceder con crear el caso
+            if (selfieDataUrl) {
+              handleVerify(selfieDataUrl);
+              // Proceder con crear el caso (skip biometría)
+              handleInputSubmit(true);
+            }
+          }}
+          isMandatory={true}
           isVerifying={isVerifying}
           userId={userId}
         />
+      )}
+      
+      {/* Mensaje informativo si no tiene plan */}
+      {!userState.canCreateCases && flowStep === "input" && (
+        <div className="fixed bottom-24 right-6 z-40 max-w-sm">
+          <Card className="p-4 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40">
+            <p className="text-sm text-white font-medium mb-2">
+              💡 Para crear casos necesitás un plan activo
+            </p>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => router.push("/pricing")}
+              className="w-full"
+            >
+              Ver Planes
+            </Button>
+          </Card>
+        </div>
       )}
     </div>
   );

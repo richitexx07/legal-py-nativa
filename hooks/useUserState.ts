@@ -1,40 +1,84 @@
-"use client";
-
-import { getSession } from "@/lib/auth";
-
 /**
- * Modelo de estados progresivos (NO binario)
- *
- * 0 – Visitante: sin sesión. Ve Home, IA demo, profesionales, casos internacionales, gráficas, planes.
- *    No puede ejecutar acciones.
- *
- * 1 – Registrado sin plan: tiene sesión, sin plan activo. Accede al Panel, explora, ve flujos,
- *    IA limitada, ve botones de acción con bloqueo informativo. No crea casos, no sube docs,
- *    no paga, no contacta profesionales. NO forzar biometría.
- *
- * 2 – Usuario con plan activo: puede crear casos, subir docs, contactar profesionales, usar IA según plan.
- *    Aquí se activan controles biométricos por acción.
+ * useUserState - Hook para Estados Progresivos de Usuario
+ * 
+ * Implementa el modelo de estados progresivos:
+ * - Estado 0: Visitante (sin sesión)
+ * - Estado 1: Usuario registrado (sin plan)
+ * - Estado 2: Usuario con plan activo
+ * 
+ * @author Legal PY Team
  */
-export type UserState = 0 | 1 | 2;
 
-export function useUserState(): UserState {
-  if (typeof window === "undefined") return 0;
-  const session = getSession();
-  if (!session) return 0;
+import { useMemo } from "react";
+import { getSession } from "@/lib/auth";
+import { AuthSession } from "@/lib/types";
 
-  const profile = session.profile as { planId?: string; planStatus?: string } | undefined;
-  const planStatus = profile?.planStatus;
-  const planId = profile?.planId;
+export type UserState = "visitor" | "registered" | "with_plan";
 
-  const hasActivePlan = planStatus === "active" && !!planId;
-  const isDemoGep =
-    typeof window !== "undefined" && localStorage.getItem("legal-py-demo-plan") === "GEP";
-  if (hasActivePlan || isDemoGep) return 2;
-  return 1;
+export interface UserStateInfo {
+  state: UserState;
+  canCreateCases: boolean;
+  canUploadDocuments: boolean;
+  canMakePayments: boolean;
+  canContactProfessionals: boolean;
+  canUseIAUnlimited: boolean;
+  requiresBiometricForAction: (action: "create_case" | "upload_doc" | "payment" | "contact_pro") => boolean;
+  showActionBlockedMessage: (action: string) => string;
 }
 
-export function hasActivePlan(session: ReturnType<typeof getSession>): boolean {
-  if (!session) return false;
-  const profile = session.profile as { planId?: string; planStatus?: string } | undefined;
-  return profile?.planStatus === "active" && !!profile?.planId;
+/**
+ * Hook para obtener el estado progresivo del usuario
+ */
+export function useUserState(): UserStateInfo {
+  const session = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return getSession();
+  }, []);
+
+  const userState: UserState = useMemo(() => {
+    if (!session) return "visitor";
+    
+    // Verificar si tiene plan activo
+    const hasActivePlan = 
+      session.user.kycTier > 0 || 
+      (session.profile && "planStatus" in session.profile && session.profile.planStatus === "active");
+    
+    if (hasActivePlan) return "with_plan";
+    return "registered";
+  }, [session]);
+
+  const canCreateCases = userState === "with_plan";
+  const canUploadDocuments = userState === "with_plan";
+  const canMakePayments = userState === "with_plan";
+  const canContactProfessionals = userState === "with_plan";
+  const canUseIAUnlimited = userState === "with_plan";
+
+  const requiresBiometricForAction = (action: "create_case" | "upload_doc" | "payment" | "contact_pro"): boolean => {
+    // Solo requiere biometría si tiene plan activo (Estado 2)
+    if (userState !== "with_plan") return false;
+    
+    // Todas las acciones sensibles requieren biometría en Estado 2
+    return true;
+  };
+
+  const showActionBlockedMessage = (action: string): string => {
+    if (userState === "visitor") {
+      return `Iniciá sesión para ${action}. La biometría se activará al confirmar.`;
+    }
+    if (userState === "registered") {
+      return `Contratá un plan para ${action}. Ver planes en /pricing`;
+    }
+    return "";
+  };
+
+  return {
+    state: userState,
+    canCreateCases,
+    canUploadDocuments,
+    canMakePayments,
+    canContactProfessionals,
+    canUseIAUnlimited,
+    requiresBiometricForAction,
+    showActionBlockedMessage,
+  };
 }

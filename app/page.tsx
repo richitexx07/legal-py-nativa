@@ -4,9 +4,15 @@ import Link from "next/link";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Image from "next/image";
-import { mockCategorias } from "@/lib/mock-data";
+import { mockCategorias, mockProfesionales } from "@/lib/mock-data";
 
 const SIX_CATEGORIES = mockCategorias.slice(0, 6);
+
+// Profesionales destacados (top 6 por rating)
+const FEATURED_PROFESSIONALS = mockProfesionales
+  .filter((p) => p.categoria === "Abogados")
+  .sort((a, b) => b.rating - a.rating)
+  .slice(0, 6);
 
 const ACTIVITY_CHART = [
   { label: "Casos abiertos", value: 127, color: "bg-[#C9A24D]" },
@@ -54,16 +60,144 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Asistentes IA - Victoria & Justo */}
-      <section className="py-12 px-4 border-t border-white/10">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Habla con Victoria y Justo</h2>
-          <p className="text-white/70 mb-6 max-w-xl mx-auto">
-            Asistentes IA disponibles 24/7. Te orientan y derivan al profesional indicado. Modo demo sin límites.
-          </p>
-          <p className="text-xs text-yellow-400/90 font-medium">
-            Esto no constituye asesoramiento legal. Solo filtrado y derivación.
-          </p>
+      {/* Asistentes IA - Victoria & Justo - VISIBLES Y ACCESIBLES */}
+      <section className="py-16 px-4 border-t border-white/10 bg-gradient-to-b from-transparent to-[#13253A]/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              Habla con <span className="text-[#C9A24D]">Victoria</span> y <span className="text-[#C9A24D]">Justo</span>
+            </h2>
+            <p className="text-lg text-white/80 mb-4 max-w-2xl mx-auto">
+              Asistentes IA disponibles 24/7. Te orientan y derivan al profesional indicado. 
+              <span className="block mt-2 text-base text-white/70">Modo demo sin límites - Sin registro necesario</span>
+            </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400/15 border border-yellow-400/30">
+              <span className="text-sm">⚠️</span>
+              <p className="text-xs text-yellow-200 font-semibold">
+                Esto no constituye asesoramiento legal. Solo filtrado y derivación.
+              </p>
+            </div>
+          </div>
+          
+          {/* Cards de asistentes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-8">
+            {/* Victoria */}
+            <Card className="p-6 hover:shadow-xl hover:scale-[1.02] transition-all border border-white/10 hover:border-[#C9A24D]/40 bg-gradient-to-br from-blue-500/10 to-purple-500/10">
+              <div className="flex items-start gap-4">
+                <div className="relative h-16 w-16 rounded-2xl overflow-hidden border-2 border-blue-400/40 bg-white/5 shrink-0">
+                  <Image 
+                    src="/avatars/icono_abogada_avatar.jpeg" 
+                    alt="Victoria" 
+                    fill 
+                    className="object-cover" 
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xl font-bold text-white">Victoria</h3>
+                    <span className="text-lg">👩‍⚖️</span>
+                  </div>
+                  <p className="text-sm text-white/70 mb-3">
+                    Empatía, calma y precisión. Ideal para familia, laboral y estudiantes.
+                  </p>
+                  <p className="text-xs text-blue-300/80 font-medium">
+                    Disponible ahora - Clic en el botón flotante para iniciar
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Justo */}
+            <Card className="p-6 hover:shadow-xl hover:scale-[1.02] transition-all border border-white/10 hover:border-[#C9A24D]/40 bg-gradient-to-br from-[#C9A24D]/10 to-[#C08457]/10">
+              <div className="flex items-start gap-4">
+                <div className="relative h-16 w-16 rounded-2xl overflow-hidden border-2 border-[#C9A24D]/40 bg-white/5 shrink-0">
+                  <Image 
+                    src="/avatars/icono_abogado_avatar.jpeg" 
+                    alt="Justo" 
+                    fill 
+                    className="object-cover" 
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xl font-bold text-white">Justo</h3>
+                    <span className="text-lg">👨‍⚖️</span>
+                  </div>
+                  <p className="text-sm text-white/70 mb-3">
+                    Autoridad, claro y pausado. Ideal para casos corporativos y penales.
+                  </p>
+                  <p className="text-xs text-[#C9A24D] font-medium">
+                    Disponible ahora - Clic en el botón flotante para iniciar
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-white/60">
+              💡 Los asistentes están disponibles en el botón flotante (esquina inferior derecha)
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Profesionales Destacados - NO listado genérico */}
+      <section className="py-16 px-4 border-t border-white/10 bg-gradient-to-b from-transparent to-[#13253A]/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Profesionales Destacados</h2>
+            <p className="text-white/70 text-lg">
+              Abogados verificados con alta calificación. Encontrá al experto para tu caso.
+            </p>
+          </div>
+          
+          {/* Grid de profesionales destacados */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {FEATURED_PROFESSIONALS.map((prof) => (
+              <Link key={prof.id} href={`/profesionales/${prof.id}`}>
+                <Card className="h-full p-6 hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer border border-white/10 hover:border-[#C9A24D]/40 bg-gradient-to-br from-white/5 to-white/0">
+                  <div className="flex items-start gap-4">
+                    <div className="relative h-16 w-16 rounded-xl overflow-hidden border-2 border-white/20 bg-white/5 shrink-0">
+                      <Image
+                        src={prof.avatar || "/avatars/icono_abogado_avatar.jpeg"}
+                        alt={prof.nombre}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-white text-base truncate">{prof.nombre}</h3>
+                          <p className="text-sm text-white/70 truncate">{prof.titulo}</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-yellow-400 text-sm">⭐</span>
+                          <span className="text-sm font-semibold text-white">{prof.rating.toFixed(1)}</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-white/60 mb-2 line-clamp-2">{prof.descripcion || `${prof.especialidad} • ${prof.ciudad}`}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#C9A24D] font-semibold">{prof.precio}</span>
+                        <span className="text-xs text-white/50">{prof.experiencia} años exp.</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          {/* Link a ver todos */}
+          <div className="text-center">
+            <Link href="/profesionales">
+              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                Ver todos los profesionales
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -71,8 +205,8 @@ export default function Home() {
       <section className="py-12 px-4 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Profesionales Verificados</h2>
-            <p className="text-white/70">Seis categorías. Encontrá al experto para tu caso.</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Categorías de Servicios</h2>
+            <p className="text-white/70">Seis categorías. Encontrá el servicio que necesitás.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {SIX_CATEGORIES.map((c) => (
@@ -111,28 +245,64 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Gráficas actividad (anonimizadas, demo-safe) */}
-      <section className="py-12 px-4 border-t border-white/10">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">
-            Actividad de la plataforma
-          </h2>
-          <p className="text-white/60 text-sm text-center mb-8 max-w-lg mx-auto">
-            Datos anonimizados. Demo-safe.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {ACTIVITY_CHART.map((item) => (
-              <Card key={item.label} className="p-6 border border-white/10">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-white/60 text-sm">{item.label}</p>
-                    <p className="text-2xl font-bold text-white mt-1">{item.value}</p>
+      {/* Gráficas actividad (anonimizadas, demo-safe) - MEJORADAS */}
+      <section className="py-16 px-4 border-t border-white/10 bg-gradient-to-b from-transparent to-[#0E1B2A]/50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              Actividad de la plataforma
+            </h2>
+            <p className="text-white/70 text-base mb-2 max-w-2xl mx-auto">
+              Datos anonimizados y demo-safe. La plataforma está viva y activa.
+            </p>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-xs text-green-300 font-medium">En tiempo real</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {ACTIVITY_CHART.map((item, index) => (
+              <Card 
+                key={item.label} 
+                className="p-8 border border-white/10 hover:border-[#C9A24D]/40 hover:shadow-xl transition-all bg-gradient-to-br from-white/5 to-white/0"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-white/70 text-sm font-medium">{item.label}</p>
+                    <div className={`w-4 h-16 rounded-full ${item.color} opacity-90 shadow-lg`} />
                   </div>
-                  <div className={`w-3 h-12 rounded-full ${item.color} opacity-80`} />
+                  <div>
+                    <p className="text-4xl font-extrabold text-white mb-1">{item.value}</p>
+                    <p className="text-xs text-white/50">
+                      {index === 0 && "Casos activos ahora"}
+                      {index === 1 && "Matchings esta semana"}
+                      {index === 2 && "Profesionales verificados"}
+                    </p>
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
+
+          {/* Gráfica de matching visual */}
+          <Card className="p-6 border border-white/10 bg-gradient-to-br from-[#C9A24D]/10 to-transparent">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-white">Tasa de Matching</h3>
+                <span className="text-2xl font-extrabold text-[#C9A24D]">94%</span>
+              </div>
+              <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                <div 
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#C9A24D] to-[#C08457] rounded-full"
+                  style={{ width: "94%" }}
+                />
+              </div>
+              <p className="text-xs text-white/60">
+                Casos resueltos exitosamente con profesionales verificados
+              </p>
+            </div>
+          </Card>
         </div>
       </section>
 
