@@ -6,7 +6,7 @@
  * Plan GEP: exclusivo, sin precio público. Biometría solo al confirmar pago.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FolderOpen,
@@ -264,7 +264,6 @@ function PlanCard({
 
   return (
     <motion.article
-      layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
@@ -297,10 +296,10 @@ function PlanCard({
         </div>
 
         {/* Precio: solo si no es GEP */}
-        {hasPrice && (
+        {hasPrice && plan.price != null && (
           <div className="mb-6 flex items-baseline gap-1">
             <span className="text-3xl md:text-4xl font-extrabold text-[#C9A24D]">
-              Gs. {plan.price!.toLocaleString("es-PY")}
+              Gs. {plan.price.toLocaleString("es-PY")}
             </span>
             <span className="text-white/60">{plan.period}</span>
           </div>
@@ -478,7 +477,11 @@ export default function PricingDashboard() {
     plan: PlanConfig | null;
   }>({ open: false, plan: null });
   const [gepModalOpen, setGepModalOpen] = useState(false);
-  const session = typeof window !== "undefined" ? getSession() : null;
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setSession(getSession());
+  }, []);
 
   const handleCta = (plan: PlanConfig) => {
     if (plan.gep) {
