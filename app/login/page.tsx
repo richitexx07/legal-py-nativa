@@ -15,14 +15,8 @@ export default function LoginPage() {
   useEffect(() => {
     const session = getSession();
     if (session) {
-      // Redirigir según el rol
-      const redirectPath =
-        session.user.role === "profesional"
-          ? "/profesional/panel"
-          : session.user.role === "estudiante"
-          ? "/pasantias"
-          : "/casos";
-      router.push(redirectPath);
+      // Redirigir al panel principal
+      router.push("/panel");
     }
   }, [router]);
 

@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Demo Controls - Solo en desarrollo */}
           <DemoControls />
 
-          {/* Bloqueo Biométrico - Verificación obligatoria */}
+          {/* Bloqueo Biométrico - Solo en acciones críticas (NO bloquea al inicio) */}
           <BiometricGate />
         </LanguageProvider>
       </body>

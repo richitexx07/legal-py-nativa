@@ -11,8 +11,15 @@ export interface WebAuthnCredential {
 
 /**
  * Registra una nueva credencial WebAuthn para el usuario
+ * @param userId ID único del usuario
+ * @param userName Nombre del usuario
+ * @param email Email del usuario (para guardar la credencial localmente)
  */
-export async function registerWebAuthn(userId: string, userName: string): Promise<WebAuthnCredential | null> {
+export async function registerWebAuthn(
+  userId: string,
+  userName: string,
+  email?: string
+): Promise<WebAuthnCredential | null> {
   if (typeof window === "undefined" || !window.PublicKeyCredential) {
     console.warn("WebAuthn no está disponible en este navegador");
     return null;
@@ -60,11 +67,18 @@ export async function registerWebAuthn(userId: string, userName: string): Promis
     const response = credential.response as AuthenticatorAttestationResponse;
 
     // Convertir a formato almacenable
-    return {
+    const webAuthnCredential: WebAuthnCredential = {
       id: credential.id,
       publicKey: Array.from(new Uint8Array(response.getPublicKey() || new Uint8Array())).map(b => b.toString(16).padStart(2, '0')).join(''),
       counter: 0,
     };
+
+    // Guardar credencial localmente si se proporciona email
+    if (email && typeof window !== "undefined") {
+      localStorage.setItem(`legal-py-webauthn-${email}`, credential.id);
+    }
+
+    return webAuthnCredential;
   } catch (error) {
     console.error("Error registrando WebAuthn:", error);
     return null;
@@ -73,10 +87,15 @@ export async function registerWebAuthn(userId: string, userName: string): Promis
 
 /**
  * Autentica al usuario usando WebAuthn
+ * @param credentialId ID de la credencial (opcional, si no se proporciona busca todas)
+ * @param email Email del usuario para buscar credenciales guardadas
  */
-export async function authenticateWebAuthn(credentialId: string): Promise<boolean> {
+export async function authenticateWebAuthn(
+  credentialId?: string,
+  email?: string
+): Promise<{ success: boolean; error?: string }> {
   if (typeof window === "undefined" || !window.PublicKeyCredential) {
-    return false;
+    return { success: false, error: "WebAuthn no está disponible" };
   }
 
   try {
@@ -84,17 +103,29 @@ export async function authenticateWebAuthn(credentialId: string): Promise<boolea
     const challenge = new Uint8Array(32);
     crypto.getRandomValues(challenge);
 
+    // Buscar credencial guardada si no se proporciona ID
+    let finalCredentialId = credentialId;
+    if (!finalCredentialId && email) {
+      finalCredentialId = localStorage.getItem(`legal-py-webauthn-${email}`) || undefined;
+    }
+
     // Opciones de autenticación
     const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
       challenge,
-      allowCredentials: [
-        {
-          id: Uint8Array.from(atob(credentialId), c => c.charCodeAt(0)),
-          type: "public-key",
-          transports: ["internal", "hybrid"], // FaceID, TouchID, USB, NFC
-        },
-      ],
-      userVerification: "required",
+      ...(finalCredentialId
+        ? {
+            allowCredentials: [
+              {
+                id: Uint8Array.from(atob(finalCredentialId), (c) => c.charCodeAt(0)),
+                type: "public-key",
+                transports: ["internal", "hybrid"], // FaceID, TouchID, USB, NFC
+              },
+            ],
+          }
+        : {
+            // Si no hay credencial específica, permitir cualquier autenticador
+            userVerification: "required",
+          }),
       timeout: 60000,
     };
 
@@ -104,14 +135,26 @@ export async function authenticateWebAuthn(credentialId: string): Promise<boolea
     }) as PublicKeyCredential;
 
     if (!assertion) {
-      return false;
+      return { success: false, error: "Autenticación cancelada" };
     }
 
     // En producción, aquí se verificaría la firma con el servidor
-    return true;
-  } catch (error) {
+    return { success: true };
+  } catch (error: any) {
     console.error("Error autenticando con WebAuthn:", error);
-    return false;
+    
+    // Errores amigables
+    if (error.name === "NotAllowedError") {
+      return { success: false, error: "Autenticación cancelada por el usuario" };
+    }
+    if (error.name === "NotSupportedError") {
+      return { success: false, error: "Biometría no soportada en este dispositivo" };
+    }
+    if (error.name === "InvalidStateError") {
+      return { success: false, error: "No tienes biometría registrada" };
+    }
+    
+    return { success: false, error: error.message || "Error al autenticar" };
   }
 }
 

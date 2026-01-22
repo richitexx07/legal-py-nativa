@@ -254,9 +254,11 @@ export interface RegisterData {
   email: string;
   password: string;
   role: UserRole;
+  firstName?: string;
+  lastName?: string;
   authMethod?: AuthMethod;
-  acceptTerms: boolean;
-  acceptPrivacy: boolean;
+  acceptTerms?: boolean;
+  acceptPrivacy?: boolean;
 }
 
 /**

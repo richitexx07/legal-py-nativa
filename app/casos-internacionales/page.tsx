@@ -22,6 +22,8 @@ export default function CasosInternacionalesPage() {
   const [filters, setFilters] = useState<{
     status?: InternationalCaseStatus;
     minAmount?: number;
+    countries?: string[];
+    complexity?: string;
   }>({});
 
   useEffect(() => {

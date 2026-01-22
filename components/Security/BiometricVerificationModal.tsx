@@ -13,6 +13,8 @@ interface BiometricVerificationModalProps {
   isMandatory?: boolean;
   isVerifying?: boolean;
   userId?: string;
+  /** Si se permite saltar/cerrar el modal (solo en rutas no críticas) */
+  allowSkip?: boolean;
 }
 
 type VerificationState = "UPLOAD_FRONT" | "UPLOAD_BACK" | "LIVENESS_CHECK";
@@ -33,6 +35,7 @@ export default function BiometricVerificationModal({
   isMandatory = false,
   isVerifying = false,
   userId,
+  allowSkip = true, // Por defecto permite skip (solo bloquea si isMandatory=true)
 }: BiometricVerificationModalProps) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -137,7 +140,26 @@ export default function BiometricVerificationModal({
 
   // Inicializar cámara con HTML5 nativo
   const startCamera = useCallback(async () => {
-    if (!videoRef.current) return;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-entry',message:'startCamera called',data:{hasVideoRef:!!videoRef.current,hasMediaDevices:!!navigator.mediaDevices,hasGetUserMedia:!!(navigator.mediaDevices?.getUserMedia)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+    // #endregion
+
+    if (!videoRef.current) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-no-video-ref',message:'No video ref - early return',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+      // #endregion
+      return;
+    }
+
+    // Verificar si el navegador soporta getUserMedia
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-no-support',message:'Browser does not support getUserMedia',data:{hasMediaDevices:!!navigator.mediaDevices,hasGetUserMedia:!!(navigator.mediaDevices?.getUserMedia)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
+      // #endregion
+      setCameraError("Tu navegador no soporta la verificación biométrica por cámara.");
+      setStatus("error");
+      return;
+    }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -157,10 +179,31 @@ export default function BiometricVerificationModal({
       // #endregion
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Error desconocido";
-      setCameraError("Por favor, permite el acceso a la cámara para verificar tu identidad.");
-      setStatus("error");
+      const errorName = error instanceof Error ? error.name : "Unknown";
+      
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:startCamera',message:'Camera error',data:{error:errorMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-error-caught',message:'Camera error caught',data:{errorMessage,errorName,errorType:error?.constructor?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+      // #endregion
+
+      // Mensaje más específico según el tipo de error
+      let userMessage = "Por favor, permite el acceso a la cámara para verificar tu identidad.";
+      if (errorMessage.includes("NotFoundError") || errorMessage.includes("DevicesNotFoundError") || errorName === "NotFoundError") {
+        userMessage = "No se encontró ninguna cámara en tu dispositivo.";
+      } else if (errorMessage.includes("NotAllowedError") || errorMessage.includes("PermissionDeniedError") || errorName === "NotAllowedError") {
+        userMessage = "Se denegó el acceso a la cámara. Por favor, permite el acceso en la configuración de tu navegador.";
+      } else if (errorMessage.includes("NotReadableError") || errorMessage.includes("TrackStartError") || errorName === "NotReadableError") {
+        userMessage = "La cámara está siendo usada por otra aplicación. Por favor, ciérrala e intenta nuevamente.";
+      }
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-error-handled',message:'Error message determined',data:{errorMessage,errorName,userMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+      // #endregion
+
+      setCameraError(userMessage);
+      setStatus("error");
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-error-state-set',message:'Error state set',data:{cameraError:userMessage,status:'error'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
       // #endregion
     }
   }, []);
@@ -333,7 +376,7 @@ export default function BiometricVerificationModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/80 backdrop-blur-xl"
-        onClick={isMandatory ? undefined : onClose}
+        onClick={isMandatory || !allowSkip ? undefined : onClose}
         aria-hidden="true"
       />
 
@@ -350,14 +393,19 @@ export default function BiometricVerificationModal({
           <h2 className="text-2xl font-bold text-white">
             {isMandatory ? "⚠️ Verificación de Identidad" : "Validación Biométrica"}
           </h2>
-          {(!isMandatory || (typeof window !== "undefined" && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))) && (
+          {/* Botón X - Solo visible si se permite skip */}
+          {allowSkip && (
             <button
-              onClick={onClose}
-              className="rounded-xl p-2 hover:bg-white/10 transition"
+              onClick={() => {
+                stopCamera();
+                onClose();
+              }}
+              className="rounded-xl p-2 hover:bg-red-500/20 hover:border-red-500/50 border border-transparent transition-all"
               aria-label="Cerrar"
+              title="Cerrar"
             >
-              <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-6 h-6 text-white/80 hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           )}
@@ -540,8 +588,44 @@ export default function BiometricVerificationModal({
                   </AnimatePresence>
                 </div>
               ) : (
-                <div className="flex h-full w-full items-center justify-center px-4 text-center">
-                  <p className="text-sm text-red-200">{cameraError}</p>
+                <div className="flex h-full w-full flex-col items-center justify-center gap-4 px-4 text-center">
+                  {/* #region agent log */}
+                  {(() => {
+                    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:render-camera-error',message:'Camera error UI rendered',data:{cameraError,allowSkip,status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+                    return null;
+                  })()}
+                  {/* #endregion */}
+                  <div className="space-y-2">
+                    <svg className="mx-auto h-16 w-16 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p className="text-sm font-medium text-red-200">{cameraError}</p>
+                    <p className="text-xs text-white/60">Tu dispositivo no es compatible con la verificación biométrica</p>
+                  </div>
+                  {/* Botón para continuar sin verificación cuando hay error de cámara */}
+                  {allowSkip && (
+                    <>
+                      {/* #region agent log */}
+                      {(() => {
+                        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:render-error-continue-button',message:'Error continue button rendered',data:{allowSkip,cameraError},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+                        return null;
+                      })()}
+                      {/* #endregion */}
+                      <Button
+                        variant="secondary"
+                        className="mt-4 w-full rounded-xl bg-gray-600/80 hover:bg-gray-600 text-white border-red-500/30"
+                        onClick={() => {
+                          // #region agent log
+                          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:error-continue-button-clicked',message:'Error continue button clicked',data:{cameraError,allowSkip},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+                          // #endregion
+                          stopCamera();
+                          onClose();
+                        }}
+                      >
+                        Continuar sin verificación (Dispositivo no compatible)
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -576,16 +660,18 @@ export default function BiometricVerificationModal({
 
         {/* Botones */}
         <div className="mt-6 flex justify-end gap-3">
-          {(!isMandatory || (typeof window !== "undefined" && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))) && (
+          {/* Botón Cancelar - Solo visible si se permite skip */}
+          {allowSkip && (
             <Button
               variant="secondary"
               className="rounded-xl"
-              onClick={onClose}
+              onClick={() => {
+                stopCamera();
+                onClose();
+              }}
               disabled={status === "scanning" || isVerifying}
             >
-              {typeof window !== "undefined" && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
-                ? "Hacerlo más tarde" 
-                : "Cancelar"}
+              Hacerlo más tarde
             </Button>
           )}
           
@@ -620,26 +706,53 @@ export default function BiometricVerificationModal({
           )}
 
           {currentState === "LIVENESS_CHECK" && (
-            <Button
-              variant="primary"
-              className={`rounded-xl ${
-                !canStartLiveness ? "grayscale cursor-not-allowed opacity-50" : ""
-              }`}
-              onClick={handleStartScan}
-              disabled={!canStartLiveness || !!cameraError || status === "scanning" || isVerifying || livenessState === "success" || !isCameraActive}
-            >
-              {isVerifying
-                ? "Comparando con tu cédula..."
-                : status === "scanning"
-                ? "Escaneando..."
-                : livenessState === "success"
-                ? "✓ Verificado"
-                : !isCameraActive
-                ? "Iniciando cámara..."
-                : "📸 Escanear Rostro"}
-            </Button>
+            <>
+              <Button
+                variant="primary"
+                className={`rounded-xl ${
+                  !canStartLiveness ? "grayscale cursor-not-allowed opacity-50" : ""
+                }`}
+                onClick={handleStartScan}
+                disabled={!canStartLiveness || !!cameraError || status === "scanning" || isVerifying || livenessState === "success" || !isCameraActive}
+              >
+                {isVerifying
+                  ? "Comparando con tu cédula..."
+                  : status === "scanning"
+                  ? "Escaneando..."
+                  : livenessState === "success"
+                  ? "✓ Verificado"
+                  : !isCameraActive
+                  ? "Iniciando cámara..."
+                  : "📸 Escanear Rostro"}
+              </Button>
+            </>
           )}
         </div>
+
+        {/* Botón "Saltar por ahora" - Solo visible en LIVENESS_CHECK y si allowSkip es true */}
+        {currentState === "LIVENESS_CHECK" && allowSkip && !cameraError && (
+          <div className="mt-4 text-center">
+            {/* #region agent log */}
+            {(() => {
+              fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:render-skip-button',message:'Skip button rendered',data:{currentState,allowSkip,hasCameraError:!!cameraError,status,isVerifying},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
+              return null;
+            })()}
+            {/* #endregion */}
+            <button
+              onClick={() => {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:skip-button-clicked',message:'Skip button clicked',data:{currentState,allowSkip},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
+                // #endregion
+                stopCamera();
+                onClose();
+              }}
+              className="text-xs text-white/50 hover:text-white/70 underline transition-colors"
+              disabled={status === "scanning" || isVerifying}
+            >
+              Omitir verificación por ahora (Modo Demo)
+            </button>
+          </div>
+        )}
 
         {/* Mensaje de ayuda */}
         {currentState === "LIVENESS_CHECK" && !canStartLiveness && (

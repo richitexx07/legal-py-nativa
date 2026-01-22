@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Button from "@/components/Button";
 import { useLanguage } from "@/context/LanguageContext";
+import PaymentAuthorizationModal from "@/components/Payments/PaymentAuthorizationModal";
+import { getSession } from "@/lib/auth";
 
 const plans = [
   {

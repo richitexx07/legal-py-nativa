@@ -175,7 +175,9 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
     };
   }
 
-  if (!data.acceptTerms || !data.acceptPrivacy) {
+  // En modo demo, no requerir aceptación de términos
+  const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  if (!isDemo && (!data.acceptTerms || !data.acceptPrivacy)) {
     return {
       success: false,
       error: "Debes aceptar los términos y condiciones y la política de privacidad",
@@ -240,14 +242,20 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
 
   saveProfile(newUser.id, data.role, profile);
 
-  // No crear sesión todavía - el usuario debe completar su perfil primero
+  // Crear sesión automáticamente después del registro
+  const session: AuthSession = {
+    user: newUser,
+    profile: profile,
+    token: `mock_token_${newUser.id}`,
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 días
+  };
+
+  saveSession(session);
+
   return {
     success: true,
-    message: "Registro exitoso. Por favor completa tu perfil.",
-    session: {
-      user: newUser,
-      profile: profile,
-    },
+    message: "Registro exitoso. Bienvenido a Legal PY.",
+    session: session,
   };
 }
 
