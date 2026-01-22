@@ -13,7 +13,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import BiometricAuth from "@/components/Security/BiometricAuth";
+import PayBiometric from "@/components/Security/PayBiometric";
+import { getSession } from "@/lib/auth";
 import { isWebAuthnAvailable } from "@/lib/security/webauthn";
 
 export interface PaymentAuthorizationModalProps {
@@ -44,11 +45,24 @@ export default function PaymentAuthorizationModal({
 }: PaymentAuthorizationModalProps) {
   const [supportsWebAuthn, setSupportsWebAuthn] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
 
-  // Verificar disponibilidad de WebAuthn
+  // Verificar disponibilidad de WebAuthn y obtener userId
   useEffect(() => {
     if (typeof window !== "undefined") {
       setSupportsWebAuthn(isWebAuthnAvailable());
+      
+      // Obtener userId de la sesión (requerido para PayBiometric)
+      const session = getSession();
+      if (session?.user?.id) {
+        setUserId(session.user.id);
+      } else {
+        console.warn("PaymentAuthorizationModal: Usuario no autenticado. PayBiometric requiere usuario autenticado.");
+      }
+      
+      // Generar transactionId único
+      setTransactionId(`txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
     }
   }, []);
 
@@ -65,7 +79,8 @@ export default function PaymentAuthorizationModal({
 
   const handleBiometricSuccess = () => {
     setIsAuthorizing(true);
-    // Simular procesamiento del pago
+    // En producción, el backend ya autorizó el pago después de verificar la firma
+    // Aquí solo confirmamos y procesamos
     setTimeout(() => {
       setIsAuthorizing(false);
       onAuthorize();
@@ -132,19 +147,35 @@ export default function PaymentAuthorizationModal({
               </div>
             </div>
 
-            {/* Biometric Auth */}
-            {supportsWebAuthn ? (
+            {/* Biometric Auth - PayBiometric (solo para pagos) */}
+            {supportsWebAuthn && userId && transactionId ? (
               <div className="py-6">
-                <BiometricAuth
-                  email={email}
-                  mode="payment"
+                <PayBiometric
+                  paymentContext={{
+                    userId,
+                    amount,
+                    currency,
+                    transactionId,
+                  }}
                   size="lg"
                   onSuccess={handleBiometricSuccess}
                   onError={(error) => {
-                    console.error("Error de autorización:", error);
+                    console.error("Error de autorización biométrica:", error);
                   }}
                   disabled={isAuthorizing}
                 />
+              </div>
+            ) : supportsWebAuthn ? (
+              <div className="py-6 text-center">
+                <p className="text-white/70 mb-4">
+                  ⚠️ Usuario no autenticado. Debes iniciar sesión primero.
+                </p>
+                <button
+                  onClick={onClose}
+                  className="px-6 py-3 bg-[#C9A24D] text-black font-semibold rounded-xl hover:bg-[#C08457] transition"
+                >
+                  Cerrar
+                </button>
               </div>
             ) : (
               <div className="py-6 text-center">

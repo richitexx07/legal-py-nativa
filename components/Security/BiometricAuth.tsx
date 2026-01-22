@@ -7,8 +7,22 @@
  * Estilo Nubank/Binance - Premium Banking UX
  * Compatible con: TouchID, FaceID, Windows Hello, Android Biometrics
  * 
+ * ARQUITECTURA BACKEND (Preparado para producción):
+ * - Login: /api/webauthn/login/options → /api/webauthn/login/verify
+ * - Payment: /api/webauthn/payment/options → /api/webauthn/payment/verify
+ * 
+ * CONTEXT BINDING (Pagos):
+ * - Challenge ligado a: userId, amount, currency, transactionId
+ * - Backend valida contexto antes de aceptar firma
+ * 
+ * SEGURIDAD:
+ * - Challenge único por request (generado en backend)
+ * - Expiración: 60s
+ * - Validación: origin, rpId, signCount, credentialID
+ * - Protección contra replay attacks
+ * 
  * @author Legal PY Security Team
- * @version 2.0.0 - Banking Grade
+ * @version 3.0.0 - Backend-Ready Architecture
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -33,6 +47,15 @@ export interface BiometricAuthProps {
   email?: string;
   /** Tamaño del componente */
   size?: "sm" | "md" | "lg";
+  /** Contexto de pago (solo para mode="payment") - Se enviará al backend para context binding */
+  paymentContext?: {
+    userId: string;
+    amount: number;
+    currency: string;
+    transactionId: string;
+  };
+  /** Modo demo: true = simula sin backend, false = usa backend real */
+  isDemoMode?: boolean;
 }
 
 // ============================================================================
@@ -124,6 +147,8 @@ export default function BiometricAuth({
   disabled = false,
   email,
   size = "lg",
+  paymentContext,
+  isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true",
 }: BiometricAuthProps) {
   const [state, setState] = useState<BiometricAuthState>("idle");
   const [isAvailable, setIsAvailable] = useState(false);
@@ -158,9 +183,28 @@ export default function BiometricAuth({
   /**
    * Función principal de autenticación WebAuthn
    * Implementa el flujo challenge-response estándar
+   * 
+   * FLUJO PRODUCCIÓN:
+   * 1. GET /api/webauthn/{mode}/options → recibe challenge del servidor
+   * 2. navigator.credentials.get() → usuario autentica
+   * 3. POST /api/webauthn/{mode}/verify → backend valida firma
+   * 
+   * FLUJO DEMO:
+   * - Simula el flujo sin backend real
+   * - Challenge generado localmente
+   * - Verificación simulada
    */
   const handleAuthenticate = useCallback(async () => {
     if (!isAvailable || disabled || state === "active" || state === "success") {
+      return;
+    }
+
+    // Validar contexto de pago si es necesario
+    if (mode === "payment" && !isDemoMode && !paymentContext) {
+      const error = "Contexto de pago requerido para autorización biométrica";
+      setErrorMessage(error);
+      setState("error");
+      if (onError) onError(error);
       return;
     }
 
@@ -177,40 +221,96 @@ export default function BiometricAuth({
     vibrate(50); // Vibración háptica fuerte al iniciar (banking grade)
 
     try {
-      // 1. Generar challenge aleatorio (en producción, esto viene del servidor)
-      const challenge = generateChallenge();
+      let challenge: Uint8Array;
+      let publicKeyOptions: PublicKeyCredentialRequestOptions;
 
-      // 2. Buscar credenciales guardadas (si hay email)
-      let allowCredentials: PublicKeyCredentialDescriptor[] | undefined;
-      if (email) {
-        const storedCredentialId = localStorage.getItem(`legal-py-webauthn-${email}`);
-        if (storedCredentialId) {
-          allowCredentials = [
-            {
-              id: base64ToArrayBuffer(storedCredentialId),
-              type: "public-key",
-              transports: ["internal", "hybrid"], // FaceID, TouchID, USB, NFC
-            },
-          ];
+      if (isDemoMode) {
+        // ========================================================================
+        // MODO DEMO: Generar challenge localmente (simulación)
+        // ========================================================================
+        challenge = generateChallenge();
+      } else {
+        // ========================================================================
+        // MODO PRODUCCIÓN: Obtener challenge del backend
+        // ========================================================================
+        const endpoint = mode === "payment" 
+          ? "/api/webauthn/payment/options"
+          : "/api/webauthn/login/options";
+        
+        const optionsResponse = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            ...(mode === "payment" && paymentContext ? {
+              userId: paymentContext.userId,
+              amount: paymentContext.amount,
+              currency: paymentContext.currency,
+              transactionId: paymentContext.transactionId,
+            } : {}),
+          }),
+        });
+
+        if (!optionsResponse.ok) {
+          throw new Error(`Error obteniendo opciones: ${optionsResponse.statusText}`);
         }
+
+        const options = await optionsResponse.json();
+        
+        // El backend devuelve el challenge en base64
+        challenge = new Uint8Array(
+          Uint8Array.from(atob(options.challenge), (c) => c.charCodeAt(0))
+        );
+        
+        // Construir opciones desde la respuesta del backend
+        publicKeyOptions = {
+          challenge: challenge.buffer as ArrayBuffer,
+          allowCredentials: options.allowCredentials?.map((cred: any) => ({
+            id: Uint8Array.from(atob(cred.id), (c) => c.charCodeAt(0)),
+            type: "public-key",
+            transports: cred.transports || ["internal", "hybrid"],
+          })),
+          userVerification: options.userVerification || "required",
+          timeout: options.timeout || 60000,
+          rpId: options.rpId || window.location.hostname,
+        };
       }
 
-      // 3. Configurar opciones de autenticación WebAuthn
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
-        challenge: challenge.buffer as ArrayBuffer,
-        ...(allowCredentials
-          ? { allowCredentials }
-          : {
-              // Si no hay credencial específica, permitir cualquier autenticador de plataforma
-              userVerification: "required",
-            }),
-        timeout: 60000, // 60 segundos
-        rpId: window.location.hostname, // Relying Party ID
-      };
+      // Si estamos en demo, construir opciones localmente
+      if (isDemoMode) {
+
+        // 2. Buscar credenciales guardadas (si hay email) - Solo en demo
+        let allowCredentials: PublicKeyCredentialDescriptor[] | undefined;
+        if (email) {
+          const storedCredentialId = localStorage.getItem(`legal-py-webauthn-${email}`);
+          if (storedCredentialId) {
+            allowCredentials = [
+              {
+                id: base64ToArrayBuffer(storedCredentialId),
+                type: "public-key",
+                transports: ["internal", "hybrid"], // FaceID, TouchID, USB, NFC
+              },
+            ];
+          }
+        }
+
+        // 3. Configurar opciones de autenticación WebAuthn (demo)
+        publicKeyOptions = {
+          challenge: challenge.buffer as ArrayBuffer,
+          ...(allowCredentials
+            ? { allowCredentials }
+            : {
+                // Si no hay credencial específica, permitir cualquier autenticador de plataforma
+                userVerification: "required",
+              }),
+          timeout: 60000, // 60 segundos
+          rpId: window.location.hostname, // Relying Party ID
+        };
+      }
 
       // 4. Llamar a la API WebAuthn nativa
       const assertion = (await navigator.credentials.get({
-        publicKey: publicKeyCredentialRequestOptions,
+        publicKey: publicKeyOptions,
         signal: abortControllerRef.current.signal,
       })) as PublicKeyCredential | null;
 
@@ -218,28 +318,61 @@ export default function BiometricAuth({
         throw new Error("Autenticación cancelada");
       }
 
-      // 5. Extraer datos de la respuesta (para enviar al backend)
+      // 5. Extraer datos de la respuesta
       const response = assertion.response as AuthenticatorAssertionResponse;
       const authenticatorData = response.authenticatorData;
       const clientDataJSON = response.clientDataJSON;
       const signature = response.signature;
       const userHandle = response.userHandle;
 
-      // 6. En producción, aquí se enviaría al backend para verificación:
-      // await fetch('/api/auth/webauthn/verify', {
-      //   method: 'POST',
-      //   body: JSON.stringify({
-      //     id: assertion.id,
-      //     rawId: arrayBufferToBase64(assertion.rawId),
-      //     response: {
-      //       authenticatorData: arrayBufferToBase64(authenticatorData),
-      //       clientDataJSON: arrayBufferToBase64(clientDataJSON),
-      //       signature: arrayBufferToBase64(signature),
-      //       userHandle: userHandle ? arrayBufferToBase64(userHandle) : null,
-      //     },
-      //     type: assertion.type,
-      //   }),
-      // });
+      // 6. Verificar con el backend (producción) o simular (demo)
+      if (isDemoMode) {
+        // ========================================================================
+        // MODO DEMO: Simular verificación exitosa
+        // ========================================================================
+        // Simular delay de red
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } else {
+        // ========================================================================
+        // MODO PRODUCCIÓN: Enviar al backend para verificación real
+        // ========================================================================
+        const verifyEndpoint = mode === "payment"
+          ? "/api/webauthn/payment/verify"
+          : "/api/webauthn/login/verify";
+
+        const verifyResponse = await fetch(verifyEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: assertion.id,
+            rawId: arrayBufferToBase64(assertion.rawId),
+            response: {
+              authenticatorData: arrayBufferToBase64(authenticatorData),
+              clientDataJSON: arrayBufferToBase64(clientDataJSON),
+              signature: arrayBufferToBase64(signature),
+              userHandle: userHandle ? arrayBufferToBase64(userHandle) : null,
+            },
+            type: assertion.type,
+            ...(mode === "payment" && paymentContext ? {
+              // Context binding: backend valida que el contexto coincida
+              userId: paymentContext.userId,
+              amount: paymentContext.amount,
+              currency: paymentContext.currency,
+              transactionId: paymentContext.transactionId,
+            } : {}),
+          }),
+        });
+
+        if (!verifyResponse.ok) {
+          const errorData = await verifyResponse.json().catch(() => ({}));
+          throw new Error(errorData.message || `Verificación falló: ${verifyResponse.statusText}`);
+        }
+
+        const verifyResult = await verifyResponse.json();
+        if (!verifyResult.verified) {
+          throw new Error(verifyResult.error || "Verificación falló");
+        }
+      }
 
       // 7. Éxito: vibración doble premium (banking grade)
       vibrate([50, 30, 50]);
@@ -274,6 +407,9 @@ export default function BiometricAuth({
       } else if (error.message?.includes("cancelado")) {
         setState("idle");
         return;
+      } else if (error.message) {
+        // Errores del backend
+        friendlyError = error.message;
       }
 
       setErrorMessage(friendlyError);
@@ -288,7 +424,7 @@ export default function BiometricAuth({
         setErrorMessage(null);
       }, 2000);
     }
-  }, [isAvailable, disabled, state, email, onSuccess, onError]);
+  }, [isAvailable, disabled, state, email, mode, paymentContext, isDemoMode, onSuccess, onError]);
 
   // Si no está disponible, NO renderizar (como los bancos reales)
   if (!isAvailable) {
@@ -306,7 +442,9 @@ export default function BiometricAuth({
 
   // Textos dinámicos según el modo
   const labels = {
-    idle: mode === "payment" ? "Toca para autorizar el pago" : "Toca para iniciar sesión",
+    idle: mode === "payment" 
+      ? (isDemoMode ? "🎯 Demo: Toca para autorizar pago" : "Toca para autorizar el pago")
+      : (isDemoMode ? "🎯 Demo: Toca para iniciar sesión" : "Toca para iniciar sesión"),
     active: mode === "payment" ? "Autorizando..." : "Verificando...",
     success: mode === "payment" ? "✓ Pago autorizado" : "✓ Autenticado",
     error: errorMessage || "Error al autenticar",

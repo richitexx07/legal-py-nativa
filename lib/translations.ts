@@ -176,7 +176,7 @@ export const translations: Record<LanguageCode, TranslationTree> = {
     ai_assistant: {
       title: "Asistente de Derivación",
       disclaimer:
-        "IMPORTANTE: Soy una IA de filtrado. No brindo asesoría legal. Mi función es derivar tu caso al profesional correcto.",
+        "IMPORTANTE: Esto no constituye asesoramiento legal. Soy una IA de filtrado; mi función es derivar tu caso al profesional correcto.",
       placeholder: "Describe tu caso para derivarte...",
       welcome: "Hola, soy tu asistente de triaje. ¿Qué necesitas gestionar hoy?",
     },

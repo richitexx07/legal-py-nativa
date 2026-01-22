@@ -50,13 +50,39 @@ export default function LoginPage() {
           <LoginForm />
         </Card>
 
-        {/* Footer */}
-        <div className="text-center mt-6 text-sm text-white/70">
+        {/* Aviso credenciales demo - solo si modo demo (AUDIT FIX) */}
+        {typeof window !== "undefined" &&
+          (process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+            localStorage.getItem("legal-py-demo-mode") === "true") && (
+          <div className="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-center">
+            <p className="text-xs text-amber-200/90 mb-1">Demo inversores / auditoría</p>
+            <p className="text-sm font-mono text-amber-100">
+              demo@legalpy.com / inversor2026
+            </p>
+          </div>
+        )}
+
+        {/* Flujo unificado: Registro, recuperar, demo, planes */}
+        <div className="text-center mt-6 space-y-2 text-sm text-white/70">
+          <p>
+            ¿No tenés cuenta?{" "}
+            <Link href="/signup" className="text-[#C9A24D] hover:underline font-medium">
+              Registrarse
+            </Link>
+          </p>
           <p>
             ¿Olvidaste tu contraseña?{" "}
             <Link href="/forgot-password" className="text-[#C9A24D] hover:underline font-medium">
               Recupérala aquí
             </Link>
+          </p>
+          <p>
+            <Link href="/pricing" className="text-[#C9A24D] hover:underline font-medium">
+              Ver planes
+            </Link>
+          </p>
+          <p className="text-white/60">
+            Modo demo: usá las credenciales de abajo cuando estén visibles.
           </p>
         </div>
       </div>

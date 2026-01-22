@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { getSession } from "@/lib/auth";
+import Link from "next/link";
 import {
-  getAllInternationalCases,
   getInternationalCases,
   InternationalCase,
   InternationalCaseStatus,
@@ -15,11 +15,11 @@ import InternationalCaseCard from "@/components/International/InternationalCaseC
 import FunnelView from "@/components/International/FunnelView";
 
 export default function CasosInternacionalesPage() {
-  const session = getSession();
+  const session = typeof window !== "undefined" ? getSession() : null;
   const [cases, setCases] = useState<InternationalCase[]>([]);
   const [selectedCase, setSelectedCase] = useState<InternationalCase | null>(null);
   const [view, setView] = useState<"list" | "funnel">("list");
-  const [filters, setFilters] = useState<{
+  const [filters] = useState<{
     status?: InternationalCaseStatus;
     minAmount?: number;
     countries?: string[];
@@ -27,18 +27,10 @@ export default function CasosInternacionalesPage() {
   }>({});
 
   useEffect(() => {
-    if (!session) {
-      window.location.href = "/login";
-      return;
-    }
-
-    loadCases();
-  }, [session, filters]);
-
-  const loadCases = () => {
-    const allCases = getInternationalCases(filters);
-    setCases(allCases);
-  };
+    if (typeof window === "undefined") return;
+    const loaded = getInternationalCases(filters);
+    queueMicrotask(() => setCases(loaded));
+  }, [filters]);
 
   const handleViewFunnel = (caseData: InternationalCase) => {
     setSelectedCase(caseData);
@@ -48,34 +40,10 @@ export default function CasosInternacionalesPage() {
   const handleBackToList = () => {
     setSelectedCase(null);
     setView("list");
-    loadCases();
+    setCases(getInternationalCases(filters));
   };
 
-  if (!session) {
-    return null;
-  }
-
-  const isAdmin = session.user.role === "profesional"; // En producción, verificar si es admin
-  // Activar GEP Gold para profesionales (demo: todos los profesionales pueden ver botones de aceptar/declinar)
-  const isGEPGold = session.user.role === "profesional"; // En producción, verificar plan GEP Gold del usuario
-
-  // #region agent log
-  if (typeof window !== "undefined") {
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run1",
-        hypothesisId: "H1",
-        location: "app/casos-internacionales/page.tsx:isGEPGold",
-        message: "isGEPGold flag calculated",
-        data: { isGEPGold, userRole: session.user.role, hasSelectedCase: !!selectedCase },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-  }
-  // #endregion
+  const isGEPGold = session?.user?.role === "profesional";
 
   if (view === "funnel" && selectedCase) {
     return (
@@ -89,7 +57,7 @@ export default function CasosInternacionalesPage() {
             ← Volver a Lista
           </Button>
         </div>
-        <FunnelView caseData={selectedCase} onUpdate={loadCases} isGEPGold={isGEPGold} />
+        <FunnelView caseData={selectedCase} onUpdate={() => setCases(getInternationalCases(filters))} isGEPGold={isGEPGold} />
       </div>
     );
   }
@@ -159,6 +127,20 @@ export default function CasosInternacionalesPage() {
 
   return (
     <div className="space-y-6">
+      {!session && (
+        <Card className="bg-[#C9A24D]/10 border-[#C9A24D]/30">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p className="text-white/90 text-sm">
+              Visitante: podés ver casos y gráficas. Iniciá sesión para acceder a acciones y detalles completos.
+            </p>
+            <Link href="/login">
+              <Button variant="primary" size="sm" className="rounded-xl">
+                Iniciar Sesión
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
       <div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-white">Casos Internacionales</h1>
         <p className="mt-2 text-white/70">

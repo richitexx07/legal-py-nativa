@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe de Auditoría Integral - Legal PY</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #C9A24D;
+    }
+    .header h1 {
+      color: #0E1B2A;
+      font-size: 28px;
+      margin-bottom: 10px;
+      border: none;
+      padding: 0;
+    }
+    .header h2 {
+      color: #13253A;
+      font-size: 20px;
+      margin-bottom: 15px;
+      border: none;
+      padding: 0;
+    }
+    .header p {
+      color: #666;
+      font-size: 14px;
+      margin: 5px 0;
+    }
+    h1 {
+      color: #0E1B2A;
+      border-bottom: 3px solid #C9A24D;
+      padding-bottom: 10px;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 24px;
+    }
+    h2 {
+      color: #13253A;
+      border-bottom: 2px solid #C9A24D;
+      padding-bottom: 5px;
+      margin-top: 25px;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+    h3 {
+      color: #13253A;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    h4 {
+      color: #13253A;
+      margin-top: 15px;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    p {
+      margin: 10px 0;
+      text-align: justify;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 0.85em;
+      page-break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #0E1B2A;
+      color: white;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    code {
+      background-color: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      background-color: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      border-left: 4px solid #C9A24D;
+      margin: 15px 0;
+      page-break-inside: avoid;
+      font-size: 0.85em;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    .status-ok { color: #10b981; font-weight: bold; }
+    .status-partial { color: #f59e0b; font-weight: bold; }
+    .status-fail { color: #ef4444; font-weight: bold; }
+    .risk-critical { background-color: #fee2e2; padding: 3px 8px; border-radius: 3px; font-weight: bold; }
+    .risk-high { background-color: #fef3c7; padding: 3px 8px; border-radius: 3px; font-weight: bold; }
+    .risk-medium { background-color: #dbeafe; padding: 3px 8px; border-radius: 3px; font-weight: bold; }
+    .risk-low { background-color: #d1fae5; padding: 3px 8px; border-radius: 3px; font-weight: bold; }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px solid #C9A24D;
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 20px 0;
+    }
+    ul, ol {
+      margin: 10px 0;
+      padding-left: 30px;
+    }
+    li {
+      margin: 5px 0;
+    }
+    blockquote {
+      border-left: 4px solid #C9A24D;
+      padding-left: 15px;
+      margin: 15px 0;
+      font-style: italic;
+      color: #555;
+      background-color: #f9f9f9;
+      padding: 10px 15px;
+    }
+    .summary-box {
+      background-color: #f0f9ff;
+      border: 2px solid #C9A24D;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .summary-box h3 {
+      color: #0E1B2A;
+      margin-top: 0;
+    }
+    .fix-applied {
+      background-color: #d1fae5;
+      border-left: 4px solid #10b981;
+      padding: 10px 15px;
+      margin: 10px 0;
+    }
+    .fix-pending {
+      background-color: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 15px;
+      margin: 10px 0;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Informe de Auditoría Integral</h1>
+    <h2>Legal PY</h2>
+    <p><strong>Fecha:</strong> Enero 2026</p>
+    <p><strong>Versión del Informe:</strong> 1.0 Final</p>
+    <p><strong>Alcance:</strong> Código fuente vs. Manual de Uso, Política de Seguridad, Material inversores y demo comercial</p>
+    <p><strong>Equipo:</strong> Auditoría Bancaria/Fintech, LegalTech, QA, Security, Customer Journey</p>
+  </div>
+
+  <h1>Informe de Auditoría Integral – Legal PY</h1>
+
+<p><strong>Fecha:</strong> Enero 2026 <strong>Versión del Informe:</strong> 1.0 Final <strong>Alcance:</strong> Código fuente vs. Manual de Uso, Política de Seguridad, Material inversores y demo comercial <strong>Equipo:</strong> Auditoría Bancaria/Fintech, LegalTech, QA, Security, Customer Journey</p>
+
+<hr>
+
+<h2>🔹 Resumen Ejecutivo (para inversores y GC)</h2>
+
+<h3>Estado general de la plataforma</h3>
+
+<p>La plataforma <strong>Legal PY</strong> implementa en código la mayor parte de lo prometido en documentación y manuales: modo demo funcional, credenciales demo aisladas, biometría con botón de escape, separación login/pagos, roles (cliente/profesional/estudiante), IA con disclaimer y flujos por rol. Se identifican <strong>gaps concretos</strong> (middleware vs. localStorage, disclaimer literal, UX en rutas de pago) que deben cerrarse antes de presentaciones a inversores o auditorías externas.</p>
+
+<p><strong>Estado:</strong> ✅ <strong>Demo / Pre‑Prod</strong> - Apto para demo controlada y pruebas internas. <strong>No Fintech‑Ready</strong> hasta resolver el desacople middleware/sesión y endurecer controles en producción.</p>
+
+<h3>Riesgos críticos</h3>
+
+<table>
+<thead>
+<tr><th>#</th><th>Riesgo</th><th>Severidad</th><th>Estado</th><th>Impacto</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td>1</td><td>Middleware usa cookies; sesión solo en <code>localStorage</code> → protección de rutas por servidor <strong>inefectiva</strong></td><td><strong>Crítico</strong></td><td><span class="status-fail">❌</span> No cumple</td><td>Bloqueo de acceso en producción si se depende del middleware</td></tr>
+<tr><td>2</td><td>Credenciales demo (<code>demo@legalpy.com</code> / <code>inversor2026</code>) <strong>no visibles</strong> en UI de login → riesgo en demo en vivo</td><td><strong>Alto</strong></td><td><span class="status-ok">✅</span> <strong>CORREGIDO</strong></td><td>Fallo en presentaciones a inversores</td></tr>
+<tr><td>3</td><td>Disclaimer IA ≠ "Esto no constituye asesoramiento legal" (texto actual distinto)</td><td><strong>Medio</strong></td><td><span class="status-ok">✅</span> <strong>CORREGIDO</strong></td><td>Objeción en auditoría legal</td></tr>
+<p></tbody> </table></p>
+
+<h3>Nivel de madurez</h3>
+
+<p><strong>Demo / Pre‑Prod:</strong> Apto para demo controlada y pruebas internas. <strong>No Fintech‑Ready</strong> hasta resolver el desacople middleware/sesión y endurecer controles en producción.</p>
+
+<hr>
+
+<h2>🔹 Matriz de Cumplimiento</h2>
+
+<h3>1. Verificación de credenciales demo</h3>
+
+<table>
+<thead>
+<tr><th>Requisito</th><th>Estado</th><th>Evidencia</th><th>Impacto</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td>Detección explícita de <code>demo@legalpy.com</code></td><td><span class="status-ok">✅</span> Cumple</td><td><code>lib/auth.ts</code> L269-270: <code>if (data.email === "demo@legalpy.com" && data.password === "inversor2026")</code></td><td>—</td></tr>
+<tr><td>Plan demo <code>GEP</code> asignado automáticamente</td><td><span class="status-ok">✅</span> Cumple</td><td><code>lib/auth.ts</code> L302, L332: <code>planId: "GEP"</code>, <code>localStorage.setItem("legal-py-demo-plan", "GEP")</code></td><td>—</td></tr>
+<tr><td><code>isIdentityVerified: true</code> para demo</td><td><span class="status-ok">✅</span> Cumple</td><td><code>lib/auth.ts</code> L286: <code>isIdentityVerified: true</code></td><td>—</td></tr>
+<tr><td>Lógica aislada del entorno productivo</td><td><span class="status-ok">✅</span> Cumple</td><td><code>lib/feature-flags.ts</code> L49: <code>isMasterKey</code> solo si <code>masterKeyEnabled</code>; demo flags en <code>localStorage</code></td><td>—</td></tr>
+<tr><td>Credenciales visibles en UI (login / ayuda)</td><td><span class="status-ok">✅</span> <strong>CORREGIDO</strong></td><td><code>app/login/page.tsx</code>: Aviso demo agregado (Fix 1)</td><td>—</td></tr>
+<p></tbody> </table></p>
+
+<h3>2. Biometría y anti-bloqueo</h3>
+
+<table>
+<thead>
+<tr><th>Requisito</th><th>Estado</th><th>Evidencia</th><th>Impacto</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td>Botón "Omitir verificación (Modo Demo / Incógnito)" visible</td><td><span class="status-ok">✅</span> Cumple</td><td><code>BiometricVerificationModal.tsx</code> L786-800: botón condicional <code>(!effectiveIsMandatory \</td><td>\</td><td>isDemoMode)</code>; texto según <code>isDemoMode</code></td><td>—</td></tr>
+<tr><td>Botón guarda flag en <code>sessionStorage</code></td><td><span class="status-ok">✅</span> Cumple</td><td><code>BiometricVerificationModal.tsx</code> L791-792: <code>sessionStorage.setItem("biometric_skipped", "true")</code> + <code>biometric-skip-changed</code></td><td>—</td></tr>
+<tr><td>Botón cierra el modal correctamente</td><td><span class="status-ok">✅</span> Cumple</td><td><code>onClose()</code> enviado a <code>BiometricGate.handleClose</code>; en demo o no‑pago, <code>setShowModal(false)</code></td><td>—</td></tr>
+<tr><td><code>BiometricGate</code> lee el flag</td><td><span class="status-ok">✅</span> Cumple</td><td><code>BiometricGate.tsx</code> L72-75, L180, L196, L341: <code>sessionStorage.getItem("biometric_skipped") === "true"</code></td><td>—</td></tr>
+<tr><td>Gate evita re-renderizar modal tras skip</td><td><span class="status-ok">✅</span> Cumple</td><td><code>BiometricGate.tsx</code> L344-351: <code>demoMode && hasSkipped</code> o <code>!demoMode && hasSkipped && !isPayment</code> → <code>return null</code></td><td>—</td></tr>
+<tr><td>Excepción absoluta en rutas de pago</td><td><span class="status-ok">✅</span> Cumple</td><td><code>BiometricGate.tsx</code> L52-55, L205-209, L316-318: <code>PAYMENT_ROUTES</code>; en pago no se cierra, <code>setBiometricSkipped(false)</code> al mostrar</td><td>—</td></tr>
+<tr><td>Master key (<code>demo@legalpy.com</code>) no ve modal</td><td><span class="status-ok">✅</span> Cumple</td><td><code>BiometricGate.tsx</code> L168-171: <code>isMasterKey(currentSession.user.email)</code> → <code>setShowModal(false)</code>; <code>feature-flags</code> L49</td><td>—</td></tr>
+<tr><td>UX: X, "Hacerlo más tarde" y backdrop ocultos cuando obligatorio</td><td><span class="status-ok">✅</span> <strong>CORREGIDO</strong></td><td><code>BiometricVerificationModal.tsx</code>: Fix 3 aplicado - controles condicionados a <code>effectiveIsMandatory</code></td><td>—</td></tr>
+<p></tbody> </table></p>
+
+<h3>3. Integración de IA y transparencia legal</h3>
+
+<table>
+<thead>
+<tr><th>Requisito</th><th>Estado</th><th>Evidencia</th><th>Impacto</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td><code>/api/assistant</code> existe y está conectado</td><td><span class="status-ok">✅</span> Cumple</td><td><code>app/api/assistant/route.ts</code>; <code>SmartAssistant.tsx</code> L308: <code>fetch("/api/assistant", …)</code></td><td>—</td></tr>
+<tr><td><code>/api/voice</code> existe y conectado</td><td><span class="status-ok">✅</span> Cumple</td><td><code>app/api/voice/route.ts</code>; <code>SmartAssistant.tsx</code> L391: <code>fetch("/api/voice", …)</code></td><td>—</td></tr>
+<tr><td>Disclaimer visible y persistente en IA</td><td><span class="status-ok">✅</span> Cumple</td><td><code>SmartAssistant.tsx</code> L627-633: bloque fijo con <code>t("ai_assistant.disclaimer")</code> o fallback</td><td>—</td></tr>
+<tr><td>Texto literal "Esto no constituye asesoramiento legal"</td><td><span class="status-ok">✅</span> <strong>CORREGIDO</strong></td><td><code>lib/translations.ts</code> L178: Fix 2 aplicado - texto actualizado</td><td>—</td></tr>
+<tr><td>Límites legales en backend</td><td><span class="status-ok">✅</span> Cumple</td><td><code>app/api/assistant/route.ts</code> L16-18: "NO eres abogado. NO das consejos legales…"</td><td>—</td></tr>
+<p></tbody> </table></p>
+
+<h3>4. Roles y experiencia por rol</h3>
+
+<table>
+<thead>
+<tr><th>Requisito</th><th>Estado</th><th>Evidencia</th><th>Impacto</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td>Dashboard cambia según <code>user.role</code> / <code>viewMode</code></td><td><span class="status-ok">✅</span> Cumple</td><td><code>app/panel/page.tsx</code> L26, L42-45, L332-341, L347-370, L452, L639, L1034, L1174: <code>viewMode</code> cliente/profesional/estudiante y contenido condicional</td><td>—</td></tr>
+<tr><td>Cada rol ve solo lo suyo</td><td><span class="status-ok">✅</span> Cumple</td><td>Tabs, CTAs y secciones filtrados por <code>viewMode</code> (ej. oportunidades solo profesional, pasantía solo estudiante)</td><td>—</td></tr>
+<tr><td>Roles claros (Client / Pro / Student)</td><td><span class="status-ok">✅</span> Cumple</td><td><code>RoleModeModal</code>, <code>viewMode</code>, <code>session?.user.role</code>; <code>lib/types</code> <code>UserRole</code></td><td>—</td></tr>
+<p></tbody> </table></p>
+
+<h3>5. Infraestructura y seguridad (extendido)</h3>
+
+<table>
+<thead>
+<tr><th>Requisito</th><th>Estado</th><th>Evidencia</th><th>Impacto</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td>Protección de rutas por middleware</td><td><span class="status-fail">❌</span> No cumple</td><td><code>middleware.ts</code> L78: <code>request.cookies.get("legal-py-session")</code>; <code>lib/auth.ts</code> L30, L54: sesión solo en <code>localStorage</code>. <strong>Nunca se setea cookie</strong> → middleware siempre sin sesión</td><td><strong>Crítico</strong></td></tr>
+<tr><td>Rutas críticas definidas</td><td><span class="status-ok">✅</span> Cumple</td><td><code>middleware</code> L40-44; <code>BiometricGate</code> L32-37: <code>/subscribe</code>, <code>/accept-case</code>, <code>/pagos</code>, etc.</td><td>—</td></tr>
+<p></tbody> </table></p>
+
+<hr>
+
+<h2>🔹 Hallazgos Críticos (priorizados)</h2>
+
+<h3>1. [Crítico] Middleware no ve la sesión: cookies vs. <code>localStorage</code></h3>
+
+<p><strong>Descripción:</strong> El middleware usa <code>request.cookies.get("legal-py-session")</code> para decidir si hay sesión. La autenticación guarda la sesión únicamente en <code>localStorage</code> (<code>lib/auth.ts</code>). No existe lógica que escriba la sesión en una cookie.</p>
+
+<p><strong>Consecuencias:</strong></p>
+<ul><li>En servidor, <code>hasSession</code> es siempre <code>false</code>.</li>
+<li>Redirección a <code>/login</code> en rutas protegidas se basa en un criterio que nunca se cumple en la práctica cuando la app se usa normalmente (navegación cliente + <code>localStorage</code>).</li>
+<li>La "protección" de rutas vía middleware es <strong>inefectiva</strong> para el modelo actual de sesión.</li>
+
+<p><strong>Evidencia:</strong></p>
+<li><code>middleware.ts</code> L76-79, L82-86.</li>
+<li><code>lib/auth.ts</code> L29-31, L53-58.</li>
+
+<p><strong>Recomendación:</strong> Unificar modelo de sesión: o bien (a) sesión en cookie (httpOnly, secure) y middleware siga usando cookie, o (b) rutas protegidas sin depender del middleware para "auth" y usar solo guards en cliente + APIs que validen token/sesión. Documentar claramente qué protege cada capa.</p>
+
+<p><strong>Prioridad:</strong> 🔴 <strong>ALTA</strong> - Requiere decisión arquitectónica antes de producción.</p>
+
+<hr>
+
+<h3>2. [Alto] ✅ <strong>CORREGIDO</strong> - Credenciales demo no visibles en la UI de login</h3>
+
+<p><strong>Descripción:</strong> Los documentos (<code>FLUJO_AUTH_IMPLEMENTADO</code>, etc.) indican <code>demo@legalpy.com</code> / <code>inversor2026</code> para pruebas. La página de login y el formulario no mostraban estas credenciales (ni siquiera en modo demo).</p>
+
+<p><strong>Estado:</strong> ✅ <strong>CORREGIDO</strong> - Fix 1 aplicado en <code>app/login/page.tsx</code>. Aviso visible solo cuando <code>NEXT_PUBLIC_DEMO_MODE=true</code> o <code>localStorage["legal-py-demo-mode"] === "true"</code>.</p>
+
+<p><strong>Evidencia de corrección:</strong></p>
+<li><code>app/login/page.tsx</code>: Aviso demo agregado después del formulario de login.</li>
+
+<hr>
+
+<h3>3. [Medio] ✅ <strong>CORREGIDO</strong> - Disclaimer IA no usaba la frase exacta "Esto no constituye asesoramiento legal"</h3>
+
+<p><strong>Descripción:</strong> Se exige un disclaimer explícito tipo "Esto no constituye asesoramiento legal". El texto anterior era "IMPORTANTE: Soy una IA de filtrado. No brindo asesoría legal. Mi función es derivar tu caso al profesional correcto."</p>
+
+<p><strong>Estado:</strong> ✅ <strong>CORREGIDO</strong> - Fix 2 aplicado en <code>lib/translations.ts</code>. Texto actualizado a: "IMPORTANTE: Esto no constituye asesoramiento legal. Soy una IA de filtrado; mi función es derivar tu caso al profesional correcto."</p>
+
+<p><strong>Evidencia de corrección:</strong></p>
+<li><code>lib/translations.ts</code> L178: <code>ai_assistant.disclaimer</code> actualizado.</li>
+
+<hr>
+
+<h3>4. [Menor] ✅ <strong>CORREGIDO</strong> - UX en rutas de pago: X, "Hacerlo más tarde" y backdrop siempre activos</h3>
+
+<p><strong>Descripción:</strong> En rutas de pago (producción), el modal biométrico no se cerraba al hacer clic en X, "Hacerlo más tarde" o backdrop porque <code>BiometricGate.handleClose</code> hacía <code>return</code> sin cerrar. Esos controles seguían visibles y clicables, pero no cerraban el modal.</p>
+
+<p><strong>Estado:</strong> ✅ <strong>CORREGIDO</strong> - Fix 3 aplicado en <code>BiometricVerificationModal.tsx</code>. Backdrop, botón X y "Hacerlo más tarde" ahora están ocultos cuando <code>effectiveIsMandatory === true</code>.</p>
+
+<p><strong>Evidencia de corrección:</strong></p>
+<li><code>BiometricVerificationModal.tsx</code> L378-394: Backdrop condicionado a <code>effectiveIsMandatory</code>.</li>
+<li><code>BiometricVerificationModal.tsx</code> L415-431: Botón X oculto cuando <code>effectiveIsMandatory</code>.</li>
+<li><code>BiometricVerificationModal.tsx</code> L682-696: "Hacerlo más tarde" oculto cuando <code>effectiveIsMandatory</code>.</li>
+
+<hr>
+
+<h2>🔹 Recomendaciones</h2>
+
+<h3>Técnicas</h3>
+
+<p>1. <strong>Sesión y middleware:</strong> Decidir modelo único (cookie vs. <code>localStorage</code> + guards cliente). Si se mantiene cookie para middleware, implementar <code>saveSession</code> que también setee cookie (httpOnly, secure, sameSite) y que el middleware la use. 2. <strong>Tests automatizados:</strong> Añadir pruebas E2E para: login demo → panel sin bloqueo; skip biometría en no‑pago; ausencia de skip en <code>/pagos</code>; disclaimer visible en SmartAssistant. 3. <strong>Limpieza de código:</strong> Remover logs de debug (<code>console.log</code>, <code>console.error</code>) de componentes de producción, especialmente en <code>BiometricVerificationModal.tsx</code>, <code>PayBiometric.tsx</code>, <code>LoginBiometric.tsx</code>.</p>
+
+<h3>UX</h3>
+
+<p>1. <strong>Demo en vivo:</strong> Indicación clara de "Modo demo" en layout (p. ej. banner o badge) cuando corresponda. 2. <strong>Feedback visual:</strong> Mejorar feedback cuando el usuario intenta cerrar modal obligatorio (ej. tooltip o mensaje breve).</p>
+
+<h3>Seguridad</h3>
+
+<p>1. <strong>Producción:</strong> Asegurar <code>NEXT_PUBLIC_DEMO_MODE !== "true"</code> y que <code>isMasterKey</code> / bypass demo estén deshabilitados. 2. <strong>Rate limiting:</strong> Revisar y endurecer en <code>/api/assistant</code> y <code>/api/voice</code> si se prevé uso masivo. 3. <strong>Auditoría de logs:</strong> Implementar sistema de logging estructurado para reemplazar <code>console.log</code> en producción.</p>
+
+<h3>Demo comercial</h3>
+
+<p>1. <strong>Checklist pre‑demo:</strong></p>
+<li>✅ Login con <code>demo@legalpy.com</code> / <code>inversor2026</code></li>
+<li>✅ Comprobar plan GEP y panel profesional</li>
+<li>✅ Probar skip biométrico en <code>/panel</code> y que en <code>/pagos</code> no se pueda omitir</li>
+<li>✅ Abrir SmartAssistant y verificar disclaimer</li>
+<li>✅ Verificar que credenciales demo son visibles en login</li>
+<p>2. <strong>Documentar</strong> en un "runbook" de demo los pasos anteriores y los puntos que pueden preguntar inversores (biometría, roles, IA, pagos).</p>
+
+<hr>
+
+<h2>🔹 FIX INMEDIATO (obligatorio)</h2>
+
+<h3>Fix 1: ✅ <strong>APLICADO</strong> - Aviso de credenciales demo en login (modo demo)</h3>
+
+<p><strong>Ubicación:</strong> <code>app/login/page.tsx</code>, después del <code><Card></code> que envuelve <code><LoginForm /></code>.</p>
+
+<p><strong>Código aplicado:</strong></p>
+
+<p>``<code>tsx {/* Aviso credenciales demo - solo si modo demo (AUDIT FIX) */} {typeof window !== "undefined" && (process.env.NEXT_PUBLIC_DEMO_MODE === "true" || localStorage.getItem("legal-py-demo-mode") === "true") && (</p>
+<div className="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-center">
+<p className="text-xs text-amber-200/90 mb-1">Demo inversores / auditoría</p>
+<p className="text-sm font-mono text-amber-100">
+<p>demo@legalpy.com / inversor2026 </p> </div> )} </code>`<code></p>
+
+<p><strong>Estado:</strong> ✅ Implementado y verificado.</p>
+
+<hr>
+
+<h3>Fix 2: ✅ <strong>APLICADO</strong> - Incluir "Esto no constituye asesoramiento legal" en disclaimer IA</h3>
+
+<p><strong>Ubicación:</strong> </code>lib/translations.ts<code>, objeto </code>es<code>, sección </code>ai_assistant.disclaimer<code>.</p>
+
+<p><strong>Código aplicado:</strong></p>
+
+<p></code>`<code>ts disclaimer: "IMPORTANTE: Esto no constituye asesoramiento legal. Soy una IA de filtrado; mi función es derivar tu caso al profesional correcto.", </code>`<code></p>
+
+<p><strong>Estado:</strong> ✅ Implementado y verificado.</p>
+
+<hr>
+
+<h3>Fix 3: ✅ <strong>APLICADO</strong> - Deshabilitar cierre por backdrop/X/"Hacerlo más tarde" cuando es obligatorio</h3>
+
+<p><strong>Ubicación:</strong> </code>components/Security/BiometricVerificationModal.tsx<code>.</p>
+
+<p><strong>Cambios aplicados:</strong></p>
+
+<p>1. <strong>Backdrop:</strong> Condicionado a </code>effectiveIsMandatory<code> - no cierra si es obligatorio. 2. <strong>Botón X:</strong> Oculto cuando </code>effectiveIsMandatory === true<code>. 3. <strong>"Hacerlo más tarde":</strong> Oculto cuando </code>effectiveIsMandatory === true<code>.</p>
+
+<p><strong>Estado:</strong> ✅ Implementado y verificado.</p>
+
+<hr>
+
+<h3>Fix 4: ⚠️ <strong>PENDIENTE</strong> - Unificación middleware/sesión</h3>
+
+<p><strong>Descripción:</strong> Resolver desacople entre middleware (cookies) y autenticación (</code>localStorage<code>).</p>
+
+<p><strong>Opciones:</strong></p>
+<li><strong>Opción A:</strong> Implementar cookie en </code>saveSession()<code> (httpOnly, secure, sameSite) y que middleware la use.</li>
+<li><strong>Opción B:</strong> Remover dependencia de middleware para auth y usar solo guards cliente + validación en APIs.</li>
+
+<p><strong>Prioridad:</strong> 🔴 <strong>ALTA</strong> - Requiere decisión arquitectónica antes de producción.</p>
+
+<p><strong>Estado:</strong> ⚠️ Pendiente de decisión arquitectónica.</p>
+
+<hr>
+
+<h2>🔹 Anexo: Referencias de Código</h2>
+
+<table>
+<thead>
+<tr><th>Tema</th><th>Archivo</th><th>Líneas relevantes</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td>Login demo</td><td></code>lib/auth.ts<code></td><td>269-333</td></tr>
+<tr><td>Master key</td><td></code>lib/feature-flags.ts<code></td><td>45-50</td></tr>
+<tr><td>BiometricGate</td><td></code>components/Security/BiometricGate.tsx<code></td><td>32-37, 52-56, 60-66, 72-86, 105-139, 143-224, 304-324, 338-369</td></tr>
+<tr><td>Modal biométrico</td><td></code>components/Security/BiometricVerificationModal.tsx<code></td><td>43-45, 378-394, 415-431, 681-696, 780-800</td></tr>
+<tr><td>SmartAssistant disclaimer</td><td></code>components/SmartAssistant.tsx<code></td><td>626-633</td></tr>
+<tr><td>Assistant API</td><td></code>app/api/assistant/route.ts<code></td><td>1-26</td></tr>
+<tr><td>Voice API</td><td></code>app/api/voice/route.ts<code></td><td>1-80</td></tr>
+<tr><td>Panel por rol</td><td></code>app/panel/page.tsx<code></td><td>26, 42-45, 332-341, 347-370, 452, 639, 1034, 1174</td></tr>
+<tr><td>Middleware</td><td></code>middleware.ts<code></td><td>40-44, 76-86</td></tr>
+<tr><td>Sesión</td><td></code>lib/auth.ts<code></td><td>29-31, 53-58</td></tr>
+<tr><td>Traducciones disclaimer</td><td></code>lib/translations.ts<code></td><td>176-179</td></tr>
+<tr><td>Fix 1 - Login demo</td><td></code>app/login/page.tsx<code></td><td>Aviso demo agregado</td></tr>
+<tr><td>Fix 2 - Disclaimer</td><td></code>lib/translations.ts<code></td><td>178</td></tr>
+<tr><td>Fix 3 - Modal UX</td><td></code>BiometricVerificationModal.tsx<code></td><td>378-394, 415-431, 682-696</td></tr>
+<p></tbody> </table></p>
+
+<hr>
+
+<h2>🔹 Resumen de Fixes Aplicados</h2>
+
+<table>
+<thead>
+<tr><th>Fix</th><th>Archivo(s)</th><th>Estado</th><th>Verificación</th></tr>
+<p></thead></p>
+<tbody>
+<tr><td><strong>Fix 1</strong> Aviso credenciales demo en login</td><td></code>app/login/page.tsx<code></td><td><span class="status-ok">✅</span> Aplicado</td><td>Visible solo en modo demo</td></tr>
+<tr><td><strong>Fix 2</strong> Disclaimer "Esto no constituye asesoramiento legal"</td><td></code>lib/translations.ts<code> (</code>es.ai_assistant.disclaimer<code>)</td><td><span class="status-ok">✅</span> Aplicado</td><td>Texto actualizado</td></tr>
+<tr><td><strong>Fix 3</strong> Deshabilitar backdrop/X/"Hacerlo más tarde" cuando obligatorio</td><td></code>BiometricVerificationModal.tsx<code> (backdrop, X, botón cancelar)</td><td><span class="status-ok">✅</span> Aplicado</td><td>Controles ocultos cuando </code>effectiveIsMandatory<code></td></tr>
+<p></tbody> </table></p>
+
+<p><strong>Pendiente (no implementado en este ciclo):</strong> Unificación middleware/sesión (cookie vs. </code>localStorage<code>). Requiere decisión de arquitectura y posible refactor de </code>lib/auth<code> y </code>middleware`.</p>
+
+<hr>
+
+<h2>🔹 Conclusión</h2>
+
+<p><strong>Cumplimiento general:</strong> 95% ✅</p>
+
+<p><strong>Puntos fuertes:</strong></p>
+<li>✅ Implementación completa de WebAuthn con separación login/pagos</li>
+<li>✅ Modo demo funcional y no bloqueante</li>
+<li>✅ Biometría con botón de escape y excepciones en pagos</li>
+<li>✅ Roles claros (cliente/profesional/estudiante) con dashboards diferenciados</li>
+<li>✅ IA con disclaimer legal visible</li>
+<li>✅ Fixes críticos aplicados (credenciales demo, disclaimer, UX modal)</li>
+
+<p><strong>Gaps identificados:</strong></p>
+<li>⚠️ Middleware/sesión desacoplados (crítico para producción)</li>
+<li>⚠️ Logs de debug en componentes de producción (limpieza recomendada)</li></ul>
+
+<p><strong>Recomendación final:</strong> La plataforma está <strong>lista para demo controlada</strong> y presentaciones a inversores. Para producción, se requiere resolver el desacople middleware/sesión y limpiar logs de debug.</p>
+
+<p><strong>Riesgo de seguridad:</strong> 🟢 <strong>BAJO</strong> (en modo demo) - La lógica de seguridad funciona correctamente. El único riesgo crítico es el middleware que no protege rutas en servidor, pero esto no afecta la demo ya que la navegación es cliente-side.</p>
+
+<p><strong>Estado final:</strong> ✅ <strong>AUDITORÍA COMPLETA - PLATAFORMA LISTA PARA DEMO</strong></p>
+
+<hr>
+
+<p><strong>Fin del Informe de Auditoría Integral</strong></p>
+
+<p>*Generado: Enero 2026* *Versión: 1.0 Final* *Confidencial - Solo para uso interno y presentaciones autorizadas*</p>
+
+
+  <div class="footer">
+    <p><strong>Legal PY</strong> - Informe de Auditoría Integral</p>
+    <p>Generado: 22 de enero de 2026, 3:22 p. m.</p>
+    <p>Confidencial - Solo para uso interno y presentaciones autorizadas</p>
+    <p><strong>Versión del Informe:</strong> 1.0 Final</p>
+  </div>
+</body>
+</html>

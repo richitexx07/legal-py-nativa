@@ -447,8 +447,24 @@ export default function SmartAssistant() {
     router.push(`/post-case?${params.toString()}`);
   };
 
+  const isDemo =
+    typeof window !== "undefined" &&
+    (process.env.NEXT_PUBLIC_DEMO_MODE === "true" || localStorage.getItem("legal-py-demo-mode") === "true");
+
   if (!assistantMeta && !showPersonalityModal) {
-    return null; // No mostrar nada hasta que se seleccione el asistente
+    return (
+      <button
+        onClick={() => setShowPersonalityModal(true)}
+        className="fixed bottom-32 right-6 z-[50] flex items-center gap-3 rounded-2xl px-4 py-3 bg-gradient-to-r from-[#C9A24D] to-[#C08457] text-black shadow-2xl hover:shadow-[#C9A24D]/40 transition-all hover:scale-[1.02] pointer-events-auto"
+        aria-label="Habla con Victoria o Justo"
+      >
+        <span className="text-2xl">👩‍⚖️</span>
+        <div className="text-left">
+          <p className="text-sm font-extrabold leading-tight">Victoria & Justo</p>
+          <p className="text-xs font-medium opacity-80">Asistentes IA · Clic para elegir</p>
+        </div>
+      </button>
+    );
   }
 
   return (
@@ -602,11 +618,16 @@ export default function SmartAssistant() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-white font-extrabold truncate">{assistantMeta.name}</h3>
                           <Badge variant="outline" className="text-xs">
-                            {isStudent ? "Estudiante" : role === "profesional" ? "Profesional" : "Cliente"}
+                            {isStudent ? "Estudiante" : role === "profesional" ? "Profesional" : session ? "Cliente" : "Visitante"}
                           </Badge>
+                          {isDemo && (
+                            <Badge className="text-xs bg-amber-500/20 text-amber-200 border-amber-500/40">
+                              Modo demo
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-xs text-white/70 truncate">{assistantMeta.tagline}</p>
                       </div>

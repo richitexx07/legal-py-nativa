@@ -83,7 +83,7 @@ function getDefaultPrivacyPolicy(): LegalContent {
     id: "privacy-policy",
     title: "Política de Privacidad",
     lastUpdated: new Date().toISOString(),
-    version: 1,
+    version: 2,
     content: `# Política de Privacidad de Legal PY
 
 **Última actualización:** ${new Date().toLocaleDateString("es-PY", { year: "numeric", month: "long", day: "numeric" })}
@@ -134,6 +134,25 @@ Implementamos medidas de seguridad técnicas y organizativas para proteger tu in
 - **Monitoreo:** Sistemas de monitoreo para detectar y prevenir accesos no autorizados
 - **Backups:** Copias de seguridad regulares de los datos
 
+### 3.1 Autenticación Biométrica
+
+Legal PY utiliza tecnología WebAuthn / Passkeys para autenticación biométrica:
+
+- **Tecnología:** WebAuthn / Passkeys (estándar W3C)
+- **Almacenamiento:** Los datos biométricos se almacenan localmente en tu dispositivo, NO en nuestros servidores
+- **Separación de flujos:** El login biométrico y la autorización de pagos utilizan flujos independientes y seguros
+- **Context binding:** En pagos, la autorización biométrica está ligada al contexto específico de la transacción (usuario, monto, operación)
+
+**En Modo Demo:**
+- La biometría se presenta como funcional para demostración
+- Puede omitirse mediante un botón de escape visible
+- El bypass solo aplica a la sesión actual y no afecta la seguridad en producción
+
+**En Producción:**
+- La biometría es obligatoria para autorización de pagos, transferencias y suscripciones
+- No se permite bypass en rutas críticas de pago
+- El botón de omitir se oculta automáticamente en operaciones sensibles
+
 ## 4. Compartir Información
 
 **Legal PY NO vende ni alquila tu información personal.**
@@ -168,6 +187,19 @@ Utilizamos cookies y tecnologías similares para:
 - Mejorar la experiencia del usuario
 
 Puedes gestionar las cookies desde la configuración de tu navegador.
+
+### 6.1 Modo Demo y Sesiones
+
+**Modo Demo:**
+- En modo demo, Legal PY permite omitir ciertas verificaciones para facilitar pruebas y demostraciones
+- Las preferencias de omisión se almacenan solo en la sesión actual (sessionStorage)
+- No se almacenan datos sensibles adicionales en modo demo
+- El modo demo está claramente identificado en la interfaz
+
+**Gestión de Sesiones:**
+- Utilizamos sessionStorage para recordar preferencias temporales durante la sesión
+- Al cerrar el navegador, estas preferencias se eliminan automáticamente
+- En producción, las sesiones tienen timeouts automáticos por seguridad
 
 ## 7. Retención de Datos
 
@@ -212,7 +244,7 @@ function getDefaultTermsAndConditions(): LegalContent {
     id: "terms-conditions",
     title: "Términos y Condiciones de Uso",
     lastUpdated: new Date().toISOString(),
-    version: 1,
+    version: 2,
     content: `# Términos y Condiciones de Uso de Legal PY
 
 **Última actualización:** ${new Date().toLocaleDateString("es-PY", { year: "numeric", month: "long", day: "numeric" })}
@@ -226,6 +258,19 @@ Al acceder y utilizar Legal PY, aceptas estar sujeto a estos Términos y Condici
 Legal PY es una plataforma digital que conecta clientes con profesionales legales, facilita la gestión de casos y trámites legales, y ofrece servicios educativos y de capacitación.
 
 **IMPORTANTE:** Legal PY es una plataforma de intermediación. No proporcionamos asesoramiento legal directo ni procesamos pagos. Los servicios legales son proporcionados por profesionales independientes.
+
+### 2.1 Modo Demo
+
+Legal PY puede operar en **Modo Demo** para:
+- Pruebas y evaluaciones de la plataforma
+- Presentaciones a inversores y stakeholders
+- Demostraciones de funcionalidades
+
+**Características del Modo Demo:**
+- La autenticación biométrica puede omitirse mediante un botón de escape visible
+- Las preferencias de omisión solo aplican a la sesión actual
+- El modo demo está claramente identificado en la interfaz
+- **IMPORTANTE:** En producción, las verificaciones biométricas son obligatorias para operaciones críticas
 
 ## 3. Registro y Cuentas
 
@@ -262,6 +307,26 @@ Está prohibido:
 - Interferir con el funcionamiento de la plataforma
 - Acceder a cuentas de otros usuarios
 - Realizar ingeniería inversa o intentar acceder al código fuente
+- Intentar eludir medidas de seguridad biométrica en producción
+- Compartir credenciales de acceso o sesiones activas
+
+### 4.3 Autenticación y Seguridad
+
+**Autenticación Biométrica:**
+- Legal PY utiliza WebAuthn / Passkeys para autenticación segura
+- La biometría es obligatoria para autorización de pagos, transferencias y suscripciones en producción
+- Los datos biométricos se almacenan localmente en tu dispositivo, NO en nuestros servidores
+- Cada operación de pago utiliza un challenge único ligado al contexto de la transacción
+
+**Exclusiones y Excepciones:**
+- **Home / Login / Registro / Panel:** Puedes omitir la verificación biométrica (solo en modo demo o rutas no críticas)
+- **Pagos / Suscripciones / Transferencias:** La biometría es OBLIGATORIA y no puede omitirse en producción
+- **Modo Demo:** Existe un botón de escape visible que permite omitir verificaciones, pero solo aplica a la sesión actual
+
+**Botón de Escape y Anti-Bloqueo:**
+- Todo modal biométrico incluye una opción de salida controlada
+- El sistema recuerda la omisión solo durante la sesión actual (sessionStorage)
+- En rutas críticas de pago, el escape es ignorado y la verificación es obligatoria
 
 ## 5. Servicios de Profesionales
 
@@ -282,11 +347,32 @@ Está prohibido:
 - Solo registramos pagos realizados externamente
 - Los pagos se realizan directamente entre cliente y profesional
 
-### 6.2 Suscripciones Profesionales
+### 6.2 Autorización Biométrica de Pagos
+
+**En Producción:**
+- La autorización biométrica es **OBLIGATORIA** para:
+  - Pagos
+  - Transferencias
+  - Suscripciones
+- El challenge biométrico está ligado al contexto de la transacción:
+  - Usuario que autoriza
+  - Monto de la operación
+  - Moneda
+  - ID único de la transacción
+- **No se permite bypass** en rutas críticas de pago
+- El botón de omitir se oculta automáticamente en operaciones de pago
+
+**En Modo Demo:**
+- La biometría se presenta como funcional para demostración
+- Puede omitirse mediante un botón de escape visible
+- El bypass solo aplica a la sesión actual y no afecta la seguridad en producción
+
+### 6.3 Suscripciones Profesionales
 - Las suscripciones se renuevan automáticamente
 - Puedes cancelar en cualquier momento desde tu panel
 - La cancelación será efectiva al finalizar el período de facturación actual
 - No se realizarán reembolsos por períodos ya facturados
+- La autorización biométrica es obligatoria para confirmar suscripciones en producción
 
 ## 7. Propiedad Intelectual
 
@@ -343,6 +429,16 @@ Podemos suspender o terminar tu cuenta si:
 ## 11. Modificaciones de los Términos
 
 Nos reservamos el derecho de modificar estos términos en cualquier momento. Te notificaremos de cambios significativos. El uso continuado de la plataforma después de los cambios constituye aceptación de los nuevos términos.
+
+### 11.1 Transición de Modo Demo a Producción
+
+Cuando Legal PY transite de Modo Demo a Producción Total:
+
+- Las políticas de seguridad se endurecerán automáticamente
+- La biometría será obligatoria en todas las rutas críticas
+- El modo demo puede desactivarse completamente
+- Se notificará a los usuarios con al menos 30 días de anticipación
+- Los usuarios deberán aceptar las nuevas políticas de seguridad antes de continuar usando la plataforma
 
 ## 12. Ley Aplicable y Jurisdicción
 

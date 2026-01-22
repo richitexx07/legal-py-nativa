@@ -11,6 +11,7 @@ import RoleModeModal, { ViewMode } from "@/components/RoleModeModal";
 import { InscripcionCurso, PostulacionPasantia, SolicitudCapacitacion } from "@/lib/educacion-data";
 import { mockCursos, mockPasantias } from "@/lib/educacion-data";
 import { getSession } from "@/lib/auth";
+import { useUserState } from "@/hooks/useUserState";
 import { LegalCase } from "@/lib/types";
 import { generateCaseHash, truncateHash, copyToClipboard } from "@/lib/security";
 import MetricsWidget from "@/components/Dashboard/MetricsWidget";
@@ -33,6 +34,7 @@ export default function PanelAdminPage() {
   const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [mounted, setMounted] = useState(false);
   const [currentInternship, setCurrentInternship] = useState<DigitalInternship | null>(null);
+  const userState = useUserState();
 
   useEffect(() => {
     setMounted(true);

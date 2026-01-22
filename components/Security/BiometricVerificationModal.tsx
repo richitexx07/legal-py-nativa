@@ -15,6 +15,8 @@ interface BiometricVerificationModalProps {
   userId?: string;
   /** Si se permite saltar/cerrar el modal (solo en rutas no críticas) */
   allowSkip?: boolean;
+  /** Modo demo: nunca bloquea, siempre permite cerrar */
+  isDemoMode?: boolean;
 }
 
 type VerificationState = "UPLOAD_FRONT" | "UPLOAD_BACK" | "LIVENESS_CHECK";
@@ -36,7 +38,11 @@ export default function BiometricVerificationModal({
   isVerifying = false,
   userId,
   allowSkip = true, // Por defecto permite skip (solo bloquea si isMandatory=true)
+  isDemoMode = false, // Modo demo: nunca bloquea
 }: BiometricVerificationModalProps) {
+  // En modo demo: NUNCA es obligatorio, siempre se puede cerrar
+  const effectiveIsMandatory = isDemoMode ? false : isMandatory;
+  const effectiveAllowSkip = isDemoMode ? true : allowSkip;
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -370,13 +376,21 @@ export default function BiometricVerificationModal({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      {/* Fondo oscuro con blur */}
+      {/* Fondo oscuro con blur - no cerrar si es obligatorio (AUDIT FIX) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/80 backdrop-blur-xl"
-        onClick={isMandatory || !allowSkip ? undefined : onClose}
+        onClick={() => {
+          if (effectiveIsMandatory) return;
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("biometric_skipped", "true");
+            window.dispatchEvent(new Event('biometric-skip-changed'));
+          }
+          stopCamera();
+          onClose();
+        }}
         aria-hidden="true"
       />
 
@@ -391,30 +405,47 @@ export default function BiometricVerificationModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">
-            {isMandatory ? "⚠️ Verificación de Identidad" : "Validación Biométrica"}
+            {isDemoMode ? (
+              "🎯 Verificación Biométrica (Demo)"
+            ) : effectiveIsMandatory ? (
+              "⚠️ Verificación de Identidad"
+            ) : (
+              "Validación Biométrica"
+            )}
           </h2>
-          {/* Botón X - Solo visible si se permite skip */}
-          {allowSkip && (
-            <button
-              onClick={() => {
-                stopCamera();
-                onClose();
-              }}
-              className="rounded-xl p-2 hover:bg-red-500/20 hover:border-red-500/50 border border-transparent transition-all"
-              aria-label="Cerrar"
-              title="Cerrar"
-            >
-              <svg className="w-6 h-6 text-white/80 hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          {/* Botón X - ocultar o no cerrar si es obligatorio (AUDIT FIX) */}
+          {!effectiveIsMandatory && (
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("biometric_skipped", "true");
+                window.dispatchEvent(new Event('biometric-skip-changed'));
+              }
+              stopCamera();
+              onClose();
+            }}
+            className="rounded-xl p-2 hover:bg-red-500/20 hover:border-red-500/50 border border-transparent transition-all"
+            aria-label="Cerrar"
+            title="Cerrar"
+          >
+            <svg className="w-6 h-6 text-white/80 hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
           )}
         </div>
 
         <p className="text-sm text-white/70 mb-6">
-          {isMandatory
-            ? "Para acceder a la plataforma, debes verificar tu identidad. Sigue los pasos en orden."
-            : "Solo usamos esta captura para verificar que eres una persona real."}
+          {isDemoMode ? (
+            <>
+              <span className="block mb-2">🎯 <strong>Modo Demo:</strong> Esta es una demostración del sistema de verificación biométrica.</span>
+              <span className="block">Puedes probar la funcionalidad o cerrar el modal en cualquier momento.</span>
+            </>
+          ) : effectiveIsMandatory ? (
+            "Para acceder a la plataforma, debes verificar tu identidad. Sigue los pasos en orden."
+          ) : (
+            "Solo usamos esta captura para verificar que eres una persona real."
+          )}
         </p>
 
         {/* Indicador de progreso */}
@@ -602,30 +633,21 @@ export default function BiometricVerificationModal({
                     <p className="text-sm font-medium text-red-200">{cameraError}</p>
                     <p className="text-xs text-white/60">Tu dispositivo no es compatible con la verificación biométrica</p>
                   </div>
-                  {/* Botón para continuar sin verificación cuando hay error de cámara */}
-                  {allowSkip && (
-                    <>
-                      {/* #region agent log */}
-                      {(() => {
-                        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:render-error-continue-button',message:'Error continue button rendered',data:{allowSkip,cameraError},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-                        return null;
-                      })()}
-                      {/* #endregion */}
-                      <Button
-                        variant="secondary"
-                        className="mt-4 w-full rounded-xl bg-gray-600/80 hover:bg-gray-600 text-white border-red-500/30"
-                        onClick={() => {
-                          // #region agent log
-                          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:error-continue-button-clicked',message:'Error continue button clicked',data:{cameraError,allowSkip},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
-                          // #endregion
-                          stopCamera();
-                          onClose();
-                        }}
-                      >
-                        Continuar sin verificación (Dispositivo no compatible)
-                      </Button>
-                    </>
-                  )}
+                  {/* Botón para continuar sin verificación cuando hay error de cámara - SIEMPRE VISIBLE */}
+                  <Button
+                    variant="secondary"
+                    className="mt-4 w-full rounded-xl bg-gray-600/80 hover:bg-gray-600 text-white border-red-500/30"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        sessionStorage.setItem("biometric_skipped", "true");
+                        window.dispatchEvent(new Event('biometric-skip-changed'));
+                      }
+                      stopCamera();
+                      onClose();
+                    }}
+                  >
+                    Continuar sin verificación (Dispositivo no compatible)
+                  </Button>
                 </div>
               )}
             </div>
@@ -660,19 +682,23 @@ export default function BiometricVerificationModal({
 
         {/* Botones */}
         <div className="mt-6 flex justify-end gap-3">
-          {/* Botón Cancelar - Solo visible si se permite skip */}
-          {allowSkip && (
-            <Button
-              variant="secondary"
-              className="rounded-xl"
-              onClick={() => {
-                stopCamera();
-                onClose();
-              }}
-              disabled={status === "scanning" || isVerifying}
-            >
-              Hacerlo más tarde
-            </Button>
+          {/* Botón Cancelar - ocultar o deshabilitar si es obligatorio (AUDIT FIX) */}
+          {!effectiveIsMandatory && (
+          <Button
+            variant="secondary"
+            className="rounded-xl"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("biometric_skipped", "true");
+                window.dispatchEvent(new Event('biometric-skip-changed'));
+              }
+              stopCamera();
+              onClose();
+            }}
+            disabled={status === "scanning" || isVerifying}
+          >
+            Hacerlo más tarde
+          </Button>
           )}
           
           {currentState === "UPLOAD_FRONT" && (
@@ -729,20 +755,15 @@ export default function BiometricVerificationModal({
           )}
         </div>
 
-        {/* Botón "Saltar por ahora" - Solo visible en LIVENESS_CHECK y si allowSkip es true */}
-        {currentState === "LIVENESS_CHECK" && allowSkip && !cameraError && (
+        {/* Botón "Saltar por ahora" - SIEMPRE VISIBLE en LIVENESS_CHECK (nunca bloquear) */}
+        {currentState === "LIVENESS_CHECK" && !cameraError && (
           <div className="mt-4 text-center">
-            {/* #region agent log */}
-            {(() => {
-              fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:render-skip-button',message:'Skip button rendered',data:{currentState,allowSkip,hasCameraError:!!cameraError,status,isVerifying},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-              return null;
-            })()}
-            {/* #endregion */}
             <button
               onClick={() => {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:skip-button-clicked',message:'Skip button clicked',data:{currentState,allowSkip},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
-                // #endregion
+                if (typeof window !== "undefined") {
+                  sessionStorage.setItem("biometric_skipped", "true");
+                  window.dispatchEvent(new Event('biometric-skip-changed'));
+                }
                 stopCamera();
                 onClose();
               }}
@@ -761,23 +782,27 @@ export default function BiometricVerificationModal({
           </p>
         )}
 
-        {/* BOTÓN DE ESCAPE SIEMPRE VISIBLE - URGENTE PARA DEMO/INCOGNITO */}
-        <div className="mt-6 pt-4 border-t border-white/10">
-          <button
-            onClick={() => {
-              // Guardar skip en sessionStorage para que no vuelva a aparecer en esta sesión
-              if (typeof window !== "undefined") {
-                sessionStorage.setItem("biometric_skipped", "true");
-              }
-              stopCamera();
-              onClose();
-            }}
-            className="w-full text-sm text-white/60 hover:text-white/90 underline cursor-pointer transition-colors text-center"
-            disabled={status === "scanning" || isVerifying}
-          >
-            Omitir Verificación (Modo Demo / Incógnito)
-          </button>
-        </div>
+        {/* BOTÓN DE ESCAPE - Visible en demo o cuando no es obligatorio (según manual) */}
+        {(!effectiveIsMandatory || isDemoMode) && (
+          <div className="mt-6 pt-4 border-t border-white/10 z-50">
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  sessionStorage.setItem("biometric_skipped", "true");
+                  window.dispatchEvent(new Event('biometric-skip-changed'));
+                }
+                stopCamera();
+                onClose();
+              }}
+              className="w-full text-sm text-white/60 hover:text-white/90 underline cursor-pointer transition-colors text-center"
+              disabled={status === "scanning" || isVerifying}
+            >
+              {isDemoMode 
+                ? "Omitir Verificación (Modo Demo / Incógnito)"
+                : "Omitir Verificación"}
+            </button>
+          </div>
+        )}
       </motion.div>
     </div>
   );

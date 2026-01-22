@@ -9,7 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import LanguageSelector from "./LanguageSelector";
 import LoginModal from "./LoginModal";
 import RoleModeModal, { ViewMode } from "./RoleModeModal";
-import { getSession } from "@/lib/auth";
+import { getSession, logout } from "@/lib/auth";
 import NotificationBell from "./Notifications/NotificationBell";
 
 export default function NavbarTop() {
@@ -513,51 +513,46 @@ export default function NavbarTop() {
                       </Link>
                       <div className="border-t border-white/10 my-2" />
                       <button
-                        onClick={() => {
-                          if (typeof window !== "undefined") {
-                            try {
-                              // Limpiar todas las keys específicas de Legal PY
-                              const keysToRemove = [
-                                "legal-py-session",
-                                "legal-py-current-user-id",
-                                "legal-py-view-mode",
-                                "legal-py-cases",
-                                "legal-py-demo-mode",
-                                "legal-py-demo-plan",
-                                "legal-py-reverify-required",
-                                "legal-py-reverify-day",
-                              ];
-                              keysToRemove.forEach((key) => {
+                        onClick={async () => {
+                          if (typeof window === "undefined") return;
+                          await logout();
+                          try {
+                            const keysToRemove = [
+                              "legal-py-current-user-id",
+                              "legal-py-view-mode",
+                              "legal-py-cases",
+                              "legal-py-demo-mode",
+                              "legal-py-demo-plan",
+                              "legal-py-reverify-required",
+                              "legal-py-reverify-day",
+                            ];
+                            keysToRemove.forEach((k) => {
+                              try {
+                                localStorage.removeItem(k);
+                              } catch {
+                                /* ignore */
+                              }
+                            });
+                            const allKeys = Object.keys(localStorage);
+                            allKeys.forEach((key) => {
+                              if (key.startsWith("legal-py-biometric-") || key.startsWith("legal-py-cedula-")) {
                                 try {
                                   localStorage.removeItem(key);
                                 } catch {
-                                  // ignore
+                                  /* ignore */
                                 }
-                              });
-                              // Limpiar también keys de biometría
-                              const allKeys = Object.keys(localStorage);
-                              allKeys.forEach((key) => {
-                                if (key.startsWith("legal-py-biometric-") || key.startsWith("legal-py-cedula-")) {
-                                  try {
-                                    localStorage.removeItem(key);
-                                  } catch {
-                                    // ignore
-                                  }
-                                }
-                              });
-                            } catch {
-                              // Si falla, hacer clear completo
-                              try {
-                                localStorage.clear();
-                              } catch {
-                                // ignore
                               }
+                            });
+                          } catch {
+                            try {
+                              localStorage.clear();
+                            } catch {
+                              /* ignore */
                             }
-                            setSession(null);
-                            setIsUserMenuOpen(false);
-                            // Forzar recarga limpia
-                            window.location.href = "/login";
                           }
+                          setSession(null);
+                          setIsUserMenuOpen(false);
+                          window.location.href = "/login";
                         }}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-500/10 transition group text-left"
                       >
@@ -770,51 +765,46 @@ export default function NavbarTop() {
                           <span className="text-white/90">{t("navbar.my_panel")}</span>
                         </Link>
                         <button
-                          onClick={() => {
-                            if (typeof window !== "undefined") {
-                              try {
-                                // Limpiar todas las keys específicas de Legal PY
-                                const keysToRemove = [
-                                  "legal-py-session",
-                                  "legal-py-current-user-id",
-                                  "legal-py-view-mode",
-                                  "legal-py-cases",
-                                  "legal-py-demo-mode",
-                                  "legal-py-demo-plan",
-                                  "legal-py-reverify-required",
-                                  "legal-py-reverify-day",
-                                ];
-                                keysToRemove.forEach((key) => {
+                          onClick={async () => {
+                            if (typeof window === "undefined") return;
+                            await logout();
+                            try {
+                              const keysToRemove = [
+                                "legal-py-current-user-id",
+                                "legal-py-view-mode",
+                                "legal-py-cases",
+                                "legal-py-demo-mode",
+                                "legal-py-demo-plan",
+                                "legal-py-reverify-required",
+                                "legal-py-reverify-day",
+                              ];
+                              keysToRemove.forEach((k) => {
+                                try {
+                                  localStorage.removeItem(k);
+                                } catch {
+                                  /* ignore */
+                                }
+                              });
+                              const allKeys = Object.keys(localStorage);
+                              allKeys.forEach((key) => {
+                                if (key.startsWith("legal-py-biometric-") || key.startsWith("legal-py-cedula-")) {
                                   try {
                                     localStorage.removeItem(key);
                                   } catch {
-                                    // ignore
+                                    /* ignore */
                                   }
-                                });
-                                // Limpiar también keys de biometría
-                                const allKeys = Object.keys(localStorage);
-                                allKeys.forEach((key) => {
-                                  if (key.startsWith("legal-py-biometric-") || key.startsWith("legal-py-cedula-")) {
-                                    try {
-                                      localStorage.removeItem(key);
-                                    } catch {
-                                      // ignore
-                                    }
-                                  }
-                                });
-                              } catch {
-                                // Si falla, hacer clear completo
-                                try {
-                                  localStorage.clear();
-                                } catch {
-                                  // ignore
                                 }
+                              });
+                            } catch {
+                              try {
+                                localStorage.clear();
+                              } catch {
+                                /* ignore */
                               }
-                              setSession(null);
-                              setIsUserMenuOpen(false);
-                              // Forzar recarga limpia
-                              window.location.href = "/login";
                             }
+                            setSession(null);
+                            setIsUserMenuOpen(false);
+                            window.location.href = "/login";
                           }}
                           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition text-red-400"
                         >

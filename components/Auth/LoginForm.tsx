@@ -8,7 +8,7 @@ import { isWebAuthnAvailable } from "@/lib/security/webauthn";
 import Button from "@/components/Button";
 import FormField from "@/components/FormField";
 import TwoFactorForm from "./TwoFactorForm";
-import BiometricAuth from "@/components/Security/BiometricAuth";
+import LoginBiometric from "@/components/Security/LoginBiometric";
 import { useRouter } from "next/navigation";
 
 interface LoginFormProps {
@@ -222,45 +222,38 @@ export default function LoginForm({ onSuccess, onError, redirectPath }: LoginFor
               </span>
             </div>
           </div>
-          <BiometricAuth
+          <LoginBiometric
             email={email}
-            mode="login"
             size="lg"
-            onSuccess={async () => {
-              // En producción, aquí se enviaría la firma al backend para verificación
+            onSuccess={async (session) => {
+              // En producción, session viene del backend después de verificar la firma
+              // En demo, puede venir de getSession() o ser undefined
               setBiometricLoading(true);
               try {
-                // Simular verificación con backend (en producción sería real)
-                await new Promise((resolve) => setTimeout(resolve, 500));
-                
-                // Intentar login automático si hay sesión guardada
-                const existingSession = getSession();
-                if (existingSession && existingSession.user.email === email) {
+                if (session) {
+                  // Sesión recibida del backend (producción) o existente (demo)
                   if (onSuccess) {
                     onSuccess();
                   } else {
                     router.push(redirectPath || "/panel");
                   }
                 } else {
-                  // En producción: enviar firma WebAuthn al backend
-                  // const response = await fetch('/api/auth/webauthn/verify', {
-                  //   method: 'POST',
-                  //   headers: { 'Content-Type': 'application/json' },
-                  //   body: JSON.stringify({ assertion, email }),
-                  // });
-                  // if (response.ok) { 
-                  //   const data = await response.json();
-                  //   saveSession(data.session);
-                  //   router.push('/panel'); 
-                  // }
-                  
-                  // Por ahora, mostrar mensaje de éxito
-                  setErrors({
-                    general: "✓ Biometría verificada. Redirigiendo...",
-                  });
-                  setTimeout(() => {
-                    router.push(redirectPath || "/panel");
-                  }, 1000);
+                  // En demo: intentar usar sesión existente o redirigir
+                  const existingSession = getSession();
+                  if (existingSession && existingSession.user.email === email) {
+                    if (onSuccess) {
+                      onSuccess();
+                    } else {
+                      router.push(redirectPath || "/panel");
+                    }
+                  } else {
+                    setErrors({
+                      general: "✓ Biometría verificada. Redirigiendo...",
+                    });
+                    setTimeout(() => {
+                      router.push(redirectPath || "/panel");
+                    }, 1000);
+                  }
                 }
               } catch (error) {
                 setErrors({ general: "Error al procesar autenticación biométrica." });

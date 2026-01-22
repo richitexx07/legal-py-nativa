@@ -23,11 +23,25 @@ function generateUserId(): string {
   return `usr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+const SESSION_API = "/api/auth/session";
+
 /**
- * Almacena la sesión actual en localStorage
+ * Almacena la sesión en localStorage y sincroniza cookie httpOnly vía API
+ * para que el middleware pueda verificar autenticación en rutas protegidas.
  */
-function saveSession(session: AuthSession): void {
+async function saveSession(session: AuthSession): Promise<void> {
+  if (typeof window === "undefined") return;
   localStorage.setItem("legal-py-session", JSON.stringify(session));
+  try {
+    await fetch(SESSION_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session }),
+      credentials: "same-origin",
+    });
+  } catch {
+    // Ignorar fallos de red; localStorage sigue siendo fuente de verdad en cliente
+  }
 }
 
 /**
@@ -35,23 +49,6 @@ function saveSession(session: AuthSession): void {
  */
 export function getSession(): AuthSession | null {
   if (typeof window === "undefined") return null;
-
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sessionId: "debug-session",
-      runId: "run1",
-      hypothesisId: "H3",
-      location: "lib/auth.ts:getSession",
-      message: "getSession called in browser",
-      data: {},
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
   const stored = localStorage.getItem("legal-py-session");
   if (!stored) return null;
   try {
@@ -62,9 +59,15 @@ export function getSession(): AuthSession | null {
 }
 
 /**
- * Elimina la sesión actual
+ * Elimina la sesión (localStorage y cookie vía API)
  */
-export function clearSession(): void {
+export async function clearSession(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    await fetch(SESSION_API, { method: "DELETE", credentials: "same-origin" });
+  } catch {
+    // Ignorar fallos de red
+  }
   localStorage.removeItem("legal-py-session");
 }
 
@@ -250,7 +253,7 @@ export async function register(data: RegisterData): Promise<AuthResponse> {
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 días
   };
 
-  saveSession(session);
+  await saveSession(session);
 
   return {
     success: true,
@@ -339,7 +342,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
 
-    saveSession(session);
+    await saveSession(session);
 
     return {
       success: true,
@@ -426,7 +429,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 días
   };
 
-  saveSession(session);
+  await saveSession(session);
 
   return {
     success: true,
@@ -496,7 +499,7 @@ export async function verifyEmail(email: string, code: string): Promise<AuthResp
     profile,
   };
 
-  saveSession(session);
+  await saveSession(session);
 
   return {
     success: true,
@@ -524,10 +527,10 @@ export async function sendEmailVerificationCode(email: string): Promise<{ succes
 }
 
 /**
- * Cierra sesión
+ * Cierra sesión (localStorage y cookie)
  */
 export async function logout(): Promise<void> {
-  clearSession();
+  await clearSession();
 }
 
 /**
@@ -556,7 +559,7 @@ export async function updateProfile(
   const session = getSession();
   if (session && session.user.id === userId) {
     session.profile = updatedProfile;
-    saveSession(session);
+    await saveSession(session);
   }
 
   return {
@@ -692,7 +695,7 @@ export async function updateIdentityVerification(
   const session = getSession();
   if (session && session.user.id === userId) {
     session.user = user;
-    saveSession(session);
+    await saveSession(session);
   }
 
   return {
@@ -726,7 +729,7 @@ export async function updateKYCTier(
   const session = getSession();
   if (session && session.user.id === userId) {
     session.user = user;
-    saveSession(session);
+    await saveSession(session);
   }
 
   return {
