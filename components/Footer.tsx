@@ -109,6 +109,43 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Aliados Estratégicos / Sponsors */}
+        <div className="border-t border-white/10 pt-8 mb-8">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-bold text-white mb-2">🤝 Aliados Estratégicos</h3>
+            <p className="text-sm text-white/70 mb-4">
+              Organizaciones que financian justicia digital y educación legal en Paraguay
+            </p>
+            <Link
+              href="/about#sponsors"
+              className="text-sm text-[#C9A24D] hover:text-white transition-colors font-medium inline-block"
+            >
+              ¿Quieres financiar justicia digital? Patrocina una Universidad →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center justify-center">
+            {/* Placeholder logos en escala de grises */}
+            {[
+              { name: "USAID", icon: "🇺🇸" },
+              { name: "Unión Europea", icon: "🇪🇺" },
+              { name: "BID", icon: "🌎" },
+              { name: "Embajada de EE.UU.", icon: "🏛️" },
+            ].map((sponsor, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center justify-center p-4 bg-white/5 rounded-xl border border-white/10 hover:border-[#C9A24D]/30 transition cursor-pointer group"
+              >
+                <div className="text-4xl mb-2 opacity-60 group-hover:opacity-100 transition-opacity grayscale group-hover:grayscale-0">
+                  {sponsor.icon}
+                </div>
+                <p className="text-xs text-white/60 text-center group-hover:text-white/80 transition">
+                  {sponsor.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Copyright */}
         <div className="border-t border-white/10 pt-6 text-center text-sm text-white/50">
           <p>

@@ -170,11 +170,13 @@ export default function NavbarTop() {
     },
     { href: "/especializaciones", label: t("navbar.specializations") },
     { href: "/pasantias", label: t("navbar.internships") },
+    { href: "/career-center", label: "💼 Carreras" },
     { href: "/gestores", label: t("navbar.gestores") },
     { href: "/ujieres", label: t("navbar.ujieres") },
     { href: "/casos", label: t("navbar.cases") },
     { href: "/migraciones", label: t("navbar.migraciones") },
     { href: "/chat", label: t("navbar.messages") },
+    { href: "/about", label: "ℹ️ Sobre Nosotros" },
   ];
 
   return (
@@ -220,7 +222,8 @@ export default function NavbarTop() {
                 {navItems.map((item) => {
                   if (item.isDropdown && item.submenu) {
                     return (
-                      <li key={item.href} className="shrink-0 relative" ref={toolsMenuRef}>
+                      <li key={item.href} className="shrink-0 relative">
+                        <div ref={toolsMenuRef}>
                         <button
                           onClick={() => setIsToolsMenuOpen(!isToolsMenuOpen)}
                           className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm text-white/80 hover:text-[#C9A24D] hover:bg-white/5 transition-all duration-200 whitespace-nowrap"
@@ -264,6 +267,7 @@ export default function NavbarTop() {
                             </div>
                           </div>
                         )}
+                        </div>
                       </li>
                     );
                   }

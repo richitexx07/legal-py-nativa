@@ -3,7 +3,7 @@
 /**
  * Roles disponibles en la plataforma
  */
-export type UserRole = "cliente" | "profesional" | "estudiante";
+export type UserRole = "cliente" | "profesional" | "estudiante" | "institucion";
 
 /**
  * Estado de verificación del usuario
@@ -163,12 +163,52 @@ export interface StudentProfile {
 }
 
 /**
+ * Perfil de Institución Educativa
+ */
+export interface InstitutionProfile {
+  userId: string; // Referencia al User.id
+  institutionName: string;
+  institutionType: "universidad" | "colegio" | "instituto" | "ong";
+  ruc?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    department?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  logo?: string;
+  verificationStatus: VerificationStatus;
+  activeStudents?: number;
+  proBonoCasesResolved?: number;
+  employabilityRate?: number; // Porcentaje de empleabilidad
+  agreements?: InstitutionAgreement[]; // Convenios con Embajadas/ONGs
+}
+
+/**
+ * Convenio de Institución
+ */
+export interface InstitutionAgreement {
+  id: string;
+  partnerName: string; // Nombre de la Embajada/ONG
+  partnerType: "embajada" | "ong" | "organizacion_internacional";
+  agreementDate: string; // ISO 8601 date string
+  pdfUrl: string; // URL del PDF firmado
+  status: "active" | "expired" | "pending";
+  description?: string;
+}
+
+/**
  * Usuario completo con su perfil según el rol
  */
 export type UserWithProfile =
   | (User & { profile: ClientProfile })
   | (User & { profile: ProfessionalProfile })
-  | (User & { profile: StudentProfile });
+  | (User & { profile: StudentProfile })
+  | (User & { profile: InstitutionProfile });
 
 /**
  * Datos de registro inicial

@@ -14,6 +14,10 @@ import { getSession } from "@/lib/auth";
 import { LegalCase } from "@/lib/types";
 import { generateCaseHash, truncateHash, copyToClipboard } from "@/lib/security";
 import MetricsWidget from "@/components/Dashboard/MetricsWidget";
+import InternshipCheckIn from "@/components/Internship/InternshipCheckIn";
+import CaseLogForm from "@/components/Internship/CaseLogForm";
+import InternshipProgress from "@/components/Internship/InternshipProgress";
+import { DigitalInternship } from "@/lib/edu-types";
 
 export default function PanelAdminPage() {
   const { t } = useLanguage();
@@ -28,6 +32,7 @@ export default function PanelAdminPage() {
   const [myCases, setMyCases] = useState<LegalCase[]>([]);
   const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [mounted, setMounted] = useState(false);
+  const [currentInternship, setCurrentInternship] = useState<DigitalInternship | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -54,6 +59,40 @@ export default function PanelAdminPage() {
     if (typeof window !== "undefined") {
       const currentSession = getSession();
       setSession(currentSession);
+
+      // Cargar pasantía activa del estudiante
+      if (currentSession && currentSession.user.role === "estudiante") {
+        try {
+          const storedInternship = localStorage.getItem("legal-py-current-internship");
+          if (storedInternship) {
+            const internship: DigitalInternship = JSON.parse(storedInternship);
+            setCurrentInternship(internship);
+          } else {
+            // Crear pasantía mock si no existe
+            const mockInternship: DigitalInternship = {
+              id: "internship_1",
+              studentId: currentSession.user.id,
+              tutorId: "tutor_1",
+              institutionId: "inst_1",
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+              endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+              requiredHours: 200,
+              completedHours: 120,
+              status: "active",
+              checkIns: [],
+              caseLogs: [],
+              location: {
+                name: "Juzgado de Primera Instancia en lo Civil y Comercial",
+                address: "Asunción, Paraguay",
+              },
+            };
+            setCurrentInternship(mockInternship);
+            localStorage.setItem("legal-py-current-internship", JSON.stringify(mockInternship));
+          }
+        } catch (error) {
+          console.error("Error loading internship:", error);
+        }
+      }
 
       // Cargar casos del usuario actual desde localStorage
       if (currentSession) {
@@ -634,6 +673,98 @@ export default function PanelAdminPage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Mi Pasantía - Tab para estudiantes */}
+      {activeTab === "pasantia" && viewMode === "estudiante" && (
+        <div className="space-y-6">
+          {currentInternship ? (
+            <>
+              <InternshipProgress internship={currentInternship} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InternshipCheckIn
+                  internshipId={currentInternship.id}
+                  onCheckIn={(checkIn) => {
+                    // Actualizar pasantía con nuevo check-in
+                    const updated = {
+                      ...currentInternship,
+                      checkIns: [...currentInternship.checkIns, checkIn],
+                      completedHours: currentInternship.completedHours + 4, // 4 horas por check-in
+                    };
+                    setCurrentInternship(updated);
+                    localStorage.setItem("legal-py-current-internship", JSON.stringify(updated));
+                  }}
+                />
+                <CaseLogForm
+                  internshipId={currentInternship.id}
+                  onLogSubmit={(entry) => {
+                    // Actualizar pasantía con nueva entrada
+                    const updated = {
+                      ...currentInternship,
+                      caseLogs: [...currentInternship.caseLogs, entry],
+                    };
+                    setCurrentInternship(updated);
+                    localStorage.setItem("legal-py-current-internship", JSON.stringify(updated));
+                  }}
+                />
+              </div>
+              {/* Historial de Check-ins */}
+              {currentInternship.checkIns.length > 0 && (
+                <Card className="p-6 bg-white/5 border-white/10">
+                  <h3 className="text-xl font-bold text-white mb-4">📅 Historial de Asistencias</h3>
+                  <div className="space-y-3">
+                    {currentInternship.checkIns.map((checkIn) => (
+                      <div key={checkIn.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div>
+                          <p className="text-white font-medium">
+                            {new Date(checkIn.checkInDate).toLocaleDateString("es-PY")} a las {checkIn.checkInTime}
+                          </p>
+                          <p className="text-xs text-white/60">{checkIn.location.address || "Ubicación verificada"}</p>
+                        </div>
+                        <Badge variant={checkIn.verified ? "accent" : "outline"} className="text-xs">
+                          {checkIn.verified ? "✓ Verificado" : "Pendiente"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+              {/* Historial de Bitácora */}
+              {currentInternship.caseLogs.length > 0 && (
+                <Card className="p-6 bg-white/5 border-white/10">
+                  <h3 className="text-xl font-bold text-white mb-4">📝 Bitácora de Casos</h3>
+                  <div className="space-y-3">
+                    {currentInternship.caseLogs.map((log) => (
+                      <div key={log.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                        <div className="flex items-start justify-between mb-2">
+                          <p className="text-white font-medium">{log.description}</p>
+                          <Badge variant={log.validated ? "accent" : "outline"} className="text-xs">
+                            {log.validated ? "✓ Validado" : "Pendiente"}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-white/60">
+                          {new Date(log.entryDate).toLocaleDateString("es-PY")}
+                          {log.caseId && ` • Caso: ${log.caseId}`}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+            </>
+          ) : (
+            <Card className="p-12 bg-white/5 border-white/10 text-center">
+              <div className="text-6xl mb-4">💼</div>
+              <h3 className="text-2xl font-bold text-white mb-3">No tienes una pasantía activa</h3>
+              <p className="text-white/70 mb-6">
+                Postúlate a una pasantía para comenzar a registrar tu actividad y horas de práctica.
+              </p>
+              <Button variant="primary" onClick={() => router.push("/pasantias")} className="rounded-xl">
+                Explorar Pasantías Disponibles
+              </Button>
+            </Card>
+          )}
         </div>
       )}
 

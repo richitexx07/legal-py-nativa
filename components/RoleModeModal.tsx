@@ -20,6 +20,8 @@ export default function RoleModeModal({ isOpen, onClose, currentMode, onSelectMo
     { id: "profesional", icon: "💼", titleKey: "roles.pro_title", descKey: "roles.pro_desc" },
     { id: "estudiante", icon: "🎓", titleKey: "roles.student_title", descKey: "roles.student_desc" },
   ];
+  
+  // Nota: El rol "institucion" no está en ViewMode porque tiene su propio panel /edu-panel
 
   return (
     <Modal

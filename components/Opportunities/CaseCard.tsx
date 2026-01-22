@@ -7,6 +7,7 @@ import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
 import { useLanguage } from "@/context/LanguageContext";
+import { getPracticeAreaById } from "@/lib/practice-areas";
 
 interface CaseCardProps {
   legalCase: LegalCase;
@@ -53,13 +54,29 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
     return `${seconds}s`;
   };
 
-  // Colores por área de práctica
-  const practiceAreaColors: Record<LegalCase["practiceArea"], string> = {
-    CIVIL: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    PENAL: "bg-red-500/20 text-red-400 border-red-500/30",
-    CORPORATIVO: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-    LABORAL: "bg-green-500/20 text-green-400 border-green-500/30",
-    FAMILIA: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  // Función para obtener color por área de práctica
+  const getPracticeAreaColor = (area: LegalCase["practiceArea"]): string => {
+    const colorMap: Record<string, string> = {
+      // High Ticket
+      CORPORATIVO_EAS: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+      MIGRACIONES_INVERSIONISTAS: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+      DUE_DILIGENCE: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+      // Volumen
+      MARCAS_DINAPI: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+      SOFTWARE_DERECHOS: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      // Nicho
+      SUMARIOS_ADUANEROS: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+      LOGISTICA_FLUVIAL: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+      // Cash Flow
+      COBRO_EJECUTIVO: "bg-green-500/20 text-green-400 border-green-500/30",
+      FAMILIA_SUCESIONES: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+      // Legacy
+      CIVIL: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      PENAL: "bg-red-500/20 text-red-400 border-red-500/30",
+      LABORAL: "bg-green-500/20 text-green-400 border-green-500/30",
+      FAMILIA: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+    };
+    return colorMap[area] || "bg-gray-500/20 text-gray-400 border-gray-500/30";
   };
 
   // Colores por complejidad
@@ -137,9 +154,9 @@ export default function CaseCard({ legalCase, userTier, onApply }: CaseCardProps
         <div className="flex flex-wrap gap-2">
           <Badge
             variant="outline"
-            className={`text-xs ${practiceAreaColors[legalCase.practiceArea]}`}
+            className={`text-xs ${getPracticeAreaColor(legalCase.practiceArea)}`}
           >
-            {legalCase.practiceArea}
+            {getPracticeAreaById(legalCase.practiceArea)?.name || legalCase.practiceArea.replace(/_/g, " ")}
           </Badge>
           <Badge variant="outline" className={`text-xs ${complexityColors[legalCase.complexity]}`}>
             {legalCase.complexity}
