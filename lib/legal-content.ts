@@ -88,7 +88,13 @@ function getDefaultPrivacyPolicy(): LegalContent {
 
 **Última actualización:** ${new Date().toLocaleDateString("es-PY", { year: "numeric", month: "long", day: "numeric" })}
 
+**Versión:** 3.0
+
+---
+
 ## 1. Información que Recopilamos
+
+Legal PY recopila información personal cuando te registras en nuestra plataforma, utilizas nuestros servicios o te comunicas con nosotros. La información que recopilamos incluye:
 
 Legal PY recopila información personal cuando te registras en nuestra plataforma, utilizas nuestros servicios o te comunicas con nosotros. La información que recopilamos incluye:
 
@@ -248,6 +254,10 @@ function getDefaultTermsAndConditions(): LegalContent {
     content: `# Términos y Condiciones de Uso de Legal PY
 
 **Última actualización:** ${new Date().toLocaleDateString("es-PY", { year: "numeric", month: "long", day: "numeric" })}
+
+**Versión:** 3.0
+
+---
 
 ## 1. Aceptación de los Términos
 
@@ -455,11 +465,130 @@ La falta de ejercicio de un derecho no constituye renuncia.
 ### 13.3 Acuerdo Completo
 Estos términos constituyen el acuerdo completo entre tú y Legal PY.
 
-## 14. Contacto
+## 14. Propiedad Intelectual
+
+14.1. **Contenido de Legal PY:**
+- Todo el contenido de la plataforma (texto, gráficos, logos, software) es propiedad de Legal PY o sus licenciantes
+- Está protegido por leyes de propiedad intelectual
+- No puedes copiar, modificar o distribuir contenido sin autorización
+
+14.2. **Contenido del Usuario:**
+- Conservas los derechos sobre el contenido que subes
+- Al subir contenido, nos otorgas una licencia para usarlo en la plataforma
+- Eres responsable de tener los derechos necesarios sobre el contenido que subes
+
+14.3. **Marcas Registradas:**
+- "Legal PY" y los logos asociados son marcas registradas
+- No puedes usar nuestras marcas sin autorización previa por escrito
+
+## 15. Limitación de Responsabilidad
+
+**DESCARGO IMPORTANTE:**
+
+15.1. Legal PY se proporciona "tal cual" y "según disponibilidad". No garantizamos:
+- Que la plataforma esté libre de errores o interrupciones
+- Que los servicios cumplan con expectativas específicas
+- Resultados específicos de servicios legales
+- La disponibilidad continua de la plataforma
+
+15.2. **Legal PY no será responsable por:**
+- Daños directos, indirectos, incidentales o consecuentes
+- Pérdida de datos, beneficios o oportunidades
+- Decisiones tomadas basándose en información de la plataforma
+- Actos u omisiones de profesionales independientes
+
+15.3. **Exclusión de Garantías:**
+- No garantizamos resultados específicos de servicios legales
+- No garantizamos la infalibilidad de la verificación de profesionales
+- No garantizamos la disponibilidad continua de la plataforma
+
+## 16. Indemnización
+
+16.1. Aceptas indemnizar y eximir de responsabilidad a Legal PY, sus afiliados, directores, empleados y agentes de cualquier reclamo, daño, obligación, pérdida, responsabilidad, costo o deuda, y gastos (incluyendo honorarios legales) que surjan de:
+- Tu uso de la plataforma
+- Violación de estos términos
+- Violación de derechos de terceros
+- Información falsa o engañosa proporcionada
+
+16.2. **Alcance de la Indemnización:**
+- La indemnización incluye todos los costos y gastos razonables
+- Se aplica a todas las reclamaciones, demandas y acciones legales
+- Permanecerá vigente después de la terminación de tu cuenta
+
+## 17. Cancelación y Terminación
+
+17.1. **Por el Usuario:**
+- Puedes cancelar tu cuenta en cualquier momento
+- La cancelación no afecta obligaciones pendientes
+- Los datos se conservarán según políticas de retención
+
+17.2. **Por Legal PY:**
+Podemos suspender o terminar tu cuenta si:
+- Violas estos términos
+- Realizas actividades fraudulentas
+- No pagas suscripciones pendientes
+- Por razones legales o de seguridad
+- Por inactividad prolongada
+
+17.3. **Efectos de la Terminación:**
+- Se revocará tu acceso a la plataforma
+- Se conservarán datos según políticas de retención
+- Las obligaciones pendientes permanecerán vigentes
+
+## 18. Modificaciones de los Términos
+
+18.1. **Derecho a Modificar:**
+- Nos reservamos el derecho de modificar estos términos en cualquier momento
+- Te notificaremos de cambios significativos por email o mediante un aviso en la plataforma
+- El uso continuado de la plataforma después de los cambios constituye aceptación de los nuevos términos
+
+18.2. **Transición de Modo Demo a Producción:**
+Cuando Legal PY transite de Modo Demo a Producción Total:
+- Las políticas de seguridad se endurecerán automáticamente
+- La biometría será obligatoria en todas las rutas críticas
+- El modo demo puede desactivarse completamente
+- Se notificará a los usuarios con al menos 30 días de anticipación
+- Los usuarios deberán aceptar las nuevas políticas de seguridad antes de continuar usando la plataforma
+
+## 19. Ley Aplicable y Jurisdicción
+
+19.1. **Ley Aplicable:**
+- Estos términos se rigen por las leyes de la República del Paraguay
+- Cualquier disputa será resuelta en los tribunales competentes de Asunción, Paraguay
+
+19.2. **Resolución de Disputas:**
+- Intentaremos resolver disputas mediante negociación directa
+- Si no es posible, se aplicará la jurisdicción de Asunción, Paraguay
+- Renuncias a cualquier objeción a la jurisdicción de los tribunales de Asunción
+
+## 20. Disposiciones Generales
+
+20.1. **Divisibilidad:**
+- Si alguna disposición es inválida, las demás permanecen en vigor
+- La disposición inválida será reemplazada por una válida que se acerque al propósito original
+
+20.2. **Renuncia:**
+- La falta de ejercicio de un derecho no constituye renuncia
+- Las renuncias deben ser explícitas y por escrito
+
+20.3. **Acuerdo Completo:**
+- Estos términos constituyen el acuerdo completo entre tú y Legal PY
+- Reemplazan todos los acuerdos anteriores relacionados con el uso de la plataforma
+
+20.4. **Cesión:**
+- No puedes ceder estos términos sin nuestro consentimiento previo por escrito
+- Legal PY puede ceder estos términos sin tu consentimiento
+
+20.5. **Fuerza Mayor:**
+- No seremos responsables por incumplimiento debido a causas fuera de nuestro control razonable
+- Incluye desastres naturales, guerras, pandemias, fallas de internet, etc.
+
+## 21. Contacto
 
 Para preguntas sobre estos términos, contáctanos:
 
-- **Email:** legal@legalpy.com
+- **Email Legal:** legal@legalpy.com
+- **Email General:** contacto@legalpy.com
 - **Dirección:** [Dirección de la empresa]
 - **Teléfono:** [Teléfono de contacto]
 
