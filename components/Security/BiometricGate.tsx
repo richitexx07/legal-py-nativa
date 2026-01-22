@@ -99,6 +99,22 @@ export default function BiometricGate() {
       return;
     }
 
+    // URGENTE: Verificar si el usuario ya hizo skip (Modo Demo/Incógnito)
+    const hasSkipped = typeof window !== "undefined" ? sessionStorage.getItem("biometric_skipped") : null;
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-skip-check-urgent',message:'Skip check (URGENT)',data:{hasSkipped,pathname,isSubscribe:pathname?.startsWith('/subscribe')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+    // #endregion
+
+    // Si el usuario hizo skip Y NO está en /subscribe (pagos), NO mostrar modal
+    if (hasSkipped === "true" && !pathname?.startsWith("/subscribe")) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-skip-active-urgent',message:'Skip active - hiding modal (URGENT)',data:{hasSkipped,pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+      // #endregion
+      setShowModal(false);
+      return;
+    }
+
     const currentSession = getSession();
     setSession(currentSession);
 
@@ -144,15 +160,17 @@ export default function BiometricGate() {
 
     // 4. Determinar si es ruta crítica
     const isCritical = isCriticalRoute(pathname);
+    const isSubscribe = pathname?.startsWith("/subscribe");
 
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-route-check',message:'Route criticality check',data:{pathname,isCritical,criticalRoutes:CRITICAL_ROUTES},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-route-check',message:'Route criticality check',data:{pathname,isCritical,isSubscribe,criticalRoutes:CRITICAL_ROUTES},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
     // #endregion
 
-    // 5. Si es ruta crítica: SIEMPRE mostrar (obligatorio)
-    if (isCritical) {
+    // 5. Si es ruta crítica (especialmente /subscribe): SIEMPRE mostrar (obligatorio)
+    // PERO si es otra ruta crítica y el usuario hizo skip, respetar el skip
+    if (isCritical && isSubscribe) {
       // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-critical-route',message:'Critical route - showing modal (mandatory)',data:{pathname,isCritical},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-subscribe-route',message:'Subscribe route - showing modal (mandatory)',data:{pathname,isCritical,isSubscribe},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
       // #endregion
       setShowModal(true);
       // Limpiar skip si estaba en una ruta crítica anterior
@@ -160,7 +178,22 @@ export default function BiometricGate() {
       return;
     }
 
-    // 6. Si NO es ruta crítica: verificar si el usuario ya hizo skip
+    // 6. Si NO es /subscribe pero es otra ruta crítica: verificar skip primero
+    if (isCritical && !isSubscribe) {
+      const hasSkipped = getBiometricSkipped();
+      if (hasSkipped) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricGate.tsx:useEffect-critical-with-skip',message:'Critical route but skip active - hiding modal',data:{pathname,isCritical,hasSkipped},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
+        // #endregion
+        setShowModal(false);
+        return;
+      }
+      setShowModal(true);
+      setBiometricSkipped(false);
+      return;
+    }
+
+    // 7. Si NO es ruta crítica: verificar si el usuario ya hizo skip
     const hasSkipped = getBiometricSkipped();
 
     // #region agent log

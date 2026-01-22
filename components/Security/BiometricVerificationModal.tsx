@@ -760,6 +760,24 @@ export default function BiometricVerificationModal({
             ⚠️ Debes completar los pasos 1 y 2 antes de continuar
           </p>
         )}
+
+        {/* BOTÓN DE ESCAPE SIEMPRE VISIBLE - URGENTE PARA DEMO/INCOGNITO */}
+        <div className="mt-6 pt-4 border-t border-white/10">
+          <button
+            onClick={() => {
+              // Guardar skip en sessionStorage para que no vuelva a aparecer en esta sesión
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("biometric_skipped", "true");
+              }
+              stopCamera();
+              onClose();
+            }}
+            className="w-full text-sm text-white/60 hover:text-white/90 underline cursor-pointer transition-colors text-center"
+            disabled={status === "scanning" || isVerifying}
+          >
+            Omitir Verificación (Modo Demo / Incógnito)
+          </button>
+        </div>
       </motion.div>
     </div>
   );
