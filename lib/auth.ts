@@ -312,7 +312,7 @@ export async function login(data: LoginData): Promise<AuthResponse> {
             ? "Reestructuración societaria y blindaje patrimonial para grupo empresarial."
             : "Gestión mensual de contratos y cobranzas para cliente PYME.",
         complexity: idx < 2 ? "ALTA" : "MEDIA",
-        practiceArea: idx % 2 === 0 ? "CORPORATIVO" : "CIVIL",
+        practiceArea: idx % 2 === 0 ? "CORPORATIVO_EAS" : "COBRO_EJECUTIVO",
         estimatedBudget: idx < 2 ? 25000000 : 6000000,
         status: "OPEN",
         exclusiveForGepUntil: idx < 2 ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null,

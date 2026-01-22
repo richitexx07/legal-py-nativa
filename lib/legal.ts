@@ -52,22 +52,29 @@ function parsePoliciesByLevel(content: string): PolicyLevel[] {
       id: 'nivel-1',
       emoji: '🟥',
       titlePattern: /🟥\s*NIVEL\s*1:/i,
-      title: 'NIVEL 1: LECTURA OBLIGATORIA (Esenciales)',
+      title: 'NIVEL 1: TÉRMINOS Y CONDICIONES GLOBALES',
       description: 'Estas políticas rigen su uso diario, sus derechos fundamentales y la privacidad de sus datos.'
     },
     {
       id: 'nivel-2',
       emoji: '🟨',
       titlePattern: /🟨\s*NIVEL\s*2:/i,
-      title: 'NIVEL 2: SEGURIDAD OPERATIVA Y BLINDAJE DE SERVICIOS',
+      title: 'NIVEL 2: SERVICIOS Y HERRAMIENTAS INTELIGENTES',
       description: 'Reglas específicas para la gestión de casos, documentos y pagos.'
     },
     {
       id: 'nivel-3',
       emoji: '🟦',
       titlePattern: /🟦\s*NIVEL\s*3:/i,
-      title: 'NIVEL 3: CUMPLIMIENTO INTERNACIONAL Y CORPORATIVO',
+      title: 'NIVEL 3: ECOSISTEMA EDUCATIVO (EdTech)',
       description: 'Para empresas, usuarios extranjeros (UE/USA) y seguridad de estado.'
+    },
+    {
+      id: 'nivel-4',
+      emoji: '🟩',
+      titlePattern: /🟩\s*NIVEL\s*4:/i,
+      title: 'NIVEL 4: CUMPLIMIENTO Y SEGURIDAD',
+      description: 'Biometría, identidad y protección de datos bajo estándares internacionales.'
     }
   ];
 
@@ -96,8 +103,8 @@ function parsePoliciesByLevel(content: string): PolicyLevel[] {
     const policies = extractPolicies(levelContent);
     
     // Extraer el título real del contenido (después del emoji y "NIVEL X:")
-    const titleMatch = levelContent.match(/##\s*[🟥🟨🟦]\s*(NIVEL\s*\d+:[^#\n]+)/i);
-    const actualTitle = titleMatch ? titleMatch[1].trim() : current.pattern.title.replace(/^[🟥🟨🟦]\s*/, '');
+    const titleMatch = levelContent.match(/##\s*[🟥🟨🟦🟩]\s*(NIVEL\s*\d+:[^#\n]+)/i);
+    const actualTitle = titleMatch ? titleMatch[1].trim() : current.pattern.title.replace(/^[🟥🟨🟦🟩]\s*/, '');
     
     // Extraer la descripción real del contenido (línea después del título con *)
     const descMatch = levelContent.match(/\*\s*([^\n]+)/);

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LoginData, AuthMethod } from "@/lib/types";
 import { login } from "@/lib/auth";
+import { authenticateWebAuthn, isWebAuthnAvailable } from "@/lib/security/webauthn";
 import Button from "@/components/Button";
 import FormField from "@/components/FormField";
 import TwoFactorForm from "./TwoFactorForm";
@@ -25,6 +26,15 @@ export default function LoginForm({ onSuccess, onError, redirectPath }: LoginFor
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const [twoFactorMethod, setTwoFactorMethod] = useState<"email" | "sms" | "app">("email");
   const [pendingEmail, setPendingEmail] = useState("");
+  const [supportsWebAuthn, setSupportsWebAuthn] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+
+  // Detectar soporte de WebAuthn
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSupportsWebAuthn(isWebAuthnAvailable());
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,8 +219,29 @@ export default function LoginForm({ onSuccess, onError, redirectPath }: LoginFor
         </a>
       </div>
 
-      <Button type="submit" variant="primary" className="w-full" disabled={loading}>
-        {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+      {/* Botón de Biometría (si está disponible) */}
+      {supportsWebAuthn && (
+        <Button
+          type="button"
+          variant="primary"
+          className="w-full mb-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold"
+          onClick={handleBiometricLogin}
+          disabled={biometricLoading || loading}
+        >
+          {biometricLoading ? (
+            "Verificando biometría..."
+          ) : (
+            <>
+              <span className="mr-2">👆</span>
+              Ingresar con Biometría
+              <span className="ml-2 text-xs opacity-80">(Más rápido y seguro)</span>
+            </>
+          )}
+        </Button>
+      )}
+
+      <Button type="submit" variant={supportsWebAuthn ? "secondary" : "primary"} className="w-full" disabled={loading || biometricLoading}>
+        {loading ? "Iniciando sesión..." : supportsWebAuthn ? "Usar contraseña" : "Iniciar Sesión"}
       </Button>
 
       <div className="relative">

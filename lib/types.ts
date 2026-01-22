@@ -35,6 +35,43 @@ export type KYCTier = 0 | 1 | 2 | 3;
 export type IdentityVerificationStatus = "pending" | "in_review" | "verified" | "rejected";
 
 /**
+ * Tipos de documentos KYC 2.0 según rol
+ */
+export type DocumentType = 
+  | "cedula_front" 
+  | "cedula_back" 
+  | "selfie" 
+  | "licencia_conducir" 
+  | "certificado_trabajo" 
+  | "constancia_ruc" 
+  | "certificado_estudios" 
+  | "constancia_matricula";
+
+/**
+ * Estado de un documento
+ */
+export interface DocumentStatus {
+  type: DocumentType;
+  uploaded: boolean;
+  uploadedAt?: string; // ISO 8601 date string
+  verified: boolean;
+  verifiedAt?: string; // ISO 8601 date string
+  rejectionReason?: string;
+  fileUrl?: string; // URL del archivo subido
+  expirationDate?: string; // Para licencias (ISO 8601 date string)
+}
+
+/**
+ * Perfil de verificación KYC 2.0
+ */
+export interface KYCProfile {
+  userId: string;
+  documents: DocumentStatus[];
+  profileCompletion: number; // 0-100
+  lastUpdated: string; // ISO 8601 date string
+}
+
+/**
  * Información básica del usuario
  */
 export interface User {

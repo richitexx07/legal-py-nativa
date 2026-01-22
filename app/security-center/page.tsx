@@ -3,12 +3,19 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSession, updateIdentityVerification } from "@/lib/auth";
+import { registerWebAuthn, isWebAuthnAvailable } from "@/lib/security/webauthn";
+import { type IdCardData } from "@/lib/ocrService";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Badge from "@/components/Badge";
+import SmartIdUploader from "@/components/Security/SmartIdUploader";
+import NfcReader from "@/components/Security/NfcReader";
+import confetti from "canvas-confetti";
+import { useSecurityContext } from "@/hooks/useSecurityContext";
 
 export default function SecurityCenterPage() {
   const router = useRouter();
+  const securityContext = useSecurityContext();
   const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -16,6 +23,11 @@ export default function SecurityCenterPage() {
     cedulaFrente: "pending" | "uploaded";
     cedulaDorso: "pending" | "uploaded";
     selfie: "pending" | "uploaded";
+    licenciaConducir?: "pending" | "uploaded";
+    certificadoTrabajo?: "pending" | "uploaded";
+    constanciaRUC?: "pending" | "uploaded";
+    certificadoEstudios?: "pending" | "uploaded";
+    constanciaMatricula?: "pending" | "uploaded";
   }>({
     cedulaFrente: "pending",
     cedulaDorso: "pending",
@@ -107,7 +119,35 @@ export default function SecurityCenterPage() {
     return [];
   };
 
-  const handleFileUpload = async (type: "cedulaFrente" | "cedulaDorso" | "selfie") => {
+  // Calcular progreso de perfil según documentos subidos
+  const getProfileCompletion = () => {
+    const baseDocs = [
+      uploadStatus.cedulaFrente === "uploaded",
+      uploadStatus.cedulaDorso === "uploaded",
+      uploadStatus.selfie === "uploaded",
+    ];
+    let completed = baseDocs.filter(Boolean).length;
+    let total = 3;
+
+    // Documentos adicionales según rol
+    if (user.role === "profesional") {
+      if (uploadStatus.certificadoTrabajo === "uploaded") completed++;
+      if (uploadStatus.constanciaRUC === "uploaded") completed++;
+      total += 2;
+    } else if (user.role === "estudiante") {
+      if (uploadStatus.certificadoEstudios === "uploaded") completed++;
+      if (uploadStatus.constanciaMatricula === "uploaded") completed++;
+      total += 2;
+    } else if (user.role === "cliente") {
+      // Clientes pueden tener licencia si son conductores/logística
+      if (uploadStatus.licenciaConducir === "uploaded") completed++;
+      total += 1;
+    }
+
+    return Math.round((completed / total) * 100);
+  };
+
+  const handleFileUpload = async (type: "cedulaFrente" | "cedulaDorso" | "selfie" | "licenciaConducir" | "certificadoTrabajo" | "constanciaRUC" | "certificadoEstudios" | "constanciaMatricula") => {
     // Simular carga de archivo
     setLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -118,9 +158,14 @@ export default function SecurityCenterPage() {
     }));
 
     // Guardar en localStorage que la cédula fue subida (para BiometricGate)
-    if (type === "cedulaFrente" || type === "cedulaDorso") {
+    if (type === "cedulaFrente") {
       if (typeof window !== "undefined") {
-        localStorage.setItem(`legal-py-cedula-${user.id}`, "uploaded");
+        localStorage.setItem(`legal-py-cedula-front-${user.id}`, "uploaded");
+      }
+    }
+    if (type === "cedulaDorso") {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`legal-py-cedula-back-${user.id}`, "uploaded");
       }
     }
 
@@ -184,10 +229,10 @@ export default function SecurityCenterPage() {
               </Badge>
             </div>
 
-            {/* Barra de progreso */}
+            {/* Barra de progreso de verificación KYC */}
             <div className="mb-4">
               <div className="flex justify-between text-sm text-white/70 mb-2">
-                <span>Progreso de verificación</span>
+                <span>Progreso de verificación KYC</span>
                 <span>{getTierProgress()}%</span>
               </div>
               <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
@@ -196,6 +241,27 @@ export default function SecurityCenterPage() {
                   style={{ width: `${getTierProgress()}%` }}
                 />
               </div>
+            </div>
+
+            {/* Barra de progreso de perfil */}
+            <div className="mb-4">
+              <div className="flex justify-between text-sm text-white/70 mb-2">
+                <span>Completitud de perfil</span>
+                <span>{getProfileCompletion()}%</span>
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#C9A24D] to-[#C08457] transition-all duration-500"
+                  style={{ width: `${getProfileCompletion()}%` }}
+                />
+              </div>
+              {getProfileCompletion() < 100 && (
+                <p className="text-xs text-white/60 mt-1">
+                  {user.role === "profesional" && uploadStatus.licenciaConducir !== "uploaded" && "Sube tu Licencia de Conducir para llegar al 80%"}
+                  {user.role === "estudiante" && uploadStatus.certificadoEstudios !== "uploaded" && "Sube tu Certificado de Estudios para llegar al 80%"}
+                  {user.role === "cliente" && uploadStatus.licenciaConducir !== "uploaded" && "Sube tu Licencia de Conducir para llegar al 80%"}
+                </p>
+              )}
             </div>
 
             {/* Requisitos para siguiente nivel */}
@@ -243,13 +309,33 @@ export default function SecurityCenterPage() {
           </div>
         </Card>
 
-        {/* Sección B: Verificación de Identidad */}
+        {/* Sección B: Verificación de Identidad con OCR */}
         <Card className="mb-6">
           <div className="p-6">
             <h2 className="text-2xl font-semibold text-white mb-4">Verificación de Identidad</h2>
             <p className="text-sm text-white/70 mb-6">
-              Sube los documentos requeridos para verificar tu identidad y acceder a funciones avanzadas.
+              Sube los documentos requeridos para verificar tu identidad. La IA leerá automáticamente los datos de tu cédula.
             </p>
+
+            {/* SmartIdUploader con OCR */}
+            <div className="mb-6">
+              <SmartIdUploader
+                onDataExtracted={(data) => {
+                  // Cuando se extraen datos, actualizar el estado
+                  if (data.documentNumber) {
+                    // Pre-llenar campos si es necesario
+                    console.log("Datos extraídos:", data);
+                    // Confeti ya se dispara en SmartIdUploader
+                  }
+                }}
+                onConfirm={(data) => {
+                  // Guardar datos extraídos
+                  if (data.documentNumber) {
+                    handleFileUpload("cedulaFrente");
+                  }
+                }}
+              />
+            </div>
 
             <div className="space-y-4">
               {/* Foto Cédula Frente */}
@@ -358,6 +444,119 @@ export default function SecurityCenterPage() {
                 </div>
               </div>
 
+              {/* Documentos adicionales según rol */}
+              {user.role === "profesional" && (
+                <>
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-semibold text-white">Certificado de Trabajo o Constancia de RUC</p>
+                        <p className="text-xs text-white/60">Documento que acredite tu actividad profesional</p>
+                      </div>
+                      {uploadStatus.certificadoTrabajo === "uploaded" && (
+                        <Badge variant="accent" className="bg-green-500 text-white">
+                          ✓ Subido
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        id="certificadoTrabajo"
+                        className="hidden"
+                        onChange={() => handleFileUpload("certificadoTrabajo" as any)}
+                        disabled={loading || uploadStatus.certificadoTrabajo === "uploaded"}
+                      />
+                      <label
+                        htmlFor="certificadoTrabajo"
+                        className={`inline-block px-4 py-2 rounded-lg cursor-pointer transition ${
+                          uploadStatus.certificadoTrabajo === "uploaded"
+                            ? "bg-green-500/20 border border-green-500/50 text-green-400 cursor-not-allowed"
+                            : "bg-[#C9A24D]/20 border border-[#C9A24D]/50 text-[#C9A24D] hover:bg-[#C9A24D]/30"
+                        }`}
+                      >
+                        {uploadStatus.certificadoTrabajo === "uploaded" ? "✓ Documento subido" : "Seleccionar archivo (PDF)"}
+                      </label>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {user.role === "estudiante" && (
+                <>
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-semibold text-white">Certificado de Estudios o Constancia de Matrícula</p>
+                        <p className="text-xs text-white/60">Documento que acredite tu condición de estudiante</p>
+                      </div>
+                      {uploadStatus.certificadoEstudios === "uploaded" && (
+                        <Badge variant="accent" className="bg-green-500 text-white">
+                          ✓ Subido
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        id="certificadoEstudios"
+                        className="hidden"
+                        onChange={() => handleFileUpload("certificadoEstudios" as any)}
+                        disabled={loading || uploadStatus.certificadoEstudios === "uploaded"}
+                      />
+                      <label
+                        htmlFor="certificadoEstudios"
+                        className={`inline-block px-4 py-2 rounded-lg cursor-pointer transition ${
+                          uploadStatus.certificadoEstudios === "uploaded"
+                            ? "bg-green-500/20 border border-green-500/50 text-green-400 cursor-not-allowed"
+                            : "bg-[#C9A24D]/20 border border-[#C9A24D]/50 text-[#C9A24D] hover:bg-[#C9A24D]/30"
+                        }`}
+                      >
+                        {uploadStatus.certificadoEstudios === "uploaded" ? "✓ Documento subido" : "Seleccionar archivo (PDF)"}
+                      </label>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {(user.role === "cliente" || user.role === "profesional") && (
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-white">Licencia de Conducir (Opcional)</p>
+                      <p className="text-xs text-white/60">Para servicios de logística o transporte</p>
+                    </div>
+                    {uploadStatus.licenciaConducir === "uploaded" && (
+                      <Badge variant="accent" className="bg-green-500 text-white">
+                        ✓ Subido
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="licenciaConducir"
+                      className="hidden"
+                      onChange={() => handleFileUpload("licenciaConducir" as any)}
+                      disabled={loading || uploadStatus.licenciaConducir === "uploaded"}
+                    />
+                    <label
+                      htmlFor="licenciaConducir"
+                      className={`inline-block px-4 py-2 rounded-lg cursor-pointer transition ${
+                        uploadStatus.licenciaConducir === "uploaded"
+                          ? "bg-green-500/20 border border-green-500/50 text-green-400 cursor-not-allowed"
+                          : "bg-[#C9A24D]/20 border border-[#C9A24D]/50 text-[#C9A24D] hover:bg-[#C9A24D]/30"
+                      }`}
+                    >
+                      {uploadStatus.licenciaConducir === "uploaded" ? "✓ Documento subido" : "Seleccionar archivo"}
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {/* Botón enviar */}
               <div className="mt-6">
                 <Button
@@ -386,7 +585,85 @@ export default function SecurityCenterPage() {
           </div>
         </Card>
 
-        {/* Sección C: Dispositivos y Accesos */}
+        {/* Sección C: Llaves de Acceso (WebAuthn) */}
+        {isWebAuthnAvailable() && (
+          <Card className="mb-6">
+            <div className="p-6">
+              <h2 className="text-2xl font-semibold text-white mb-4">🔐 Llaves de Acceso</h2>
+              <p className="text-sm text-white/70 mb-4">
+                Registra este dispositivo para usar FaceID, TouchID o Windows Hello en futuros inicios de sesión.
+              </p>
+              
+              <div className="space-y-4">
+                {localStorage.getItem(`legal-py-webauthn-credential-${user.id}`) ? (
+                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">✅</span>
+                      <p className="text-white font-semibold">Dispositivo registrado</p>
+                    </div>
+                    <p className="text-sm text-white/70">
+                      Puedes usar biometría para iniciar sesión en este dispositivo.
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    variant="primary"
+                    className="w-full"
+                    onClick={async () => {
+                      try {
+                        const credential = await registerWebAuthn(user.id, user.email);
+                        if (credential) {
+                          // Guardar credencial
+                          localStorage.setItem(`legal-py-webauthn-credential-${user.id}`, JSON.stringify(credential));
+                          localStorage.setItem(`legal-py-webauthn-credential-id`, credential.id);
+                          localStorage.setItem(`legal-py-webauthn-email`, user.email);
+                          
+                          confetti({
+                            particleCount: 50,
+                            spread: 60,
+                            origin: { y: 0.6 },
+                            colors: ["#10b981", "#34d399"],
+                          });
+                          
+                          alert("✅ Dispositivo registrado exitosamente. Ahora puedes usar biometría para iniciar sesión.");
+                        } else {
+                          alert("Error al registrar el dispositivo. Por favor, intenta nuevamente.");
+                        }
+                      } catch (error) {
+                        console.error("Error registrando WebAuthn:", error);
+                        alert("Error al registrar el dispositivo. Por favor, intenta nuevamente.");
+                      }
+                    }}
+                  >
+                    👆 Registrar este dispositivo (FaceID/TouchID)
+                  </Button>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Sección D: Verificación Avanzada (NFC) */}
+        <Card className="mb-6">
+          <div className="p-6">
+            <h2 className="text-2xl font-semibold text-white mb-4">🔍 Verificación Avanzada</h2>
+            <p className="text-sm text-white/70 mb-4">
+              Si tu cédula tiene chip, puedes escanearla directamente con NFC.
+            </p>
+            
+            <NfcReader
+              onDataRead={(result) => {
+                if (result.success && result.data) {
+                  // Pre-llenar datos si es necesario
+                  console.log("Datos NFC:", result.data);
+                  // Confeti ya se dispara en NfcReader
+                }
+              }}
+            />
+          </div>
+        </Card>
+
+        {/* Sección E: Dispositivos y Accesos */}
         <Card>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">

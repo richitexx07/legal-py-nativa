@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { getSession, updateIdentityVerification } from "@/lib/auth";
 import BiometricVerificationModal from "./BiometricVerificationModal";
 import confetti from "canvas-confetti";
@@ -8,29 +9,54 @@ import confetti from "canvas-confetti";
 /**
  * Componente que bloquea la UI hasta que el usuario complete la verificación biométrica
  * Se muestra automáticamente si el usuario está logueado pero no tiene isIdentityVerified: true
+ * NO bloquea en rutas de navegación libre como /post-case o /panel (solo en acciones críticas)
  */
 export default function BiometricGate() {
+  const pathname = usePathname();
   const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [mounted, setMounted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Rutas donde NO se debe bloquear inmediatamente
+  const nonBlockingRoutes = ["/post-case", "/panel", "/opportunities", "/profesionales", "/cursos"];
+
+  // Rutas críticas donde SÍ se debe bloquear (acciones que requieren verificación)
+  const criticalRoutes = ["/subscribe", "/accept-case", "/pagos"];
 
   useEffect(() => {
     setMounted(true);
     if (typeof window !== "undefined") {
+      // Detectar si es móvil
+      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+
       const currentSession = getSession();
       setSession(currentSession);
 
-      // Si el usuario está logueado pero no verificado, mostrar modal obligatorio
+      // Si el usuario está logueado pero no verificado
       if (currentSession && !currentSession.user.isIdentityVerified) {
         // Excepción: usuario demo siempre verificado
         if (currentSession.user.email === "demo@legalpy.com") {
           return;
         }
-        setShowModal(true);
+
+        // NO bloquear en rutas de navegación libre
+        if (nonBlockingRoutes.some(route => pathname?.startsWith(route))) {
+          return;
+        }
+
+        // SÍ bloquear en rutas críticas
+        if (criticalRoutes.some(route => pathname?.startsWith(route))) {
+          setShowModal(true);
+        }
+        // Para otras rutas, solo bloquear si no es móvil (en móvil se puede hacer más tarde)
+        else if (!isMobile) {
+          setShowModal(true);
+        }
       }
     }
-  }, []);
+  }, [pathname, isMobile]);
 
   // Escuchar cambios en la sesión (por si se actualiza desde otro componente)
   useEffect(() => {
@@ -43,7 +69,23 @@ export default function BiometricGate() {
         if (currentSession.user.email === "demo@legalpy.com") {
           return;
         }
-        setShowModal(true);
+
+        // NO bloquear en rutas de navegación libre
+        if (nonBlockingRoutes.some(route => pathname?.startsWith(route))) {
+          setShowModal(false);
+          return;
+        }
+
+        // SÍ bloquear en rutas críticas
+        if (criticalRoutes.some(route => pathname?.startsWith(route))) {
+          setShowModal(true);
+        }
+        // Para otras rutas, solo bloquear si no es móvil
+        else if (!isMobile) {
+          setShowModal(true);
+        } else {
+          setShowModal(false);
+        }
       } else {
         setShowModal(false);
       }
@@ -52,7 +94,7 @@ export default function BiometricGate() {
     // Verificar cada 2 segundos (por si se actualiza la sesión)
     const interval = setInterval(checkSession, 2000);
     return () => clearInterval(interval);
-  }, [mounted]);
+  }, [mounted, pathname, isMobile]);
 
   const handleVerify = async (selfieDataUrl: string) => {
     if (!session) return;
@@ -162,6 +204,7 @@ export default function BiometricGate() {
       onVerify={handleVerify}
       isMandatory={true}
       isVerifying={isVerifying}
+      userId={session?.user.id}
     />
   );
 }

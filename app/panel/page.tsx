@@ -448,18 +448,436 @@ export default function PanelAdminPage() {
 
             {/* Contenido de Tabs con Glassmorphism */}
 
-            {/* Mis Gestiones Activas / Panel Profesional */}
-        {(activeTab === "gestiones" || activeTab === "mis-casos") && (
-          <div className="space-y-6">
-            {/* Widget de Métricas para Plan Empresarial/GEP */}
-            {viewMode === "profesional" && (() => {
-              const demoPlan = typeof window !== "undefined" ? localStorage.getItem("legal-py-demo-plan") : null;
-              const userPlan = demoPlan || (session?.user.kycTier === 3 ? "gep" : null);
-              if (userPlan === "empresarial" || userPlan === "gep") {
-                return <MetricsWidget plan={userPlan as "empresarial" | "gep"} />;
-              }
-              return null;
-            })()}
+            {/* VISTA CLIENTE: Seguimiento y Paz Mental */}
+            {viewMode === "cliente" && (activeTab === "gestiones" || activeTab === "mis-casos") && (
+              <div className="space-y-6 mt-6">
+                {/* Widget Principal: Línea de Tiempo del Caso */}
+                {myCases.length > 0 && myCases[0] && (
+                  <Card className="p-8 bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-400/30">
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">📊</span>
+                        <h3 className="text-2xl font-bold text-white">Línea de Tiempo del Caso</h3>
+                      </div>
+                      <div className="relative">
+                        {/* Barra de progreso visual */}
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center justify-between text-sm text-white/80 mb-2">
+                              <span>Progreso del Caso</span>
+                              <span className="font-semibold text-[#C9A24D]">
+                                {myCases[0].status === "ASSIGNED" ? "75%" : myCases[0].status === "OPEN" ? "25%" : "50%"}
+                              </span>
+                            </div>
+                            <div className="w-full h-4 bg-white/10 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-[#C9A24D] to-[#C08457] rounded-full transition-all duration-1000"
+                                style={{ 
+                                  width: myCases[0].status === "ASSIGNED" ? "75%" : myCases[0].status === "OPEN" ? "25%" : "50%" 
+                                }}
+                              />
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-white/60 mt-2">
+                              <span className={myCases[0].status === "OPEN" ? "text-[#C9A24D] font-semibold" : ""}>
+                                ✓ Publicado
+                              </span>
+                              <span className={myCases[0].status === "ASSIGNED" ? "text-[#C9A24D] font-semibold" : ""}>
+                                ✓ Asignado
+                              </span>
+                              <span className="text-white/40">En Proceso</span>
+                              <span className="text-white/40">Completado</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Widget Secundario: Mensajes de tu Abogado (Chat Directo) */}
+                <Card className="p-6 bg-white/5 border border-white/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">💬</span>
+                      <h3 className="text-xl font-bold text-white">Mensajes de tu Abogado</h3>
+                    </div>
+                    {myCases.length > 0 && myCases[0].status === "ASSIGNED" && (
+                      <Link href="/chat">
+                        <Button variant="outline" className="rounded-xl text-sm">
+                          Ir al Chat
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                  {myCases.length > 0 && myCases[0].status === "ASSIGNED" ? (
+                    <div className="space-y-4">
+                      {/* Último mensaje destacado */}
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-[#C9A24D]/40 transition-all cursor-pointer">
+                        <div className="flex items-start gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#C9A24D] to-[#C08457] flex items-center justify-center text-white font-bold shrink-0">
+                            Dr.
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="font-semibold text-white">Dr. Juan Pérez</p>
+                              <span className="text-xs text-white/50">Hace 2 horas</span>
+                            </div>
+                            <p className="text-sm text-white/90 mb-2 line-clamp-2">
+                              &ldquo;Hola, he revisado tu caso. Necesito algunos documentos adicionales para proceder.&rdquo;
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">
+                                ✓ Leído
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Botón para ver conversación completa */}
+                      <Link href="/chat">
+                        <Button variant="primary" className="w-full rounded-xl">
+                          Ver Conversación Completa →
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-5xl mb-4">💬</div>
+                      <p className="text-white/70 mb-2">Aún no hay mensajes.</p>
+                      <p className="text-sm text-white/50">Tu abogado te contactará cuando el caso sea asignado.</p>
+                    </div>
+                  )}
+                </Card>
+
+                {/* Lista de Casos (mantener existente) */}
+                {myCases.length === 0 ? (
+                  <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
+                    <div className="text-center">
+                      <div className="text-7xl mb-6 animate-bounce">📋</div>
+                      <h3 className="text-2xl font-bold text-white mb-3">{t("dashboard.no_cases")}</h3>
+                      <p className="text-lg text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
+                        {t("dashboard.no_cases_client_desc") || "Publica tu primer caso legal y comienza a recibir propuestas de profesionales verificados."}
+                      </p>
+                      <Button 
+                        variant="primary" 
+                        onClick={() => router.push("/post-case")}
+                        className="rounded-2xl px-8 py-4 text-base font-semibold"
+                      >
+                        ⚖️ {t("dashboard.publish_first")}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  myCases.map((caseData) => {
+                    const statusBadge = getCaseStatusBadge(caseData);
+                    const complexityStyle = getComplexityBadge(caseData.complexity);
+                    return (
+                      <div
+                        key={caseData.id}
+                        className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl hover:shadow-[#C9A24D]/20 hover:border-[#C9A24D]/30 transition-all duration-300 group"
+                      >
+                        <div className="flex items-start justify-between gap-6">
+                          <div className="flex-1 space-y-4">
+                            <div className="flex items-start justify-between gap-4 flex-wrap">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#C9A24D] transition-colors">{caseData.title}</h3>
+                                <p className="text-base text-white/70 leading-relaxed line-clamp-2">{caseData.description}</p>
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant={statusBadge.variant} className="text-xs px-3 py-1.5 rounded-xl relative">
+                                  {statusBadge.label === "En revisión DPT" && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                    </span>
+                                  )}
+                                  {statusBadge.label}
+                                </Badge>
+                                <Badge variant="outline" className={`text-xs px-3 py-1.5 rounded-xl ${complexityStyle.bg} ${complexityStyle.text} border-current`}>
+                                  Prioridad: {caseData.complexity}
+                                </Badge>
+                              </div>
+                            </div>
+                            
+                            {/* Grid de información */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+                              <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Área</p>
+                                <p className="text-base text-white font-semibold">{caseData.practiceArea}</p>
+                              </div>
+                              <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Presupuesto</p>
+                                <p className="text-base text-[#C9A24D] font-bold">
+                                  {new Intl.NumberFormat("es-PY", {
+                                    style: "currency",
+                                    currency: "PYG",
+                                    minimumFractionDigits: 0,
+                                  }).format(caseData.estimatedBudget)}
+                                </p>
+                              </div>
+                              <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Publicado</p>
+                                <p className="text-base text-white/80 font-semibold">
+                                  {new Date(caseData.createdAt).toLocaleDateString("es-PY", {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric"
+                                  })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* VISTA PROFESIONAL: Captación y Gestión (Estilo CRM Legal) */}
+            {viewMode === "profesional" && (activeTab === "gestiones" || activeTab === "mis-casos") && (
+              <div className="space-y-6 mt-6">
+                {/* Widget Principal: Oportunidades Nuevas (Motor DPT) */}
+                <Card className="p-8 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-400/30">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">💼</span>
+                        <h3 className="text-2xl font-bold text-white">Oportunidades Nuevas</h3>
+                      </div>
+                      <Link href="/opportunities">
+                        <Button variant="primary" className="rounded-xl">
+                          Ver Todas →
+                        </Button>
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                        <p className="text-xs text-white/60 mb-1">Casos Disponibles</p>
+                        <p className="text-2xl font-bold text-emerald-400">12</p>
+                        <p className="text-xs text-white/50 mt-1">En tu área</p>
+                      </div>
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                        <p className="text-xs text-white/60 mb-1">Prioridad Alta</p>
+                        <p className="text-2xl font-bold text-[#C9A24D]">3</p>
+                        <p className="text-xs text-white/50 mt-1">GEP exclusivos</p>
+                      </div>
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                        <p className="text-xs text-white/60 mb-1">Valor Total</p>
+                        <p className="text-2xl font-bold text-white">Gs. 45M</p>
+                        <p className="text-xs text-white/50 mt-1">Estimado</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Herramientas: Accesos directos */}
+                <Card className="p-6 bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-2xl">🛠️</span>
+                    <h3 className="text-xl font-bold text-white">Herramientas Rápidas</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a 
+                      href="https://www.pj.gov.py" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-[#C9A24D]/40 hover:bg-white/10 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">⚖️</span>
+                        <div>
+                          <p className="font-semibold text-white">CSJ</p>
+                          <p className="text-xs text-white/60">Corte Suprema</p>
+                        </div>
+                      </div>
+                    </a>
+                    <a 
+                      href="https://www.dinapi.gov.py" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-[#C9A24D]/40 hover:bg-white/10 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">📋</span>
+                        <div>
+                          <p className="font-semibold text-white">DINAPI</p>
+                          <p className="text-xs text-white/60">Propiedad Intelectual</p>
+                        </div>
+                      </div>
+                    </a>
+                    <button
+                      onClick={() => router.push("/modelos")}
+                      className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-[#C9A24D]/40 hover:bg-white/10 transition-all cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">📄</span>
+                        <div>
+                          <p className="font-semibold text-white">Modelos</p>
+                          <p className="text-xs text-white/60">Escritos Legales</p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </Card>
+
+                {/* Widget: Mis Clientes Activos (Estilo CRM Legal) */}
+                <Card className="p-6 bg-white/5 border border-white/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">👥</span>
+                      <h3 className="text-xl font-bold text-white">Mis Clientes Activos</h3>
+                    </div>
+                    <Badge variant="accent" className="bg-emerald-500 text-white">
+                      {myCases.length} {myCases.length === 1 ? "Cliente" : "Clientes"}
+                    </Badge>
+                  </div>
+                  {myCases.length > 0 ? (
+                    <div className="space-y-3">
+                      {myCases.slice(0, 3).map((caseData) => (
+                        <div 
+                          key={caseData.id}
+                          className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-[#C9A24D]/40 transition-all cursor-pointer"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-white mb-1 truncate">{caseData.title}</h4>
+                              <p className="text-xs text-white/60 mb-2">{caseData.practiceArea}</p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
+                                  {caseData.status === "ASSIGNED" ? "En Proceso" : "Abierto"}
+                                </span>
+                                <span className="text-xs text-white/50">
+                                  {new Date(caseData.createdAt).toLocaleDateString("es-PY", {
+                                    day: "numeric",
+                                    month: "short"
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right ml-4">
+                              <p className="text-sm font-bold text-[#C9A24D]">
+                                {new Intl.NumberFormat("es-PY", {
+                                  style: "currency",
+                                  currency: "PYG",
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0,
+                                }).format(caseData.estimatedBudget).replace(/\s/g, "")}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {myCases.length > 3 && (
+                        <Button variant="outline" className="w-full rounded-xl text-sm">
+                          Ver todos los clientes ({myCases.length})
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-white/70">Aún no tienes clientes asignados.</p>
+                    </div>
+                  )}
+                </Card>
+
+                {/* Widget de Métricas para Plan Empresarial/GEP */}
+                {(() => {
+                  const demoPlan = typeof window !== "undefined" ? localStorage.getItem("legal-py-demo-plan") : null;
+                  const userPlan = demoPlan || (session?.user.kycTier === 3 ? "gep" : null);
+                  if (userPlan === "empresarial" || userPlan === "gep") {
+                    return <MetricsWidget plan={userPlan as "empresarial" | "gep"} />;
+                  }
+                  return null;
+                })()}
+
+                {/* Lista de Casos del Profesional */}
+                {myCases.length === 0 ? (
+                  <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
+                    <div className="text-center">
+                      <div className="text-7xl mb-6 animate-bounce">📋</div>
+                      <h3 className="text-2xl font-bold text-white mb-3">{t("dashboard.no_cases")}</h3>
+                      <p className="text-lg text-white/70 mb-8 max-w-md mx-auto leading-relaxed">
+                        {t("dashboard.no_cases_pro_desc") || "Aún no tienes casos asignados. Explora las oportunidades disponibles y aplica a casos que coincidan con tu perfil."}
+                      </p>
+                      <Button 
+                        variant="primary" 
+                        onClick={() => router.push("/opportunities")}
+                        className="rounded-2xl px-8 py-4 text-base font-semibold"
+                      >
+                        💼 {t("dashboard.explore_opportunities") || "Explorar Oportunidades"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-bold text-white">Mis Casos Asignados</h3>
+                    {myCases.map((caseData) => {
+                      const statusBadge = getCaseStatusBadge(caseData);
+                      const complexityStyle = getComplexityBadge(caseData.complexity);
+                      return (
+                        <div
+                          key={caseData.id}
+                          className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl hover:shadow-[#C9A24D]/20 hover:border-[#C9A24D]/30 transition-all duration-300 group"
+                        >
+                          <div className="flex items-start justify-between gap-6">
+                            <div className="flex-1 space-y-4">
+                              <div className="flex items-start justify-between gap-4 flex-wrap">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#C9A24D] transition-colors">{caseData.title}</h3>
+                                  <p className="text-base text-white/70 leading-relaxed line-clamp-2">{caseData.description}</p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge variant={statusBadge.variant} className="text-xs px-3 py-1.5 rounded-xl relative">
+                                    {statusBadge.label === "En revisión DPT" && (
+                                      <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                      </span>
+                                    )}
+                                    {statusBadge.label}
+                                  </Badge>
+                                  <Badge variant="outline" className={`text-xs px-3 py-1.5 rounded-xl ${complexityStyle.bg} ${complexityStyle.text} border-current`}>
+                                    Prioridad: {caseData.complexity}
+                                  </Badge>
+                                </div>
+                              </div>
+                              
+                              {/* Grid de información */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                  <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Área</p>
+                                  <p className="text-base text-white font-semibold">{caseData.practiceArea}</p>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                  <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Presupuesto</p>
+                                  <p className="text-base text-[#C9A24D] font-bold">
+                                    {new Intl.NumberFormat("es-PY", {
+                                      style: "currency",
+                                      currency: "PYG",
+                                      minimumFractionDigits: 0,
+                                    }).format(caseData.estimatedBudget)}
+                                  </p>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                  <p className="text-xs text-white/50 mb-1 font-medium uppercase tracking-wide">Publicado</p>
+                                  <p className="text-base text-white/80 font-semibold">
+                                    {new Date(caseData.createdAt).toLocaleDateString("es-PY", {
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric"
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
             {myCases.length === 0 ? (
               <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-12 shadow-2xl">
                 <div className="text-center">
@@ -612,9 +1030,106 @@ export default function PanelAdminPage() {
           </div>
         )}
 
-      {/* DASHBOARD ESTUDIANTE */}
+      {/* DASHBOARD ESTUDIANTE: Aprendizaje y Carrera */}
       {viewMode === "estudiante" && (
         <div className="space-y-6 mt-6">
+          {/* Widget Principal: Mis Pasantías Activas */}
+          <Card className="p-8 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-400/30">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">💼</span>
+                <h3 className="text-2xl font-bold text-white">Mis Pasantías Activas</h3>
+              </div>
+              {currentInternship ? (
+                <div className="space-y-4">
+                  <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h4 className="text-lg font-bold text-white mb-1">{currentInternship.location?.name || "Pasantía Activa"}</h4>
+                        <p className="text-sm text-white/70">{currentInternship.location?.address || "Ubicación no especificada"}</p>
+                      </div>
+                      <Badge variant="accent" className="bg-emerald-500 text-white">
+                        Activa
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-xs text-white/60 mb-1">Horas Completadas</p>
+                        <p className="text-xl font-bold text-emerald-400">
+                          {currentInternship.completedHours} / {currentInternship.requiredHours}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/60 mb-1">Progreso</p>
+                        <p className="text-xl font-bold text-white">
+                          {Math.round((currentInternship.completedHours / currentInternship.requiredHours) * 100)}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all"
+                        style={{ width: `${(currentInternship.completedHours / currentInternship.requiredHours) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <Button 
+                    variant="primary" 
+                    onClick={() => setActiveTab("pasantia")}
+                    className="w-full rounded-xl"
+                  >
+                    Ver Detalles de la Pasantía
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-white/70 mb-4">Aún no tienes una pasantía activa.</p>
+                  <Link href="/pasantias">
+                    <Button variant="primary" className="rounded-xl">
+                      Explorar Pasantías Disponibles
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Widget Secundario: Cursos Recomendados para ti */}
+          <Card className="p-6 bg-white/5 border border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📚</span>
+                <h3 className="text-xl font-bold text-white">Cursos Recomendados para ti</h3>
+              </div>
+              <Link href="/cursos">
+                <Button variant="outline" className="rounded-xl text-sm">
+                  Ver Todos
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { title: "Oratoria Legal", level: "Intermedio", progress: 0 },
+                { title: "Redacción de Escritos", level: "Básico", progress: 0 },
+                { title: "Ética Profesional", level: "Avanzado", progress: 0 },
+              ].map((curso, idx) => (
+                <div key={idx} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-emerald-400/40 transition-all cursor-pointer">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-semibold text-white">{curso.title}</h4>
+                    <Badge variant="outline" className="text-xs">
+                      {curso.level}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-white/60 mb-3">Recomendado según tu perfil</p>
+                  <Button variant="outline" className="w-full rounded-xl text-sm">
+                    Inscribirse
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Accesos Rápidos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href="/cursos">
               <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-6 shadow-2xl hover:border-emerald-400/60 hover:shadow-emerald-400/30 transition-all cursor-pointer">
@@ -651,27 +1166,6 @@ export default function PanelAdminPage() {
                 </p>
               </div>
             </Link>
-          </div>
-
-          {/* Estado de Aprendizaje */}
-          <div className="relative backdrop-blur-xl bg-white/5 rounded-3xl border border-white/10 p-8 shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-4">{t("student_panel.active_learning")}</h3>
-            <p className="text-sm text-white/70 mb-4">
-              Este es un panel de demostración. Simulamos tu avance general en la ruta de aprendizaje.
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm text-white/70">
-                <span>Carga horaria completada</span>
-                <span className="font-semibold text-emerald-300">65%</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full w-[65%] bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.6)] transition-all" />
-              </div>
-              <div className="flex items-center justify-between text-xs text-white/50 mt-1">
-                <span>3 cursos activos</span>
-                <span>1 pasantía en proceso</span>
-              </div>
-            </div>
           </div>
         </div>
       )}
