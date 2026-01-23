@@ -42,7 +42,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-            Encontrá profesionales verificados, gestores y ujieres. Publicá tu caso, subí documentos, recibí notificaciones y hacé seguimiento en un solo lugar.
+            Encontrá profesionales verificados, gestores y oficiales de justicia. Publicá tu caso, subí documentos, recibí notificaciones y hacé seguimiento en un solo lugar.
           </p>
           
           {/* Barra de búsqueda */}

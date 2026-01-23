@@ -103,10 +103,15 @@ export default function PasantiasPage() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/10">
-                  <Link href={`/pasantias/postular?pasantia=${pasantia.id}`}>
+                <div className="pt-4 border-t border-white/10 flex gap-2">
+                  <Link href={`/pasantias/postular?pasantia=${pasantia.id}`} className="flex-1">
                     <Button variant="primary" className="w-full" size="sm" disabled={pasantia.cuposDisponibles === 0}>
                       {pasantia.cuposDisponibles > 0 ? "Postular ahora" : "Sin cupos disponibles"}
+                    </Button>
+                  </Link>
+                  <Link href={`/pasantias/${pasantia.id}`} className="flex-1">
+                    <Button variant="outline" className="w-full" size="sm">
+                      Ver Detalles
                     </Button>
                   </Link>
                 </div>

@@ -18,6 +18,9 @@ import MetricsWidget from "@/components/Dashboard/MetricsWidget";
 import InternshipCheckIn from "@/components/Internship/InternshipCheckIn";
 import CaseLogForm from "@/components/Internship/CaseLogForm";
 import InternshipProgress from "@/components/Internship/InternshipProgress";
+import BitacoraBiometrica from "@/components/EdTech/BitacoraBiometrica";
+import CheckInJuzgado from "@/components/EdTech/CheckInJuzgado";
+import BilleteraAcademica from "@/components/EdTech/BilleteraAcademica";
 import { DigitalInternship } from "@/lib/edu-types";
 
 export default function PanelAdminPage() {
@@ -99,24 +102,12 @@ export default function PanelAdminPage() {
       // Cargar casos del usuario actual desde localStorage
       if (currentSession) {
         try {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:39',message:'Loading cases from localStorage',data:{hasSession:!!currentSession,userId:currentSession.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-          // #endregion
           const storedCases = localStorage.getItem("legal-py-cases");
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:43',message:'localStorage read result',data:{hasStoredCases:!!storedCases,storedLength:storedCases?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-          // #endregion
           if (storedCases) {
             const allCases: LegalCase[] = JSON.parse(storedCases);
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:47',message:'Parsed cases from localStorage',data:{totalCases:allCases.length,caseIds:allCases.map(c=>c.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-            // #endregion
             // Filtrar casos del usuario actual (por ahora, todos los casos son del usuario actual)
             // En producción, se filtraría por userId
             const userCases = allCases.filter((c) => c.status === "OPEN" || c.status === "ASSIGNED");
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:50',message:'Filtered user cases',data:{filteredCount:userCases.length,statuses:userCases.map(c=>c.status)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-            // #endregion
             // Ordenar por fecha (más nuevos primero)
             userCases.sort((a, b) => {
               const dateA = new Date(a.createdAt).getTime();
@@ -124,14 +115,8 @@ export default function PanelAdminPage() {
               return dateB - dateA;
             });
             setMyCases(userCases);
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:57',message:'Cases set successfully',data:{finalCount:userCases.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-            // #endregion
           }
         } catch (error) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:60',message:'ERROR loading cases',data:{errorMessage:error instanceof Error?error.message:String(error),errorStack:error instanceof Error?error.stack:undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-          // #endregion
           console.error("Error loading cases:", error);
         }
       }
@@ -161,21 +146,6 @@ export default function PanelAdminPage() {
       }
     }
 
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run-panel-2",
-        hypothesisId: "H-REVERIFY",
-        location: "app/panel/page.tsx:reverifyInit",
-        message: "Reverify gating evaluated",
-        data: { isVerified, storedFlag: stored ?? null },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
   }, []);
 
   useEffect(() => {
@@ -196,9 +166,6 @@ export default function PanelAdminPage() {
   // Log de notificaciones
   useEffect(() => {
     if (typeof window !== "undefined" && viewMode === "cliente" && myCases.length > 0) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/panel/page.tsx:notifications',message:'Notifications should render',data:{viewMode,myCasesCount:myCases.length,shouldShow:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run-verify',hypothesisId:'H4'})}).catch(()=>{});
-      // #endregion
     }
   }, [viewMode, myCases.length]);
 
@@ -261,6 +228,17 @@ export default function PanelAdminPage() {
         { id: "postulaciones", label: `Postulaciones (${postulaciones.length})`, icon: "📝" },
       ];
     }
+    if (viewMode === "estudiante") {
+      return [
+        { id: "gestiones", label: `Mis Gestiones Activas (${myCases.length})`, icon: "📋" },
+        { id: "pasantia", label: `Mi Pasantía`, icon: "💼" },
+        { id: "bitacora", label: `Bitácora Biométrica`, icon: "📝" },
+        { id: "checkin", label: `Check-in Juzgados`, icon: "📍" },
+        { id: "billetera", label: `Billetera Académica`, icon: "🎓" },
+        { id: "inscripciones", label: `Inscripciones (${inscripciones.length})`, icon: "📚" },
+        { id: "postulaciones", label: `Postulaciones (${postulaciones.length})`, icon: "📝" },
+      ];
+    }
     return [
       { id: "gestiones", label: `Mis Gestiones Activas (${myCases.length})`, icon: "📋" },
       { id: "inscripciones", label: `Inscripciones (${inscripciones.length})`, icon: "📚" },
@@ -303,21 +281,6 @@ export default function PanelAdminPage() {
                   variant="primary"
                   className="rounded-2xl"
                   onClick={() => {
-                    // #region agent log
-                    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        sessionId: "debug-session",
-                        runId: "run-panel-2",
-                        hypothesisId: "H-REVERIFY",
-                        location: "app/panel/page.tsx:reverifyCTA",
-                        message: "User clicked reverify CTA",
-                        data: {},
-                        timestamp: Date.now(),
-                      }),
-                    }).catch(() => {});
-                    // #endregion
                     router.push("/profile?verify=1");
                   }}
                 >
@@ -1172,39 +1135,100 @@ export default function PanelAdminPage() {
         </div>
       )}
 
-      {/* Mi Pasantía - Tab para estudiantes */}
-      {activeTab === "pasantia" && viewMode === "estudiante" && (
+      {/* Mi Pasantía - Tab para estudiantes (incluye funcionalidades EdTech) */}
+      {(activeTab === "pasantia" || activeTab === "bitacora" || activeTab === "checkin" || activeTab === "billetera") && viewMode === "estudiante" && (
         <div className="space-y-6">
           {currentInternship ? (
             <>
               <InternshipProgress internship={currentInternship} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InternshipCheckIn
-                  internshipId={currentInternship.id}
-                  onCheckIn={(checkIn) => {
-                    // Actualizar pasantía con nuevo check-in
-                    const updated = {
-                      ...currentInternship,
-                      checkIns: [...currentInternship.checkIns, checkIn],
-                      completedHours: currentInternship.completedHours + 4, // 4 horas por check-in
-                    };
-                    setCurrentInternship(updated);
-                    localStorage.setItem("legal-py-current-internship", JSON.stringify(updated));
-                  }}
-                />
-                <CaseLogForm
-                  internshipId={currentInternship.id}
-                  onLogSubmit={(entry) => {
-                    // Actualizar pasantía con nueva entrada
-                    const updated = {
-                      ...currentInternship,
-                      caseLogs: [...currentInternship.caseLogs, entry],
-                    };
-                    setCurrentInternship(updated);
-                    localStorage.setItem("legal-py-current-internship", JSON.stringify(updated));
-                  }}
-                />
+              {/* Tabs para funcionalidades EdTech */}
+              <div className="flex gap-2 border-b border-white/10 mb-6">
+                <button
+                  onClick={() => setActiveTab("bitacora" as any)}
+                  className={`px-4 py-2 font-medium transition-all ${
+                    activeTab === "bitacora"
+                      ? "text-white border-b-2 border-[#C9A24D]"
+                      : "text-white/60 hover:text-white/80"
+                  }`}
+                >
+                  📝 Bitácora Biométrica
+                </button>
+                <button
+                  onClick={() => setActiveTab("checkin" as any)}
+                  className={`px-4 py-2 font-medium transition-all ${
+                    activeTab === "checkin"
+                      ? "text-white border-b-2 border-[#C9A24D]"
+                      : "text-white/60 hover:text-white/80"
+                  }`}
+                >
+                  📍 Check-in Juzgados
+                </button>
+                <button
+                  onClick={() => setActiveTab("billetera" as any)}
+                  className={`px-4 py-2 font-medium transition-all ${
+                    activeTab === "billetera"
+                      ? "text-white border-b-2 border-[#C9A24D]"
+                      : "text-white/60 hover:text-white/80"
+                  }`}
+                >
+                  🎓 Billetera Académica
+                </button>
               </div>
+
+              {/* Contenido de tabs EdTech */}
+              {activeTab === "bitacora" && (
+                <BitacoraBiometrica
+                  pasantiaId={currentInternship.id}
+                  onEntrySaved={(entry) => {
+                    // Actualizar pasantía con nueva entrada de bitácora
+                    const updated = {
+                      ...currentInternship,
+                      completedHours: currentInternship.completedHours + (entry.horaSalida ? 4 : 0),
+                    };
+                    setCurrentInternship(updated);
+                    localStorage.setItem("legal-py-current-internship", JSON.stringify(updated));
+                  }}
+                />
+              )}
+
+              {activeTab === "checkin" && (
+                <CheckInJuzgado />
+              )}
+
+              {activeTab === "billetera" && (
+                <BilleteraAcademica />
+              )}
+
+              {/* Funcionalidades existentes (mantener compatibilidad) */}
+              {activeTab === "pasantia" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <InternshipCheckIn
+                    internshipId={currentInternship.id}
+                    onCheckIn={(checkIn) => {
+                      // Actualizar pasantía con nuevo check-in
+                      const updated = {
+                        ...currentInternship,
+                        checkIns: [...currentInternship.checkIns, checkIn],
+                        completedHours: currentInternship.completedHours + 4, // 4 horas por check-in
+                      };
+                      setCurrentInternship(updated);
+                      localStorage.setItem("legal-py-current-internship", JSON.stringify(updated));
+                    }}
+                  />
+                  <CaseLogForm
+                    internshipId={currentInternship.id}
+                    onLogSubmit={(entry) => {
+                      // Actualizar pasantía con nueva entrada
+                      const updated = {
+                        ...currentInternship,
+                        caseLogs: [...currentInternship.caseLogs, entry],
+                      };
+                      setCurrentInternship(updated);
+                      localStorage.setItem("legal-py-current-internship", JSON.stringify(updated));
+                    }}
+                  />
+                </div>
+              )}
               {/* Historial de Check-ins */}
               {currentInternship.checkIns.length > 0 && (
                 <Card className="p-6 bg-white/5 border-white/10">
@@ -1458,21 +1482,6 @@ export default function PanelAdminPage() {
           localStorage.setItem("legal-py-view-mode", mode);
           window.dispatchEvent(new Event("legal-py-view-mode-changed"));
           setIsModeModalOpen(false);
-          // #region agent log
-          fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sessionId: "debug-session",
-              runId: "run3",
-              hypothesisId: "H-MODE",
-              location: "app/panel/page.tsx:onSelectMode",
-              message: "View mode changed via modal (panel)",
-              data: { mode },
-              timestamp: Date.now(),
-            }),
-          }).catch(() => {});
-          // #endregion
         }}
       />
         </div>

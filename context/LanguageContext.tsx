@@ -49,21 +49,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       document.documentElement.lang = defaultLanguage;
     }
 
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run-i18n",
-        hypothesisId: "H-I18N-INIT",
-        location: "context/LanguageContext.tsx:init",
-        message: "LanguageProvider initialized",
-        data: { saved: saved || null, current: language },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
   }, []);
 
   /**
@@ -88,21 +73,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       document.documentElement.lang = newLanguage;
     }
 
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run-i18n",
-        hypothesisId: "H-I18N-CHANGE",
-        location: "context/LanguageContext.tsx:setLanguage",
-        message: "Language changed via useLanguage hook",
-        data: { newLanguage, previous: language },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
   }, [language]);
 
   /**
@@ -125,21 +95,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     if (translated === key && language !== defaultLanguage) {
       translated = translate(defaultLanguage, key);
       
-      // #region agent log
-      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: "debug-session",
-          runId: "run-i18n",
-          hypothesisId: "H-I18N-FALLBACK",
-          location: "context/LanguageContext.tsx:t",
-          message: "Translation fallback to Spanish",
-          data: { key, requestedLang: language, fallbackLang: defaultLanguage },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
     }
 
     // Asegurar que siempre devolvemos un string válido

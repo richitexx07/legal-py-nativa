@@ -250,7 +250,7 @@ export default function BiometricAuth({
 
     try {
       let challenge: Uint8Array;
-      let publicKeyOptions: PublicKeyCredentialRequestOptions;
+      let publicKeyOptions: PublicKeyCredentialRequestOptions | null = null;
 
       if (isDemoMode) {
         // ====================================================================
@@ -339,6 +339,10 @@ export default function BiometricAuth({
       // LLAMAR A LA API WEBAUTHN NATIVA
       // Esta es la única forma correcta de hacerlo (NO hacks)
       // ====================================================================
+      if (!publicKeyOptions) {
+        console.warn("BiometricAuth: publicKeyOptions is null, aborting biometric assertion")
+        return
+      }
       const assertion = (await navigator.credentials.get({
         publicKey: publicKeyOptions,
         signal: abortControllerRef.current.signal,

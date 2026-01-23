@@ -59,24 +59,6 @@ export default function LanguageSelector({
               <button
                 key={idioma.code}
                 onClick={() => {
-                  // #region agent log
-                  fetch(
-                    "http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9",
-                    {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        sessionId: "debug-session",
-                        runId: "run-i18n",
-                        hypothesisId: "H-I18N-SELECT",
-                        location: "components/LanguageSelector.tsx:onClick",
-                        message: "Language selected in dropdown",
-                        data: { from: currentLanguage, to: idioma.code },
-                        timestamp: Date.now(),
-                      }),
-                    }
-                  ).catch(() => {});
-                  // #endregion
                   onLanguageChange(idioma.code);
                   setIsOpen(false);
                 }}

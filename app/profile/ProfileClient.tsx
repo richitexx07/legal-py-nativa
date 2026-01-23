@@ -49,21 +49,6 @@ export default function ProfileClient() {
   useEffect(() => {
     const s = getSession();
     setSession(s);
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run-profile-2",
-        hypothesisId: "H-PROFILE-MOUNT",
-        location: "app/profile/ProfileClient.tsx:mount",
-        message: "Profile client mounted",
-        data: { hasSession: !!s, kycTier: s?.user.kycTier ?? null, isIdentityVerified: s?.user.isIdentityVerified ?? null },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
 
     if (!s) return;
     setBio((s.profile as any).bio ?? "");
@@ -86,21 +71,6 @@ export default function ProfileClient() {
     const userId = session.user.id;
     const role = session.user.role;
 
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run-profile-2",
-        hypothesisId: "H-PROFILE-SAVE",
-        location: "app/profile/ProfileClient.tsx:saveEdits",
-        message: "Saving profile edits",
-        data: { role, hasBio: !!bio, hasPhone: !!phone, hasSocials: !!(website || instagram || linkedin || x) },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
 
     const res = await updateProfile(userId, role, {
       bio,
@@ -124,21 +94,6 @@ export default function ProfileClient() {
     const userId = session.user.id;
     const role = session.user.role;
 
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run-profile-2",
-        hypothesisId: "H-BIO-VERIFY",
-        location: "app/profile/ProfileClient.tsx:onBiometricVerified",
-        message: "Biometric verified flow completed",
-        data: { role, selfieLen: selfieDataUrl.length },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
 
     await updateProfile(userId, role, { avatar: selfieDataUrl } as any);
     await updateIdentityVerification(userId, { status: "verified", selfieDataUrl });
@@ -233,21 +188,6 @@ export default function ProfileClient() {
                 className="rounded-2xl"
                 onClick={() => {
                   setIsBioModalOpen(true);
-                  // #region agent log
-                  fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      sessionId: "debug-session",
-                      runId: "run-profile-2",
-                      hypothesisId: "H-BIO-START",
-                      location: "app/profile/ProfileClient.tsx:openBiometric",
-                      message: "User opened biometric capture modal",
-                      data: { role: session.user.role },
-                      timestamp: Date.now(),
-                    }),
-                  }).catch(() => {});
-                  // #endregion
                 }}
               >
                 🔄 Actualizar Identidad / Foto

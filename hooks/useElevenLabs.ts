@@ -50,21 +50,6 @@ export function useElevenLabs() {
 
   const speak = useCallback(
     async ({ assistant, text }: SpeakOptions) => {
-      // #region agent log
-      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: "debug-session",
-          runId: "run1",
-          hypothesisId: "H-SPEAK",
-          location: "hooks/useElevenLabs.ts:speak",
-          message: "Speak invoked (mock ElevenLabs)",
-          data: { assistant, textLen: text.length },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
 
       stopAudio();
       setIsSpeaking(true);
@@ -107,40 +92,10 @@ export function useElevenLabs() {
 
   const startRecording = useCallback(() => {
     setIsRecording(true);
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run2",
-        hypothesisId: "H-REC",
-        location: "hooks/useElevenLabs.ts:startRecording",
-        message: "Hold-to-speak started (mock)",
-        data: {},
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
   }, []);
 
   const stopRecording = useCallback(() => {
     setIsRecording(false);
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run2",
-        hypothesisId: "H-REC",
-        location: "hooks/useElevenLabs.ts:stopRecording",
-        message: "Hold-to-speak ended (mock)",
-        data: {},
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
   }, []);
 
   useEffect(() => {

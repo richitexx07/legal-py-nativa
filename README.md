@@ -47,7 +47,7 @@ legal-py/
 │   ├── profesionales/     # Páginas de profesionales
 │   │   └── [id]/         # Detalle de profesional
 │   ├── gestores/          # Página de gestores
-│   ├── ujieres/           # Página de ujieres
+│   ├── oficiales-justicia/ # Página de oficiales de justicia
 │   ├── casos/             # Dashboard y detalle de casos
 │   │   └── [id]/         # Detalle de caso
 │   ├── migraciones/       # Trámites migratorios
@@ -189,7 +189,7 @@ En el dashboard de Vercel, agregar variables de entorno en:
 - ✅ Gestión de casos con timeline
 - ✅ Trámites migratorios con wizard
 - ✅ Chat con bot de asistencia
-- ✅ Gestores y ujieres
+- ✅ Gestores y oficiales de justicia
 - ✅ Sistema de documentos
 - ✅ Internacionalización (es/gn/en/pt)
 - ✅ Diseño responsive

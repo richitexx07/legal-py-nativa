@@ -27,7 +27,7 @@ export interface Gestor {
   precio: string;
 }
 
-export interface Ujier {
+export interface OficialJusticia {
   id: string;
   nombre: string;
   ciudad: string;
@@ -443,7 +443,7 @@ export const mockCategorias: Categoria[] = [
     id: "5",
     titulo: "Oficial de Justicia",
     descripcion: "Notificaciones, diligencias y constancias",
-    href: "/ujieres",
+    href: "/oficiales-justicia",
     icono: "/avatars/icono_oficialdejusticia_removedbackground.png",
   },
   {

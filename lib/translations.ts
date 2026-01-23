@@ -51,7 +51,7 @@ export const translations: Record<LanguageCode, TranslationTree> = {
       internships: "Pasantías",
       professionals: "Profesionales",
       gestores: "Gestores",
-      ujieres: "Oficial de Justicia",
+      oficiales_justicia: "Oficiales de Justicia",
       cases: "Casos",
       migraciones: "Gestiones Migratorias",
       messages: "Mensajes",
@@ -216,7 +216,7 @@ export const translations: Record<LanguageCode, TranslationTree> = {
       internships: "Internships",
       professionals: "Professionals",
       gestores: "Managers",
-      ujieres: "Court Officer",
+      oficiales_justicia: "Court Officers",
       cases: "Cases",
       migraciones: "Immigration Services",
       messages: "Messages",
@@ -565,7 +565,7 @@ export const translations: Record<LanguageCode, TranslationTree> = {
       internships: "Praktika",
       professionals: "Fachkräfte",
       gestores: "Manager",
-      ujieres: "Gerichtsvollzieher",
+      oficiales_justicia: "Gerichtsvollzieher",
       cases: "Fälle",
       migraciones: "Migration",
       messages: "Nachrichten",
@@ -880,7 +880,7 @@ export const translations: Record<LanguageCode, TranslationTree> = {
       internships: "Tirocini",
       professionals: "Professionisti",
       gestores: "Gestori",
-      ujieres: "Ufficiale giudiziario",
+      oficiales_justicia: "Ufficiale giudiziario",
       cases: "Casi",
       migraciones: "Immigrazione",
       messages: "Messaggi",
@@ -1013,7 +1013,7 @@ export const translations: Record<LanguageCode, TranslationTree> = {
       internships: "Pasantía",
       professionals: "Profesional",
       gestores: "Gestor",
-      ujieres: "Ujier",
+      oficiales_justicia: "Oficial de Justicia",
       cases: "Caso kuéra",
       migraciones: "Migración",
       messages: "Ñe'ẽnguéra",
@@ -1132,21 +1132,6 @@ export function translate(lang: LanguageCode, key: string): string {
 
   const resolved = typeof fallback === "string" ? fallback : key;
 
-  // #region agent log
-  fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sessionId: "debug-session",
-      runId: "run-i18n",
-      hypothesisId: "H-I18N-MISS",
-      location: "lib/translations.ts:translate",
-      message: "Missing translation key (fallback used)",
-      data: { lang, key, usedFallback: resolved !== key },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
 
   return resolved;
 }

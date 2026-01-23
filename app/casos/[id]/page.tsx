@@ -1,12 +1,11 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Tabs from "@/components/Tabs";
-import { getCaseById, updateCase, updateChecklistItem, assignProfessional } from "@/lib/cases";
+import { getCaseById, updateCase, updateChecklistItem } from "@/lib/cases";
 import { getSession } from "@/lib/auth";
 import type { Case, CaseStatus } from "@/lib/cases";
 
@@ -19,7 +18,6 @@ import CaseComments from "@/components/Case/CaseComments";
 import CaseInfo from "@/components/Case/CaseInfo";
 import PaymentHistory from "@/components/Payments/PaymentHistory";
 import PaymentForm from "@/components/Payments/PaymentForm";
-import { getPaymentsByCase } from "@/lib/payments";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -32,7 +30,6 @@ export default function CasoDetallePage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [payments, setPayments] = useState<any[]>([]);
 
   // Cargar caso
   useEffect(() => {
@@ -60,11 +57,6 @@ export default function CasoDetallePage({ params }: PageProps) {
       }
 
       setCaseData(caseItem);
-      
-      // Cargar pagos asociados al caso
-      const casePayments = getPaymentsByCase(id);
-      setPayments(casePayments);
-      
       setLoading(false);
     };
 
@@ -124,9 +116,12 @@ export default function CasoDetallePage({ params }: PageProps) {
 
   const handlePaymentSuccess = () => {
     if (!caseData) return;
-    const casePayments = getPaymentsByCase(caseData.id);
-    setPayments(casePayments);
     setShowPaymentForm(false);
+    // Recargar caso para actualizar pagos
+    const updatedCase = getCaseById(caseData.id);
+    if (updatedCase) {
+      setCaseData(updatedCase);
+    }
   };
 
   const handleAssignProfessional = () => {

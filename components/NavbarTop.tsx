@@ -28,21 +28,6 @@ export default function NavbarTop() {
   const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
   const setIdiomaWithLog = (newIdioma: typeof language) => {
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run-i18n-2",
-        hypothesisId: "H-I18N-NAVBAR-SET",
-        location: "components/NavbarTop.tsx:setIdiomaWithLog",
-        message: "Navbar requested language change",
-        data: { from: language, to: newIdioma },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     setLanguage(newIdioma);
   };
 
@@ -76,22 +61,6 @@ export default function NavbarTop() {
       setSession(currentSession);
       const userId = localStorage.getItem("legal-py-current-user-id") || null;
       setMockUserId(userId);
-      
-      // #region agent log
-      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: "debug-session",
-          runId: "run1",
-          hypothesisId: "H2",
-          location: "components/NavbarTop.tsx:Notifications",
-          message: "Navbar notifications render",
-          data: { hasUserId: !!userId },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
     }
   }, []);
 
@@ -102,21 +71,6 @@ export default function NavbarTop() {
       window.dispatchEvent(new Event("legal-py-view-mode-changed"));
     }
     setIsModeModalOpen(false);
-    // #region agent log
-    fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: "run3",
-        hypothesisId: "H-MODE",
-        location: "components/NavbarTop.tsx:applyViewMode",
-        message: "View mode changed via modal",
-        data: { mode },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     router.push("/panel");
   };
 
@@ -172,7 +126,7 @@ export default function NavbarTop() {
     { href: "/pasantias", label: t("navbar.internships") },
     { href: "/career-center", label: "💼 Carreras" },
     { href: "/gestores", label: t("navbar.gestores") },
-    { href: "/ujieres", label: t("navbar.ujieres") },
+    { href: "/oficiales-justicia", label: t("navbar.oficiales_justicia") },
     { href: "/casos", label: t("navbar.cases") },
     { href: "/migraciones", label: t("navbar.migraciones") },
     { href: "/chat", label: t("navbar.messages") },

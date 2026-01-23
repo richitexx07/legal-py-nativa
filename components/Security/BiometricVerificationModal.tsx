@@ -93,9 +93,6 @@ export default function BiometricVerificationModal({
       const hasFront = localStorage.getItem(frontKey) === "uploaded";
       const hasBack = localStorage.getItem(backKey) === "uploaded";
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:checkDocuments',message:'Checking documents',data:{hasFront,hasBack,userId,isOpen},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
 
       if (hasFront) {
         setIdFront("uploaded");
@@ -134,16 +131,10 @@ export default function BiometricVerificationModal({
 
   // Rotar instrucciones cuando está en estado waiting
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:instructionsEffect',message:'Instructions rotation effect',data:{currentState,livenessState,status,shouldRotate:currentState === "LIVENESS_CHECK" && livenessState === "waiting" && status === "idle"},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
-    // #endregion
     if (currentState === "LIVENESS_CHECK" && livenessState === "waiting" && status === "idle") {
       const interval = setInterval(() => {
         setCurrentInstruction((prev) => {
           const next = (prev + 1) % instructions.length;
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:instructionsInterval',message:'Instruction rotated',data:{prev,next,instruction:instructions[next]},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H4'})}).catch(()=>{});
-          // #endregion
           return next;
         });
       }, 3000);
@@ -153,22 +144,13 @@ export default function BiometricVerificationModal({
 
   // Inicializar cámara con HTML5 nativo
   const startCamera = useCallback(async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-entry',message:'startCamera called',data:{hasVideoRef:!!videoRef.current,hasMediaDevices:!!navigator.mediaDevices,hasGetUserMedia:!!(navigator.mediaDevices?.getUserMedia)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-    // #endregion
 
     if (!videoRef.current) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-no-video-ref',message:'No video ref - early return',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-      // #endregion
       return;
     }
 
     // Verificar si el navegador soporta getUserMedia
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-no-support',message:'Browser does not support getUserMedia',data:{hasMediaDevices:!!navigator.mediaDevices,hasGetUserMedia:!!(navigator.mediaDevices?.getUserMedia)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-      // #endregion
       setCameraError("Tu navegador no soporta la verificación biométrica por cámara.");
       setStatus("error");
       // CRÍTICO: No bloquear, el botón de escape está visible
@@ -188,16 +170,10 @@ export default function BiometricVerificationModal({
       videoRef.current.srcObject = stream;
       setIsCameraActive(true);
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:startCamera',message:'Camera started',data:{hasStream:!!stream,active:stream.active},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
-      // #endregion
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Error desconocido";
       const errorName = error instanceof Error ? error.name : "Unknown";
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-error-caught',message:'Camera error caught',data:{errorMessage,errorName,errorType:error?.constructor?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
-      // #endregion
 
       // Mensaje más específico según el tipo de error
       let userMessage = "Por favor, permite el acceso a la cámara para verificar tu identidad.";
@@ -209,9 +185,6 @@ export default function BiometricVerificationModal({
         userMessage = "La cámara está siendo usada por otra aplicación. Por favor, ciérrala e intenta nuevamente.";
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-error-handled',message:'Error message determined',data:{errorMessage,errorName,userMessage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
-      // #endregion
 
       setCameraError(userMessage);
       setStatus("error");
@@ -219,9 +192,6 @@ export default function BiometricVerificationModal({
       // CRÍTICO: No bloquear usuario, permitir salida inmediata
       // El botón de escape ya está visible en el render
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-error-state-set',message:'Error state set',data:{cameraError:userMessage,status:'error'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
-      // #endregion
     }
   }, []);
 
@@ -275,9 +245,6 @@ export default function BiometricVerificationModal({
   };
 
   const handleStartScan = () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:handleStartScan',message:'handleStartScan called',data:{idFront:!!idFront,idBack:!!idBack,cameraError:!!cameraError,isVerifying,isCameraActive},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});
-    // #endregion
     if (!idFront || !idBack) {
       alert("⚠️ Debes subir primero la foto del frente y dorso de tu cédula antes de realizar el liveness check.");
       router.push("/security-center?step=docs");
@@ -290,16 +257,10 @@ export default function BiometricVerificationModal({
     setLivenessState("analyzing");
     setMessage("Analizando biometría... No te muevas");
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:handleStartScan',message:'State updated to scanning/analyzing',data:{status:'scanning',livenessState:'analyzing'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
 
     // Después de 3 segundos, capturar y mostrar éxito
     setTimeout(() => {
       const imageSrc = captureScreenshot();
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:handleStartScan:timeout',message:'Screenshot attempt',data:{hasImageSrc:!!imageSrc,imageSrcLength:imageSrc?.length||0,videoReady:videoRef.current?.readyState === 4},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H3'})}).catch(()=>{});
-      // #endregion
       if (!imageSrc) {
         setStatus("error");
         setLivenessState("waiting");
@@ -309,9 +270,6 @@ export default function BiometricVerificationModal({
 
       // Efecto flash
       setShowFlash(true);
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:handleStartScan:flash',message:'Flash triggered',data:{showFlash:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
-      // #endregion
       setTimeout(() => setShowFlash(false), 200);
 
       // Confeti
@@ -322,22 +280,13 @@ export default function BiometricVerificationModal({
           origin: { y: 0.6 },
           colors: ["#22c55e", "#16a34a", "#15803d"],
         });
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:handleStartScan:confetti',message:'Confetti triggered',data:{success:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H7'})}).catch(()=>{});
-        // #endregion
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:handleStartScan:confetti',message:'Confetti error',data:{error:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H7'})}).catch(()=>{});
-        // #endregion
       }
 
       setStatus("done");
       setLivenessState("success");
       setMessage("Comparando con tu cédula de identidad...");
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:handleStartScan:success',message:'State updated to done/success',data:{status:'done',livenessState:'success'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H8'})}).catch(()=>{});
-      // #endregion
       
       // Llamar a onVerify después de un breve delay para mostrar el éxito
       setTimeout(() => {
@@ -350,13 +299,6 @@ export default function BiometricVerificationModal({
 
   const canStartLiveness = idFront && idBack && currentState === "LIVENESS_CHECK";
 
-  // #region agent log
-  useEffect(() => {
-    if (isOpen) {
-      fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/Security/BiometricVerificationModal.tsx:render',message:'Component render state',data:{isOpen,currentState,status,livenessState,canStartLiveness,idFront:!!idFront,idBack:!!idBack,currentInstruction,showFlash,isCameraActive},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H1'})}).catch(()=>{});
-    }
-  }, [isOpen, currentState, status, livenessState, canStartLiveness, idFront, idBack, currentInstruction, showFlash, isCameraActive]);
-  // #endregion
 
   // Colores según el estado de liveness
   const getBorderColor = () => {
@@ -629,12 +571,6 @@ export default function BiometricVerificationModal({
                 </div>
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center gap-4 px-4 text-center">
-                  {/* #region agent log */}
-                  {(() => {
-                    fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:render-camera-error',message:'Camera error UI rendered',data:{cameraError,allowSkip,status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});
-                    return null;
-                  })()}
-                  {/* #endregion */}
                   <div className="space-y-2">
                     <svg className="mx-auto h-16 w-16 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />

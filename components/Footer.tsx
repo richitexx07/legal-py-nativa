@@ -7,25 +7,6 @@ import { useEffect } from "react";
 export default function Footer() {
   const { t } = useLanguage();
 
-  // #region agent log
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: "debug-session",
-          runId: "run1",
-          hypothesisId: "H3",
-          location: "components/Footer.tsx:Footer",
-          message: "Footer rendered with policy links",
-          data: {},
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-    }
-  }, []);
-  // #endregion
 
   return (
     <footer className="border-t border-white/10 mt-10 bg-gradient-to-br from-[#0E1B2A] to-[#13253A]">

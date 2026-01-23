@@ -50,42 +50,10 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
   // Log cuando se renderizan los botones GEP
   useEffect(() => {
     if (caseData.gepGoldResponse === "pendiente" && isGEPGold && typeof window !== "undefined") {
-      // #region agent log
-      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: "debug-session",
-          runId: "run1",
-          hypothesisId: "H1",
-          location: "components/International/FunnelView.tsx:GEPButtons",
-          message: "GEP buttons rendered",
-          data: { isGEPGold, gepGoldResponse: caseData.gepGoldResponse, caseId: caseData.id },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
     }
   }, [caseData.gepGoldResponse, isGEPGold, caseData.id]);
 
   const handleGEPGoldResponse = async (response: "aceptado" | "declinado", notes?: string) => {
-    // #region agent log
-    if (typeof window !== "undefined") {
-      fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId: "debug-session",
-          runId: "run1",
-          hypothesisId: "H2",
-          location: "components/International/FunnelView.tsx:handleGEPGoldResponse",
-          message: "GEP response button clicked",
-          data: { response, caseId: caseData.id },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-    }
-    // #endregion
     setLoading(true);
     try {
       await processGEPGoldResponse({
@@ -99,23 +67,6 @@ export default function FunnelView({ caseData, onUpdate, isGEPGold = false }: Fu
         type: response === "aceptado" ? "success" : "info",
         isOpen: true,
       });
-      // #region agent log
-      if (typeof window !== "undefined") {
-        fetch("http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: "debug-session",
-            runId: "run1",
-            hypothesisId: "H2",
-            location: "components/International/FunnelView.tsx:handleGEPGoldResponse",
-            message: "GEP response processed successfully",
-            data: { response, caseId: caseData.id },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-      }
-      // #endregion
     } catch (error) {
       console.error("Error processing GEP Gold response:", error);
       setSnackbar({
