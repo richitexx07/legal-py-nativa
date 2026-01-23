@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "@/components/Button";
 import confetti from "canvas-confetti";
+import { checkDemoMode, checkDemoUser, canSkipBiometric } from "@/lib/demo-utils";
 
 interface BiometricVerificationModalProps {
   isOpen: boolean;
@@ -40,9 +41,15 @@ export default function BiometricVerificationModal({
   allowSkip = true, // Por defecto permite skip (solo bloquea si isMandatory=true)
   isDemoMode = false, // Modo demo: nunca bloquea
 }: BiometricVerificationModalProps) {
+  // Detección automática de modo demo (AUDIT FIX: Centralizado)
+  const demoMode = checkDemoMode(); // Función de utilidad
+  const demoUser = checkDemoUser(); // Función de utilidad
+  const canSkip = canSkipBiometric(); // Función de utilidad
+  
   // En modo demo: NUNCA es obligatorio, siempre se puede cerrar
-  const effectiveIsMandatory = isDemoMode ? false : isMandatory;
-  const effectiveAllowSkip = isDemoMode ? true : allowSkip;
+  // Combinar prop isDemoMode con detección automática
+  const effectiveIsMandatory = (isDemoMode || demoMode || demoUser) ? false : isMandatory;
+  const effectiveAllowSkip = canSkip ? true : allowSkip;
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -164,6 +171,7 @@ export default function BiometricVerificationModal({
       // #endregion
       setCameraError("Tu navegador no soporta la verificación biométrica por cámara.");
       setStatus("error");
+      // CRÍTICO: No bloquear, el botón de escape está visible
       return;
     }
 
@@ -207,6 +215,9 @@ export default function BiometricVerificationModal({
 
       setCameraError(userMessage);
       setStatus("error");
+      
+      // CRÍTICO: No bloquear usuario, permitir salida inmediata
+      // El botón de escape ya está visible en el render
       
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/8568c4c1-fdfd-4da4-81a0-a7add37291b9',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BiometricVerificationModal.tsx:startCamera-error-state-set',message:'Error state set',data:{cameraError:userMessage,status:'error'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H6'})}).catch(()=>{});
@@ -376,14 +387,14 @@ export default function BiometricVerificationModal({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      {/* Fondo oscuro con blur - no cerrar si es obligatorio (AUDIT FIX) */}
+      {/* Fondo oscuro con blur - SIEMPRE permite cerrar (NUNCA bloquear) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 bg-black/80 backdrop-blur-xl"
         onClick={() => {
-          if (effectiveIsMandatory) return;
+          // REGLA DE ORO: Nunca bloquear, siempre permitir salida
           if (typeof window !== "undefined") {
             sessionStorage.setItem("biometric_skipped", "true");
             window.dispatchEvent(new Event('biometric-skip-changed'));
@@ -405,7 +416,7 @@ export default function BiometricVerificationModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">
-            {isDemoMode ? (
+            {(isDemoMode || demoMode || demoUser) ? (
               "🎯 Verificación Biométrica (Demo)"
             ) : effectiveIsMandatory ? (
               "⚠️ Verificación de Identidad"
@@ -413,8 +424,7 @@ export default function BiometricVerificationModal({
               "Validación Biométrica"
             )}
           </h2>
-          {/* Botón X - ocultar o no cerrar si es obligatorio (AUDIT FIX) */}
-          {!effectiveIsMandatory && (
+          {/* Botón X - SIEMPRE VISIBLE (NUNCA bloquear) */}
           <button
             onClick={() => {
               if (typeof window !== "undefined") {
@@ -432,11 +442,10 @@ export default function BiometricVerificationModal({
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          )}
         </div>
 
         <p className="text-sm text-white/70 mb-6">
-          {isDemoMode ? (
+          {(isDemoMode || demoMode || demoUser) ? (
             <>
               <span className="block mb-2">🎯 <strong>Modo Demo:</strong> Esta es una demostración del sistema de verificación biométrica.</span>
               <span className="block">Puedes probar la funcionalidad o cerrar el modal en cualquier momento.</span>
@@ -682,8 +691,7 @@ export default function BiometricVerificationModal({
 
         {/* Botones */}
         <div className="mt-6 flex justify-end gap-3">
-          {/* Botón Cancelar - ocultar o deshabilitar si es obligatorio (AUDIT FIX) */}
-          {!effectiveIsMandatory && (
+          {/* Botón Cancelar - SIEMPRE VISIBLE (NUNCA bloquear) */}
           <Button
             variant="secondary"
             className="rounded-xl"
@@ -699,7 +707,6 @@ export default function BiometricVerificationModal({
           >
             Hacerlo más tarde
           </Button>
-          )}
           
           {currentState === "UPLOAD_FRONT" && (
             <Button
@@ -755,26 +762,6 @@ export default function BiometricVerificationModal({
           )}
         </div>
 
-        {/* Botón "Saltar por ahora" - SIEMPRE VISIBLE en LIVENESS_CHECK (nunca bloquear) */}
-        {currentState === "LIVENESS_CHECK" && !cameraError && (
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  sessionStorage.setItem("biometric_skipped", "true");
-                  window.dispatchEvent(new Event('biometric-skip-changed'));
-                }
-                stopCamera();
-                onClose();
-              }}
-              className="text-xs text-white/50 hover:text-white/70 underline transition-colors"
-              disabled={status === "scanning" || isVerifying}
-            >
-              Omitir verificación por ahora (Modo Demo)
-            </button>
-          </div>
-        )}
-
         {/* Mensaje de ayuda */}
         {currentState === "LIVENESS_CHECK" && !canStartLiveness && (
           <p className="mt-3 text-xs text-yellow-400 text-center">
@@ -782,27 +769,26 @@ export default function BiometricVerificationModal({
           </p>
         )}
 
-        {/* BOTÓN DE ESCAPE - Visible en demo o cuando no es obligatorio (según manual) */}
-        {(!effectiveIsMandatory || isDemoMode) && (
-          <div className="mt-6 pt-4 border-t border-white/10 z-50">
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  sessionStorage.setItem("biometric_skipped", "true");
-                  window.dispatchEvent(new Event('biometric-skip-changed'));
-                }
-                stopCamera();
-                onClose();
-              }}
-              className="w-full text-sm text-white/60 hover:text-white/90 underline cursor-pointer transition-colors text-center"
-              disabled={status === "scanning" || isVerifying}
-            >
-              {isDemoMode 
-                ? "Omitir Verificación (Modo Demo / Incógnito)"
-                : "Omitir Verificación"}
-            </button>
-          </div>
-        )}
+        {/* BOTÓN DE ESCAPE GLOBAL - SIEMPRE VISIBLE AL FINAL (NUNCA BLOQUEAR) */}
+        <div className="mt-6 pt-4 border-t border-white/10 z-50">
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                sessionStorage.setItem("biometric_skipped", "true");
+                window.dispatchEvent(new Event('biometric-skip-changed'));
+              }
+              stopCamera();
+              onClose();
+            }}
+            className="w-full text-sm text-white/60 hover:text-white/90 underline cursor-pointer transition-colors text-center"
+            disabled={status === "scanning" || isVerifying}
+            style={{ zIndex: 50 }}
+          >
+            {(demoMode || demoUser || isDemoMode)
+              ? "Omitir verificación (Modo Demo / Incógnito)"
+              : "Omitir verificación"}
+          </button>
+        </div>
       </motion.div>
     </div>
   );

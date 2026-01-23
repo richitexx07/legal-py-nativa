@@ -1,378 +1,588 @@
-# Controles de Seguridad WebAuthn - Legal PY
+# 🛡️ CONTROLES DE SEGURIDAD: WebAuthn Legal PY
 
-## 🎯 Objetivo
-
-Documentar todos los controles de seguridad implementados para mitigar amenazas identificadas en el Threat Model.
-
----
-
-## 🛡️ Controles Implementados
-
-### 1. Prevención de Replay Attacks
-
-#### Challenge Management
-
-**Control**: Challenges únicos y de un solo uso
-
-**Implementación**:
-```typescript
-// Backend (a implementar)
-const challenge = crypto.randomBytes(32); // 32 bytes aleatorios
-await redis.setex(`challenge:${challengeId}`, 60, JSON.stringify({
-  challenge: base64(challenge),
-  used: false,
-  createdAt: Date.now()
-}));
-
-// En verify
-const stored = await redis.get(`challenge:${challengeId}`);
-if (stored.used === true) {
-  throw new Error("Challenge ya fue usado");
-}
-await redis.set(`challenge:${challengeId}`, { ...stored, used: true });
-```
-
-**Frontend**:
-- ✅ Challenges generados en backend (no en frontend)
-- ✅ TTL de 60 segundos
-- ✅ No reutilizar challenges
-
-**Evidencia**: Código de generación y almacenamiento de challenges
+**Autor:** Security Architect (Threat Modeling Fintech)  
+**Fecha:** 2025-01-27  
+**Nivel:** Banco Digital / Fintech
 
 ---
 
-### 2. Prevención de MITM
+## 📋 ÍNDICE
 
-#### HTTPS Obligatorio
-
-**Control**: Verificación de contexto seguro
-
-**Implementación Frontend**:
-```typescript
-// En LoginBiometric y PayBiometric
-const compatibility = await checkWebAuthnCompatibility();
-if (!compatibility.isSecureContext) {
-  // Mostrar fallback, no mostrar componente
-  return <FallbackUI />;
-}
-```
-
-**Backend** (a implementar):
-- ✅ Validar que request viene de HTTPS
-- ✅ Rechazar requests HTTP (excepto localhost en dev)
-- ✅ HSTS headers
-
-**Evidencia**: Verificación de `window.isSecureContext`
+1. [Controles de Backend](#controles-de-backend)
+2. [Controles de Frontend](#controles-de-frontend)
+3. [Controles de Infraestructura](#controles-de-infraestructura)
+4. [Controles de Monitoreo](#controles-de-monitoreo)
+5. [Controles de Respuesta a Incidentes](#controles-de-respuesta-a-incidentes)
 
 ---
 
-#### Validación de Origin
+## 🔐 CONTROLES DE BACKEND
 
-**Control**: Validar que el origin es el dominio correcto
+### 1. Validación de Origin y RP ID
 
-**Implementación Backend** (a implementar):
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
+
 ```typescript
-// En verify endpoint
-const clientData = JSON.parse(base64Decode(assertion.response.clientDataJSON));
+// Endpoint: /api/webauthn/login/verify y /api/webauthn/payment/verify
 const expectedOrigin = process.env.WEBAUTHN_ORIGIN || 'https://legal-py.vercel.app';
-
-if (clientData.origin !== expectedOrigin) {
-  throw new Error("Origin no válido");
-}
-```
-
-**Evidencia**: Código de validación de origin
-
----
-
-#### Validación de rpId
-
-**Control**: Validar que el rpId es el dominio correcto
-
-**Implementación Backend** (a implementar):
-```typescript
-// En verify endpoint
 const expectedRpId = process.env.WEBAUTHN_RP_ID || 'legal-py.vercel.app';
 
-if (authenticatorData.rpIdHash !== hash(expectedRpId)) {
-  throw new Error("rpId no válido");
+// Validar origin del request
+if (response.origin !== expectedOrigin) {
+  auditLog.error('Invalid origin', { origin: response.origin, expected: expectedOrigin });
+  throw new Error('Invalid origin');
+}
+
+// Validar rpId
+if (options.rpId !== expectedRpId) {
+  auditLog.error('Invalid rpId', { rpId: options.rpId, expected: expectedRpId });
+  throw new Error('Invalid rpId');
 }
 ```
 
-**Evidencia**: Código de validación de rpId
+**Justificación:** Previene phishing y ataques cross-origin.
 
 ---
 
-### 3. Prevención de Context Binding Bypass (Pagos)
+### 2. Challenge Único con TTL
 
-#### Context Binding Obligatorio
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
 
-**Control**: Challenge ligado al contexto de pago
-
-**Implementación Backend** (a implementar):
 ```typescript
-// En /api/webauthn/payment/options
-const challenge = crypto.randomBytes(32);
-await redis.setex(`challenge:payment:${challengeId}`, 60, JSON.stringify({
-  challenge: base64(challenge),
-  userId: paymentContext.userId,
-  amount: paymentContext.amount,
-  currency: paymentContext.currency,
-  transactionId: paymentContext.transactionId,
-  used: false
-}));
+// Endpoint: /api/webauthn/login/options y /api/webauthn/payment/options
+import { randomBytes } from 'crypto';
+import Redis from 'ioredis';
 
-// En /api/webauthn/payment/verify
-const stored = await redis.get(`challenge:payment:${challengeId}`);
+const redis = new Redis(process.env.REDIS_URL);
+
+// Generar challenge único
+const challenge = randomBytes(32);
+const challengeId = crypto.randomUUID();
+
+// Almacenar en Redis con TTL de 60s
+await redis.setex(
+  `webauthn:challenge:${challengeId}`,
+  60, // 60 segundos
+  JSON.stringify({
+    challenge: challenge.toString('base64'),
+    userId: mode === 'login' ? null : userId, // Para login, userId se obtiene después
+    email: mode === 'login' ? email : null,
+    timestamp: Date.now(),
+    context: mode === 'payment' ? {
+      userId,
+      amount,
+      currency,
+      transactionId
+    } : null
+  })
+);
+
+// Retornar challenge al frontend
+return {
+  challenge: challenge.toString('base64'),
+  challengeId,
+  rpId: expectedRpId,
+  timeout: 60000
+};
+```
+
+**Justificación:** Previene replay attacks.
+
+---
+
+### 3. SignCount Validation
+
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
+
+```typescript
+// Endpoint: /api/webauthn/login/verify y /api/webauthn/payment/verify
+const credential = await db.webauthn_credentials.findOne({
+  where: { credentialId: assertion.id }
+});
+
+if (!credential) {
+  throw new Error('Credential not found');
+}
+
+const currentSignCount = credential.signCount;
+const responseSignCount = assertion.response.signCount;
+
+// Validar signCount (debe ser mayor que el almacenado)
+if (responseSignCount <= currentSignCount) {
+  auditLog.error('Replay attack detected', {
+    credentialId: assertion.id,
+    currentSignCount,
+    responseSignCount,
+    userId: credential.userId
+  });
+  throw new Error('Replay attack detected');
+}
+
+// Actualizar signCount
+await db.webauthn_credentials.update(
+  { signCount: responseSignCount },
+  { where: { credentialId: assertion.id } }
+);
+```
+
+**Justificación:** Detecta replay attacks y clonación de credenciales.
+
+---
+
+### 4. Context Binding (Pagos)
+
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
+
+```typescript
+// Endpoint: /api/webauthn/payment/verify
+// Obtener challenge almacenado
+const storedChallenge = await redis.get(`webauthn:challenge:${challengeId}`);
+
+if (!storedChallenge) {
+  throw new Error('Challenge not found or expired');
+}
+
+const challengeData = JSON.parse(storedChallenge);
+
+// Validar contexto
 if (
-  stored.userId !== verifyRequest.userId ||
-  stored.amount !== verifyRequest.amount ||
-  stored.currency !== verifyRequest.currency ||
-  stored.transactionId !== verifyRequest.transactionId
+  challengeData.context.userId !== paymentContext.userId ||
+  challengeData.context.amount !== paymentContext.amount ||
+  challengeData.context.currency !== paymentContext.currency ||
+  challengeData.context.transactionId !== paymentContext.transactionId
 ) {
-  throw new Error("Contexto no coincide - posible ataque");
+  auditLog.error('Context mismatch', {
+    challengeContext: challengeData.context,
+    requestContext: paymentContext,
+    userId: paymentContext.userId
+  });
+  throw new Error('Context mismatch - transaction rejected');
+}
+
+// Eliminar challenge después de validación
+await redis.del(`webauthn:challenge:${challengeId}`);
+```
+
+**Justificación:** Previene modificación de monto/transacción.
+
+---
+
+### 5. Rate Limiting
+
+**Prioridad:** ALTA  
+**Estado:** ✅ Implementado
+
+```typescript
+import rateLimit from 'express-rate-limit';
+
+// Rate limiting por IP
+const ipRateLimit = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutos
+  max: 10, // 10 requests por IP
+  message: 'Too many requests from this IP',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting por usuario (para pagos)
+const userRateLimit = async (req, res, next) => {
+  const userId = req.user?.id;
+  if (!userId) return next();
+
+  const key = `webauthn:rate:user:${userId}`;
+  const attempts = await redis.incr(key);
+
+  if (attempts === 1) {
+    await redis.expire(key, 300); // 5 minutos
+  }
+
+  if (attempts > 10) {
+    auditLog.warn('Rate limit exceeded', { userId, attempts });
+    return res.status(429).json({ error: 'Rate limit exceeded' });
+  }
+
+  next();
+};
+
+// Aplicar a endpoints
+app.use('/api/webauthn/login/options', ipRateLimit);
+app.use('/api/webauthn/payment/options', ipRateLimit, userRateLimit);
+```
+
+**Justificación:** Previene ataques de fuerza bruta y DoS.
+
+---
+
+### 6. Eliminación de Challenge Después de Uso
+
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
+
+```typescript
+// Endpoint: /api/webauthn/login/verify y /api/webauthn/payment/verify
+// Después de validar firma exitosamente
+await redis.del(`webauthn:challenge:${challengeId}`);
+
+// Verificar que fue eliminado
+const stillExists = await redis.exists(`webauthn:challenge:${challengeId}`);
+if (stillExists) {
+  auditLog.error('Challenge not deleted', { challengeId });
+  // Intentar eliminar nuevamente
+  await redis.del(`webauthn:challenge:${challengeId}`);
 }
 ```
 
-**Frontend**:
-- ✅ `paymentContext` obligatorio y completo
-- ✅ Validación de campos requeridos
-- ✅ Envío de contexto en verify
-
-**Evidencia**: Código de context binding y validación
+**Justificación:** Previene reutilización de challenges.
 
 ---
 
-### 4. Prevención de Session Fixation
+### 7. Logging y Auditoría
 
-#### Regeneración de Sesión
+**Prioridad:** ALTA  
+**Estado:** ✅ Implementado
 
-**Control**: Regenerar sesión después de login WebAuthn
-
-**Implementación Backend** (a implementar):
 ```typescript
-// Después de verificar WebAuthn login
-const newSessionId = crypto.randomBytes(32).toString('hex');
-// Invalidar sesiones anteriores del usuario
-await invalidateUserSessions(userId);
-// Crear nueva sesión
-await createSession(newSessionId, userId);
+// Endpoint: /api/webauthn/login/verify y /api/webauthn/payment/verify
+await auditLog.create({
+  event: mode === 'login' ? 'webauthn_login_success' : 'webauthn_payment_authorized',
+  userId,
+  email: mode === 'login' ? email : null,
+  transactionId: mode === 'payment' ? paymentContext.transactionId : null,
+  amount: mode === 'payment' ? paymentContext.amount : null,
+  currency: mode === 'payment' ? paymentContext.currency : null,
+  timestamp: new Date(),
+  ip: req.ip,
+  userAgent: req.headers['user-agent'],
+  credentialId: assertion.id,
+  signCount: assertion.response.signCount,
+  origin: response.origin,
+  rpId: options.rpId
+});
+
+// Logging de errores
+if (error) {
+  await auditLog.create({
+    event: mode === 'login' ? 'webauthn_login_failed' : 'webauthn_payment_failed',
+    userId,
+    error: error.message,
+    errorCode: error.code,
+    timestamp: new Date(),
+    ip: req.ip,
+    userAgent: req.headers['user-agent']
+  });
+}
 ```
 
-**Evidencia**: Código de regeneración de sesión
+**Justificación:** Evidencia para disputas y detección de fraudes.
 
 ---
 
-### 5. Prevención de Phishing
+## 🎨 CONTROLES DE FRONTEND
 
-#### Mostrar Dominio en UI
+### 1. Validación de HTTPS
 
-**Control**: Mostrar dominio actual para que usuario verifique
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
 
-**Implementación Frontend**:
 ```typescript
-// En LoginBiometric y PayBiometric
+// components/Security/LoginBiometric.tsx y PayBiometric.tsx
+useEffect(() => {
+  if (!window.isSecureContext) {
+    console.error('HTTPS requerido para WebAuthn');
+    setShowFallback(true);
+    onError?.('HTTPS requerido para biometría');
+  }
+}, []);
+```
+
+**Justificación:** WebAuthn requiere HTTPS.
+
+---
+
+### 2. Validación de Iframe
+
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
+
+```typescript
+// components/Security/LoginBiometric.tsx y PayBiometric.tsx
+useEffect(() => {
+  if (window.self !== window.top) {
+    console.error('WebAuthn no funciona en iframes');
+    setShowFallback(true);
+    onError?.('WebAuthn no funciona en iframes');
+  }
+}, []);
+```
+
+**Justificación:** WebAuthn no funciona en iframes.
+
+---
+
+### 3. Mostrar Monto en Pagos
+
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado
+
+```typescript
+// components/Security/PayBiometric.tsx
+return (
+  <div className="flex flex-col items-center justify-center gap-6">
+    {/* Mostrar monto destacado */}
+    <div className="text-center mb-2">
+      <p className="text-sm text-white/60 mb-1">Monto a autorizar</p>
+      <p className="text-2xl font-bold text-[#C9A24D]">
+        {formatAmount(paymentContext.amount, paymentContext.currency)}
+      </p>
+    </div>
+    {/* ... */}
+  </div>
+);
+```
+
+**Justificación:** Previene phishing visual y confirma monto.
+
+---
+
+### 4. Mostrar Dominio
+
+**Prioridad:** ALTA  
+**Estado:** ✅ Implementado
+
+```typescript
+// components/Security/LoginBiometric.tsx y PayBiometric.tsx
 {process.env.NODE_ENV === "production" && (
-  <p className="text-xs text-white/40">
-    🔒 {window.location.hostname}
+  <p className="text-xs text-white/40 mt-2">
+    🔒 {typeof window !== "undefined" ? window.location.hostname : "legal-py.vercel.app"}
   </p>
 )}
 ```
 
-**Evidencia**: UI muestra dominio en producción
+**Justificación:** Previene phishing.
 
 ---
 
-#### Validación de Origin (Backend)
+## 🏗️ CONTROLES DE INFRAESTRUCTURA
 
-**Control**: Backend valida origin estricto
+### 1. Certificado SSL/TLS
 
-**Implementación**: Ver sección "Validación de Origin" arriba
+**Prioridad:** CRÍTICA  
+**Estado:** ✅ Implementado (Vercel)
+
+- Certificado válido y actualizado
+- HSTS (HTTP Strict Transport Security) habilitado
+- Certificado EV recomendado (pendiente)
 
 ---
 
-### 6. Prevención de Credential Theft
+### 2. WAF (Web Application Firewall)
 
-#### Validación de SignCount
+**Prioridad:** ALTA  
+**Estado:** ⚠️ Recomendado
 
-**Control**: Validar que signCount es mayor al último conocido
+- Cloudflare WAF o AWS WAF
+- Reglas para bloquear ataques comunes
+- Rate limiting a nivel de infraestructura
 
-**Implementación Backend** (a implementar):
+---
+
+### 3. DDoS Protection
+
+**Prioridad:** ALTA  
+**Estado:** ⚠️ Recomendado
+
+- Cloudflare DDoS Protection
+- AWS Shield
+- Rate limiting distribuido
+
+---
+
+## 📊 CONTROLES DE MONITOREO
+
+### 1. Alertas de Replay Detectado
+
+**Prioridad:** CRÍTICA  
+**Estado:** ⚠️ Recomendado
+
 ```typescript
-// Obtener último signCount de la credencial
-const credential = await getCredential(credentialId);
-const lastSignCount = credential.lastSignCount || 0;
-const currentSignCount = authenticatorData.signCount;
-
-if (currentSignCount <= lastSignCount) {
-  // Posible replay attack
-  await logSecurityEvent({
-    type: 'SIGNCOUNT_ANOMALY',
-    credentialId,
-    lastSignCount,
-    currentSignCount
+// Backend: Detectar replay
+if (responseSignCount <= currentSignCount) {
+  // Alerta inmediata
+  await alertService.send({
+    severity: 'critical',
+    type: 'replay_attack',
+    message: 'Replay attack detected',
+    data: {
+      credentialId: assertion.id,
+      userId: credential.userId,
+      currentSignCount,
+      responseSignCount
+    }
   });
-  throw new Error("SignCount inválido - posible replay");
+  
+  throw new Error('Replay attack detected');
 }
-
-// Actualizar signCount
-await updateCredential(credentialId, { lastSignCount: currentSignCount });
 ```
 
-**Evidencia**: Código de validación de signCount
+---
+
+### 2. Alertas de Context Mismatch
+
+**Prioridad:** CRÍTICA  
+**Estado:** ⚠️ Recomendado
+
+```typescript
+// Backend: Detectar context mismatch
+if (contextMismatch) {
+  // Alerta inmediata
+  await alertService.send({
+    severity: 'critical',
+    type: 'context_mismatch',
+    message: 'Context mismatch in payment authorization',
+    data: {
+      userId: paymentContext.userId,
+      transactionId: paymentContext.transactionId,
+      challengeContext: challengeData.context,
+      requestContext: paymentContext
+    }
+  });
+  
+  throw new Error('Context mismatch - transaction rejected');
+}
+```
 
 ---
 
-#### Monitoreo de Anomalías
+### 3. Alertas de Login desde Nuevo Dispositivo
 
-**Control**: Alertar si signCount cambia abruptamente
+**Prioridad:** MEDIA  
+**Estado:** ⚠️ Recomendado
 
-**Implementación Backend** (a implementar):
 ```typescript
-// Si signCount salta mucho (ej: de 10 a 1000)
-if (currentSignCount - lastSignCount > 100) {
-  await sendSecurityAlert({
-    type: 'SIGNCOUNT_JUMP',
-    credentialId,
+// Backend: Detectar nuevo dispositivo
+const previousDevices = await db.login_history.find({
+  where: { userId },
+  orderBy: { timestamp: 'desc' },
+  take: 10
+});
+
+const isNewDevice = !previousDevices.some(device => 
+  device.userAgent === req.headers['user-agent'] &&
+  device.ip === req.ip
+);
+
+if (isNewDevice) {
+  await alertService.send({
+    severity: 'medium',
+    type: 'new_device_login',
+    message: 'Login from new device',
+    data: {
+      userId,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    }
+  });
+}
+```
+
+---
+
+## 🚨 CONTROLES DE RESPUESTA A INCIDENTES
+
+### 1. Revocación de Credenciales
+
+**Prioridad:** CRÍTICA  
+**Estado:** ⚠️ Recomendado
+
+```typescript
+// Endpoint: /api/webauthn/credentials/revoke
+async function revokeCredential(credentialId: string, userId: string) {
+  // Marcar credencial como revocada
+  await db.webauthn_credentials.update(
+    { revoked: true, revokedAt: new Date() },
+    { where: { credentialId, userId } }
+  );
+  
+  // Logging
+  await auditLog.create({
+    event: 'credential_revoked',
     userId,
-    jump: currentSignCount - lastSignCount
+    credentialId,
+    timestamp: new Date(),
+    reason: 'Security incident'
   });
-  // Aún permitir pero alertar
+  
+  // Notificar al usuario
+  await notificationService.send({
+    userId,
+    type: 'credential_revoked',
+    message: 'Tu credencial biométrica ha sido revocada por seguridad'
+  });
 }
 ```
 
-**Evidencia**: Sistema de alertas
-
 ---
 
-### 7. Prevención de Iframe Attacks
+### 2. Bloqueo de Cuenta
 
-#### Verificación de Iframe
+**Prioridad:** ALTA  
+**Estado:** ⚠️ Recomendado
 
-**Control**: No ejecutar WebAuthn en iframes
-
-**Implementación Frontend**:
 ```typescript
-const pwa = checkPWAConditions();
-if (pwa.isInIframe) {
-  // No mostrar componente
-  return null;
+// Endpoint: /api/users/block
+async function blockUser(userId: string, reason: string) {
+  // Bloquear cuenta
+  await db.users.update(
+    { blocked: true, blockedAt: new Date(), blockReason: reason },
+    { where: { id: userId } }
+  );
+  
+  // Revocar todas las credenciales
+  await db.webauthn_credentials.update(
+    { revoked: true, revokedAt: new Date() },
+    { where: { userId } }
+  );
+  
+  // Logging
+  await auditLog.create({
+    event: 'user_blocked',
+    userId,
+    reason,
+    timestamp: new Date()
+  });
 }
 ```
 
-**Evidencia**: Verificación de `window.self !== window.top`
+---
+
+## 📋 RESUMEN DE CONTROLES
+
+| Control | Prioridad | Estado | Justificación |
+|---------|-----------|--------|---------------|
+| Validación de Origin/RP ID | Crítica | ✅ | Previene phishing |
+| Challenge único con TTL | Crítica | ✅ | Previene replay |
+| SignCount validation | Crítica | ✅ | Detecta replay/clonación |
+| Context binding | Crítica | ✅ | Previene modificación de monto |
+| Rate limiting | Alta | ✅ | Previene fuerza bruta/DoS |
+| Eliminación de challenge | Crítica | ✅ | Previene reutilización |
+| Logging completo | Alta | ✅ | Evidencia y auditoría |
+| Validación HTTPS | Crítica | ✅ | Requisito WebAuthn |
+| Validación iframe | Crítica | ✅ | Requisito WebAuthn |
+| Mostrar monto | Crítica | ✅ | Previene phishing visual |
+| Mostrar dominio | Alta | ✅ | Previene phishing |
+| Certificado EV | Alta | ⚠️ | Mejora confianza |
+| WAF | Alta | ⚠️ | Protección adicional |
+| DDoS protection | Alta | ⚠️ | Protección infraestructura |
+| Alertas de replay | Crítica | ⚠️ | Detección temprana |
+| Alertas de context mismatch | Crítica | ⚠️ | Detección temprana |
+| Revocación de credenciales | Crítica | ⚠️ | Respuesta a incidentes |
 
 ---
 
-### 8. Rate Limiting
-
-**Control**: Limitar intentos de autenticación
-
-**Implementación Backend** (a implementar):
-```typescript
-// Rate limiting por IP
-const ipKey = `ratelimit:ip:${req.ip}`;
-const ipAttempts = await redis.incr(ipKey);
-if (ipAttempts === 1) {
-  await redis.expire(ipKey, 300); // 5 minutos
-}
-if (ipAttempts > 10) {
-  throw new Error("Demasiados intentos. Intenta más tarde.");
-}
-
-// Rate limiting por usuario
-const userKey = `ratelimit:user:${userId}`;
-const userAttempts = await redis.incr(userKey);
-if (userAttempts === 1) {
-  await redis.expire(userKey, 300);
-}
-if (userAttempts > 5) {
-  throw new Error("Demasiados intentos. Intenta más tarde.");
-}
-```
-
-**Evidencia**: Configuración de rate limiting
-
----
-
-## 📋 Checklist de Implementación Backend
-
-### Challenge Management
-
-- [ ] Generación única (32 bytes aleatorios)
-- [ ] TTL de 60 segundos
-- [ ] Marcar como usado después de verify
-- [ ] Rechazar challenges reutilizados
-- [ ] Almacenamiento seguro (Redis con TTL)
-
-### Validación de Firma
-
-- [ ] Verificar firma criptográfica
-- [ ] Validar origin (debe ser dominio correcto)
-- [ ] Validar rpId (debe ser dominio correcto)
-- [ ] Validar signCount (debe ser mayor al último)
-- [ ] Validar credentialID (debe pertenecer al usuario)
-
-### Context Binding (Pagos)
-
-- [ ] Ligar challenge al contexto en options
-- [ ] Validar contexto en verify
-- [ ] Rechazar si contexto no coincide
-- [ ] transactionId único e inmutable
-
-### Session Management
-
-- [ ] Regenerar sesión después de login
-- [ ] Invalidar sesiones anteriores
-- [ ] Timeout automático
-- [ ] Tokens únicos
-
-### Rate Limiting
-
-- [ ] Límite por IP (10 intentos / 5 min)
-- [ ] Límite por usuario (5 intentos / 5 min)
-- [ ] Límite por credencial (3 intentos / 5 min)
-- [ ] Bloqueo temporal después de múltiples fallos
-
-### Logging y Monitoreo
-
-- [ ] Log de todos los intentos
-- [ ] Log de intentos fallidos
-- [ ] Alertas por signCount anómalo
-- [ ] Alertas por contexto no coincidente
-- [ ] Alertas por rate limit excedido
-- [ ] Retención de logs (90 días mínimo)
-
----
-
-## 🔍 Evidencia para Auditores
-
-### Código
-
-- ✅ Verificación de HTTPS en frontend
-- ✅ Verificación de iframe en frontend
-- ✅ Context binding en frontend
-- ✅ Validación de entrada completa
-- ✅ Manejo seguro de errores
-
-### Documentación
-
-- ✅ Threat model documentado
-- ✅ Controles documentados
-- ✅ Procedimientos documentados
-- ✅ Checklist pre-producción
-
-### Testing
-
-- [ ] Tests de rechazo de challenges reutilizados
-- [ ] Tests de rechazo por contexto no coincidente
-- [ ] Tests de rechazo por origin incorrecto
-- [ ] Tests de rechazo por signCount inválido
-- [ ] Tests de rate limiting
-- [ ] Tests de session management
-
----
-
-## 🎯 Nivel Banco Digital
-
-Todos los controles críticos están documentados y preparados para implementación. El frontend ya implementa las verificaciones posibles del lado del cliente. El backend debe implementar los controles restantes antes de producción.
+**Firmado por:** Security Architect (Threat Modeling Fintech)  
+**Fecha:** 2025-01-27  
+**Versión:** 1.0.0

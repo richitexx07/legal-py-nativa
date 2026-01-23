@@ -7,6 +7,7 @@ import Image from "next/image";
 import Card from "@/components/Card";
 import LoginForm from "@/components/Auth/LoginForm";
 import { getSession } from "@/lib/auth";
+import { checkDemoMode } from "@/lib/demo-utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -51,9 +52,7 @@ export default function LoginPage() {
         </Card>
 
         {/* Aviso credenciales demo - solo si modo demo (AUDIT FIX) */}
-        {typeof window !== "undefined" &&
-          (process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
-            localStorage.getItem("legal-py-demo-mode") === "true") && (
+        {typeof window !== "undefined" && checkDemoMode() && (
           <div className="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-center">
             <p className="text-xs text-amber-200/90 mb-1">Demo inversores / auditoría</p>
             <p className="text-sm font-mono text-amber-100">

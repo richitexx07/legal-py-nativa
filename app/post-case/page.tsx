@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { calculateCasePriority } from "@/lib/dpt-engine";
 import { LegalCase } from "@/lib/types";
@@ -28,6 +28,7 @@ interface AnonymizedProfessional {
 
 export default function PostCasePage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
   const [mounted, setMounted] = useState(false);
   const [flowStep, setFlowStep] = useState<FlowStep>("input");
@@ -36,8 +37,16 @@ export default function PostCasePage() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [notification, setNotification] = useState<{ message: string; type: "info" | "success" } | null>(null);
   
+  // EXCEPCIÓN ABSOLUTA: Rutas de pago siempre requieren verificación
+  const isPaymentRoute = pathname?.includes("/subscribe") || 
+                         pathname?.includes("/payments") || 
+                         pathname?.includes("/checkout") ||
+                         pathname?.includes("/pricing");
+  
   // Hook para verificación biométrica en acciones críticas
-  const { showModal, setShowModal, isVerifying, handleVerify, userId } = useBiometricCheck();
+  // forceVerification = true solo en rutas de pago
+  // En modo demo: ejecuta acción directamente sin mostrar modal
+  const { showModal, setShowModal, isVerifying, handleVerify, userId } = useBiometricCheck(isPaymentRoute);
   
   // Hook para estados progresivos de usuario
   const userState = useUserState();
@@ -86,6 +95,18 @@ export default function PostCasePage() {
     }
   }, [flowStep]);
 
+  // CRÍTICO: Verificar sessionStorage antes de mostrar modal
+  // Si usuario cerró modal, prevenir que se muestre nuevamente
+  useEffect(() => {
+    if (showModal && !isPaymentRoute && typeof window !== "undefined") {
+      const hasSkipped = sessionStorage.getItem("biometric_skipped");
+      if (hasSkipped === "true") {
+        // Usuario cerró modal, cerrar inmediatamente
+        setShowModal(false);
+      }
+    }
+  }, [showModal, isPaymentRoute, setShowModal]);
+
   if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0E1B2A] via-[#13253A] to-[#0E1B2A] py-8">
@@ -107,9 +128,23 @@ export default function PostCasePage() {
 
     // Action-Based Security Gate: Verificar si requiere biometría
     if (!skipBiometric && userState.requiresBiometricForAction("create_case")) {
-      // Mostrar modal biométrico antes de crear el caso
-      setShowModal(true);
-      return;
+      // CRÍTICO: Verificar sessionStorage antes de mostrar modal
+      if (typeof window !== "undefined") {
+        const hasSkipped = sessionStorage.getItem("biometric_skipped");
+        // Si usuario cerró modal y NO es ruta de pago, ejecutar acción sin verificación
+        if (hasSkipped === "true" && !isPaymentRoute) {
+          // Continuar sin verificación
+          skipBiometric = true;
+        } else {
+          // Mostrar modal biométrico antes de crear el caso
+          setShowModal(true);
+          return;
+        }
+      } else {
+        // Mostrar modal biométrico antes de crear el caso
+        setShowModal(true);
+        return;
+      }
     }
 
     // Si no tiene plan, mostrar mensaje informativo
@@ -418,23 +453,42 @@ export default function PostCasePage() {
       )}
 
       {/* Modal biométrico para acciones críticas - Solo si tiene plan */}
-      {showModal && userState.state === "with_plan" && (
-        <BiometricVerificationModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          onVerify={(selfieDataUrl) => {
-            // Si la biometría fue exitosa (hay selfieDataUrl), proceder con crear el caso
-            if (selfieDataUrl) {
-              handleVerify(selfieDataUrl);
-              // Proceder con crear el caso (skip biometría)
-              handleInputSubmit(true);
-            }
-          }}
-          isMandatory={true}
-          isVerifying={isVerifying}
-          userId={userId}
-        />
-      )}
+      {/* CRÍTICO: Verificar sessionStorage antes de mostrar (manejado en useEffect) */}
+      {showModal && userState.state === "with_plan" && (() => {
+        // Verificar sessionStorage una vez más antes de renderizar
+        if (!isPaymentRoute && typeof window !== "undefined") {
+          const hasSkipped = sessionStorage.getItem("biometric_skipped");
+          if (hasSkipped === "true") {
+            return null; // No renderizar si usuario cerró modal
+          }
+        }
+        
+        return (
+          <BiometricVerificationModal
+            isOpen={showModal}
+            onClose={() => {
+              setShowModal(false);
+              // Guardar skip en sessionStorage (excepto en pagos)
+              if (!isPaymentRoute && typeof window !== "undefined") {
+                sessionStorage.setItem("biometric_skipped", "true");
+                window.dispatchEvent(new Event('biometric-skip-changed'));
+              }
+            }}
+            onVerify={(selfieDataUrl) => {
+              // Si la biometría fue exitosa (hay selfieDataUrl), proceder con crear el caso
+              if (selfieDataUrl) {
+                handleVerify(selfieDataUrl);
+                // Proceder con crear el caso (skip biometría)
+                handleInputSubmit(true);
+              }
+            }}
+            isMandatory={isPaymentRoute} // Solo obligatorio en pagos
+            isVerifying={isVerifying}
+            userId={userId}
+            allowSkip={!isPaymentRoute} // Permitir skip excepto en pagos
+          />
+        );
+      })()}
       
       {/* Mensaje informativo si no tiene plan */}
       {!userState.canCreateCases && flowStep === "input" && (

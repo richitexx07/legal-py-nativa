@@ -4,13 +4,18 @@ import { useState, useCallback } from "react";
 import { getSession } from "@/lib/auth";
 import BiometricVerificationModal from "@/components/Security/BiometricVerificationModal";
 import { updateIdentityVerification } from "@/lib/auth";
+import { checkDemoMode, checkDemoUser, canSkipBiometric, isBiometricMandatory } from "@/lib/demo-utils";
 import confetti from "canvas-confetti";
 
 /**
  * Hook para verificar biometría antes de acciones críticas
  * Retorna una función que debe llamarse antes de ejecutar la acción
+ * 
+ * REGLAS DE MODO DEMO:
+ * - En modo demo: biometría se muestra pero NO bloquea
+ * - En producción: biometría obligatoria en pagos
  */
-export function useBiometricCheck() {
+export function useBiometricCheck(forceVerification: boolean = false) {
   const [showModal, setShowModal] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [onVerifiedCallback, setOnVerifiedCallback] = useState<(() => void) | null>(null);
@@ -18,16 +23,47 @@ export function useBiometricCheck() {
   const requireBiometric = useCallback((action: () => void) => {
     const session = getSession();
     
-    // Si no hay sesión o el usuario está verificado, ejecutar acción directamente
-    if (!session || session.user.isIdentityVerified || session.user.email === "demo@legalpy.com") {
+    // Si no hay sesión, ejecutar acción directamente
+    if (!session) {
       action();
       return;
     }
 
-    // Si no está verificado, guardar callback y mostrar modal
+    // Detección de modo demo
+    const demoMode = checkDemoMode();
+    const demoUser = checkDemoUser();
+    const canSkip = canSkipBiometric();
+    
+    // En modo demo: ejecutar acción directamente (biometría se muestra pero no bloquea)
+    if (demoMode || demoUser) {
+      action();
+      return;
+    }
+    
+    // Si el usuario ya está verificado, ejecutar acción directamente
+    if (session.user.isIdentityVerified) {
+      action();
+      return;
+    }
+
+    // Verificar si la biometría es obligatoria
+    const isMandatory = isBiometricMandatory(forceVerification);
+    
+    // CRÍTICO: Verificar si el usuario cerró el modal (sessionStorage)
+    // EXCEPTO si es obligatorio (pagos en producción)
+    if (!isMandatory && typeof window !== "undefined") {
+      const hasSkipped = sessionStorage.getItem("biometric_skipped");
+      if (hasSkipped === "true") {
+        // Usuario cerró el modal, ejecutar acción sin verificación
+        action();
+        return;
+      }
+    }
+
+    // Si no está verificado y no ha cerrado el modal, guardar callback y mostrar modal
     setOnVerifiedCallback(() => action);
     setShowModal(true);
-  }, []);
+  }, [forceVerification]);
 
   const handleVerify = async (selfieDataUrl: string) => {
     const session = getSession();

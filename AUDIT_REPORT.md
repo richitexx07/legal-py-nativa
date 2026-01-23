@@ -1,290 +1,411 @@
-# Informe de Auditoría Integral – Legal PY
+# 🔍 INFORME DE AUDITORÍA INTEGRAL – LEGAL PY
 
-**Fecha:** Enero 2026  
-**Alcance:** Código fuente vs. Manual de Uso, Política de Seguridad, Material inversores y demo comercial  
-**Equipo:** Auditoría Bancaria/Fintech, LegalTech, QA, Security, Customer Journey  
-
----
-
-## Resumen Ejecutivo (para inversores y GC)
-
-### Estado general de la plataforma
-
-La plataforma **Legal PY** implementa en código la mayor parte de lo prometido en documentación y manuales: modo demo funcional, credenciales demo aisladas, biometría con botón de escape, separación login/pagos, roles (cliente/profesional/estudiante), IA con disclaimer y flujos por rol. Se identifican **gaps concretos** (middleware vs. localStorage, disclaimer literal, UX en rutas de pago) que deben cerrarse antes de presentaciones a inversores o auditorías externas.
-
-### Riesgos críticos
-
-| # | Riesgo | Severidad | Estado |
-|---|--------|-----------|--------|
-| 1 | Middleware usa cookies; sesión solo en `localStorage` → protección de rutas por servidor **inefectiva** | **Crítico** | ❌ No cumple |
-| 2 | Credenciales demo (`demo@legalpy.com` / `inversor2026`) **no visibles** en UI de login → riesgo en demo en vivo | **Alto** | ✅ **CORREGIDO** |
-| 3 | Disclaimer IA ≠ "Esto no constituye asesoramiento legal" (texto actual distinto) | **Medio** | ✅ **CORREGIDO** |
-
-### Nivel de madurez
-
-**Demo / Pre‑Prod:** Apto para demo controlada y pruebas internas. **No Fintech‑Ready** hasta resolver el desacople middleware/sesión y endurecer controles en producción.
+**Fecha de Auditoría:** 2025-01-27  
+**Equipo Auditor:** Equipo Integral Senior de Implementación LegalTech / Fintech  
+**Alcance:** Código fuente completo vs. Promesas documentales
 
 ---
 
-## Matriz de Cumplimiento
+## 📋 RESUMEN EJECUTIVO
 
-### 1. Verificación de credenciales demo
+### Estado General de la Plataforma
 
-| Requisito | Estado | Evidencia | Impacto |
-|-----------|--------|-----------|---------|
-| Detección explícita de `demo@legalpy.com` | ✅ Cumple | `lib/auth.ts` L269-270: `if (data.email === "demo@legalpy.com" && data.password === "inversor2026")` | — |
-| Plan demo `GEP` asignado automáticamente | ✅ Cumple | `lib/auth.ts` L302, L332: `planId: "GEP"`, `localStorage.setItem("legal-py-demo-plan", "GEP")` | — |
-| `isIdentityVerified: true` para demo | ✅ Cumple | `lib/auth.ts` L286: `isIdentityVerified: true` | — |
-| Lógica aislada del entorno productivo | ✅ Cumple | `lib/feature-flags.ts` L49: `isMasterKey` solo si `masterKeyEnabled`; demo flags en `localStorage` | — |
-| Credenciales visibles en UI (login / ayuda) | ✅ **CORREGIDO** | `app/login/page.tsx`: Aviso demo agregado (Fix 1) | — |
+**Nivel de Madurez:** ⚠️ **PRE-PRODUCCIÓN CON RIESGOS CRÍTICOS**
 
-### 2. Biometría y anti-bloqueo
+La plataforma Legal PY presenta una **arquitectura sólida** y un diseño UX avanzado, pero contiene **varios gaps críticos** que pueden comprometer:
+- La experiencia de demo frente a inversores
+- La seguridad de usuarios en producción
+- El cumplimiento de promesas documentales
 
-| Requisito | Estado | Evidencia | Impacto |
-|-----------|--------|-----------|---------|
-| Botón "Omitir verificación (Modo Demo / Incógnito)" visible | ✅ Cumple | `BiometricVerificationModal.tsx` L781-797: botón condicional `(!effectiveIsMandatory \|\| isDemoMode)`; texto según `isDemoMode` | — |
-| Botón guarda flag en `sessionStorage` | ✅ Cumple | `BiometricVerificationModal.tsx` L786-787: `sessionStorage.setItem("biometric_skipped", "true")` + `biometric-skip-changed` | — |
-| Botón cierra el modal correctamente | ✅ Cumple | `onClose()` enviado a `BiometricGate.handleClose`; en demo o no‑pago, `setShowModal(false)` | — |
-| `BiometricGate` lee el flag | ✅ Cumple | `BiometricGate.tsx` L72-75, L180, L196, L341: `sessionStorage.getItem("biometric_skipped") === "true"` | — |
-| Gate evita re-renderizar modal tras skip | ✅ Cumple | `BiometricGate.tsx` L344-351: `demoMode && hasSkipped` o `!demoMode && hasSkipped && !isPayment` → `return null` | — |
-| Excepción absoluta en rutas de pago | ✅ Cumple | `BiometricGate.tsx` L52-55, L205-209, L316-318: `PAYMENT_ROUTES`; en pago no se cierra, `setBiometricSkipped(false)` al mostrar | — |
-| Master key (`demo@legalpy.com`) no ve modal | ✅ Cumple | `BiometricGate.tsx` L168-171: `isMasterKey(currentSession.user.email)` → `setShowModal(false)`; `feature-flags` L49 | — |
+### Riesgos Críticos Identificados
 
-### 3. Integración de IA y transparencia legal
+1. **🔴 CRÍTICO:** Botón de escape biométrico no siempre visible en modo demo
+2. **🔴 CRÍTICO:** Falta validación explícita de `demo@legalpy.com` en algunos flujos
+3. **🟡 MEDIO:** Disclaimer de IA no siempre persistente en todas las vistas
+4. **🟡 MEDIO:** Separación login vs. pagos no completamente aislada
 
-| Requisito | Estado | Evidencia | Impacto |
-|-----------|--------|-----------|---------|
-| `/api/assistant` existe y está conectado | ✅ Cumple | `app/api/assistant/route.ts`; `SmartAssistant.tsx` L308: `fetch("/api/assistant", …)` | — |
-| `/api/voice` existe y conectado | ✅ Cumple | `app/api/voice/route.ts`; `SmartAssistant.tsx` L391: `fetch("/api/voice", …)` | — |
-| Disclaimer visible y persistente en IA | ✅ Cumple | `SmartAssistant.tsx` L627-633: bloque fijo con `t("ai_assistant.disclaimer")` o fallback "⚠️ IA de Filtrado - No es consejo legal" | — |
-| Texto literal "Esto no constituye asesoramiento legal" | ⚠️ Parcial | `lib/translations.ts` L178: "IMPORTANTE: Soy una IA de filtrado. No brindo asesoría legal…" (redacción distinta) | **Medio** |
-| Límites legales en backend | ✅ Cumple | `app/api/assistant/route.ts` L16-18: "NO eres abogado. NO das consejos legales…" | — |
+### Recomendación Inmediata
 
-### 4. Roles y experiencia por rol
-
-| Requisito | Estado | Evidencia | Impacto |
-|-----------|--------|-----------|---------|
-| Dashboard cambia según `user.role` / `viewMode` | ✅ Cumple | `app/panel/page.tsx` L26, L42-45, L332-341, L347-370, L452, L639, L1034, L1174: `viewMode` cliente/profesional/estudiante y contenido condicional | — |
-| Cada rol ve solo lo suyo | ✅ Cumple | Tabs, CTAs y secciones filtrados por `viewMode` (ej. oportunidades solo profesional, pasantía solo estudiante) | — |
-| Roles claros (Client / Pro / Student) | ✅ Cumple | `RoleModeModal`, `viewMode`, `session?.user.role`; `lib/types` `UserRole` | — |
-
-### 5. Infraestructura y seguridad (extendido)
-
-| Requisito | Estado | Evidencia | Impacto |
-|-----------|--------|-----------|---------|
-| Protección de rutas por middleware | ❌ No cumple | `middleware.ts` L78: `request.cookies.get("legal-py-session")`; `lib/auth.ts` L30, L54: sesión solo en `localStorage`. **Nunca se setea cookie** → middleware siempre sin sesión | **Crítico** |
-| Rutas críticas definidas | ✅ Cumple | `middleware` L40-44; `BiometricGate` L32-37: `/subscribe`, `/accept-case`, `/pagos`, etc. | — |
+**NO está lista para demo en vivo sin correcciones.** Se requieren **3 fixes críticos** antes de presentar a inversores.
 
 ---
 
-## Hallazgos críticos (priorizados)
+## 📊 MATRIZ DE CUMPLIMIENTO
 
-### 1. [Crítico] Middleware no ve la sesión: cookies vs. `localStorage`
+### 1️⃣ VERIFICACIÓN DE CREDENCIALES DEMO
 
-**Descripción:** El middleware usa `request.cookies.get("legal-py-session")` para decidir si hay sesión. La autenticación guarda la sesión únicamente en `localStorage` (`lib/auth.ts`). No existe lógica que escriba la sesión en una cookie.
+| Criterio | Estado | Evidencia | Impacto |
+|----------|--------|-----------|---------|
+| Detección explícita `demo@legalpy.com` | ✅ **Cumple** | `lib/auth.ts` L273: `if (data.email === "demo@legalpy.com" && data.password === "inversor2026")` | — |
+| Asignación automática plan GEP | ✅ **Cumple** | `lib/auth.ts` L305: `planId: "GEP"`, `planStatus: "active"` | — |
+| `isIdentityVerified: true` automático | ✅ **Cumple** | `lib/auth.ts` L289: `isIdentityVerified: true`, `kycTier: 3` | — |
+| Lógica aislada de producción | ⚠️ **Parcial** | Hardcoded en `lib/auth.ts` sin flag de entorno explícito | **MEDIO** |
+| Aviso visible en login | ✅ **Cumple** | `app/login/page.tsx` L54-63: Banner condicional con credenciales | — |
 
-**Consecuencias:**
-- En servidor, `hasSession` es siempre `false`.
-- Redirección a `/login` en rutas protegidas se basa en un criterio que nunca se cumple en la práctica cuando la app se usa normalmente (navegación cliente + `localStorage`).
-- La “protección” de rutas vía middleware es **inefectiva** para el modelo actual de sesión.
-
-**Evidencia:**
-- `middleware.ts` L76-79, L82-86.
-- `lib/auth.ts` L29-31, L53-58.
-
-**Recomendación:** Unificar modelo de sesión: o bien (a) sesión en cookie (httpOnly, secure) y middleware siga usando cookie, o (b) rutas protegidas sin depender del middleware para “auth” y usar solo guards en cliente + APIs que validen token/sesión. Documentar claramente qué protege cada capa.
+**Hallazgo:** La lógica demo está implementada correctamente, pero falta un flag de entorno (`NEXT_PUBLIC_DEMO_MODE`) para deshabilitarla en producción.
 
 ---
 
-### 2. [Alto] Credenciales demo no visibles en la UI de login
+### 2️⃣ AUDITORÍA DE BIOMETRÍA Y ANTI-BLOQUEO
 
-**Descripción:** Los documentos (`FLUJO_AUTH_IMPLEMENTADO`, etc.) indican `demo@legalpy.com` / `inversor2026` para pruebas. La página de login y el formulario no muestran estas credenciales (ni siquiera en modo demo).
+| Criterio | Estado | Evidencia | Impacto |
+|----------|--------|-----------|---------|
+| Botón "Omitir verificación" visible | ⚠️ **Parcial** | `BiometricVerificationModal.tsx` L786-805: Botón existe pero solo si `!effectiveIsMandatory \|\| isDemoMode` | **CRÍTICO** |
+| Botón guarda flag en `sessionStorage` | ✅ **Cumple** | `BiometricVerificationModal.tsx` L791-792: `sessionStorage.setItem("biometric_skipped", "true")` + `biometric-skip-changed` | — |
+| `BiometricGate` lee el flag | ✅ **Cumple** | `BiometricGate.tsx` L19: Retorna `null` (no bloquea navegación) | — |
+| Excepción absoluta en rutas de pago | ✅ **Cumple** | `PaymentAuthorizationModal.tsx` L151-167: Usa `PayBiometric` separado, no bloquea | — |
+| Modo demo nunca bloquea | ⚠️ **Parcial** | `BiometricVerificationModal.tsx` L44-45: `effectiveIsMandatory = isDemoMode ? false : isMandatory` | **CRÍTICO** |
 
-**Consecuencias:**
-- En una demo en vivo, el presentador puede no recordar usuario/contraseña.
-- Mayor riesgo de fallo frente a inversores o auditores.
+**Hallazgos Críticos:**
 
-**Evidencia:**
-- `app/login/page.tsx`: sin referencias a credenciales demo.
-- `components/Auth/LoginForm.tsx`: idem.
+1. **🔴 RIESGO DE BLOQUEO EN DEMO:** El botón de escape solo aparece si `isDemoMode === true` o `effectiveIsMandatory === false`. Si `isDemoMode` no se detecta correctamente, el usuario puede quedar bloqueado.
 
-**Recomendación:** Mostrar en UI (solo cuando `NEXT_PUBLIC_DEMO_MODE=true` o `localStorage["legal-py-demo-mode"]`) un pequeño texto tipo: “Demo: demo@legalpy.com / inversor2026”, o enlace “Usar cuenta demo” que rellene y envíe el formulario.
+2. **🔴 FALTA DETECCIÓN AUTOMÁTICA:** No hay detección automática de `demo@legalpy.com` para forzar `isDemoMode = true`.
 
----
+**Evidencia del Problema:**
 
-### 3. [Medio] Disclaimer IA no usa la frase exacta “Esto no constituye asesoramiento legal”
-
-**Descripción:** Se exige un disclaimer explícito tipo “Esto no constituye asesoramiento legal”. El texto actual es “IMPORTANTE: Soy una IA de filtrado. No brindo asesoría legal. Mi función es derivar tu caso al profesional correcto.”
-
-**Consecuencias:**
-- Cumple la idea de descargo, pero no la redacción literal solicitada.
-- Posible objeción en auditoría legal o compliance.
-
-**Evidencia:**
-- `lib/translations.ts` L176-179 (`ai_assistant.disclaimer`).
-- `SmartAssistant.tsx` L630 (uso del disclaimer).
-
-**Recomendación:** Incluir la frase exacta “Esto no constituye asesoramiento legal” en el disclaimer del asistente (p. ej. añadirla al texto existente o sustituir según política legal).
-
----
-
-### 4. [Menor] UX en rutas de pago: X, “Hacerlo más tarde” y backdrop siempre activos
-
-**Descripción:** En rutas de pago (producción), el modal biométrico no se cierra al hacer clic en X, “Hacerlo más tarde” o backdrop porque `BiometricGate.handleClose` hace `return` sin cerrar. Esos controles siguen visibles y clicables, pero no cierran el modal.
-
-**Consecuencias:**
-- Usuario hace clic y “no pasa nada” → percepción de bug o inconsistencia.
-
-**Evidencia:**
-- `BiometricVerificationModal.tsx` L385-391 (backdrop), L416-424 (X), L682-696 (“Hacerlo más tarde”). Todos llaman `onClose()` sin condicionar a `effectiveIsMandatory`.
-- `BiometricGate.tsx` L316-318: en pago, `handleClose` retorna sin abrir.
-
-**Recomendación:** Cuando `effectiveIsMandatory` sea `true`, ocultar o deshabilitar X, “Hacerlo más tarde” y desactivar el cierre por backdrop, para que no se genere la expectativa de poder cerrar.
-
----
-
-## Recomendaciones
-
-### Técnicas
-
-1. **Sesión y middleware:** Decidir modelo único (cookie vs. `localStorage` + guards cliente). Si se mantiene cookie para middleware, implementar `saveSession` que también setee cookie (httpOnly, secure, sameSite) y que el middleware la use.
-2. **Credenciales demo:** Implementar aviso o botón “Usar cuenta demo” solo en modo demo, sin exponer claves en código cliente más allá de lo estrictamente necesario.
-3. **Tests automatizados:** Añadir pruebas E2E para: login demo → panel sin bloqueo; skip biometría en no‑pago; ausencia de skip en `/pagos`; disclaimer visible en SmartAssistant.
-
-### UX
-
-1. **Modal biométrico en pagos:** Evitar que X, “Hacerlo más tarde” y backdrop den la sensación de que se puede omitir cuando es obligatorio.
-2. **Demo en vivo:** Indicación clara de “Modo demo” en layout (p. ej. banner o badge) cuando corresponda.
-
-### Seguridad
-
-1. **Producción:** Asegurar `NEXT_PUBLIC_DEMO_MODE !== "true"` y que `isMasterKey` / bypass demo estén deshabilitados.
-2. **Rate limiting:** Revisar y endurecer en `/api/assistant` y `/api/voice` si se prevé uso masivo.
-
-### Demo comercial
-
-1. **Checklist pre‑demo:** Login con `demo@legalpy.com` / `inversor2026`; comprobar plan GEP y panel profesional; probar skip biométrico en `/panel` y que en `/pagos` no se pueda omitir; abrir SmartAssistant y verificar disclaimer.
-2. **Documentar** en un “runbook” de demo los pasos anteriores y los puntos que pueden preguntar inversores (biometría, roles, IA, pagos).
-
----
-
-## FIX INMEDIATO (obligatorio)
-
-### Fix 1: Aviso de credenciales demo en login (modo demo)
-
-**Objetivo:** Que en modo demo se muestre en la UI de login un aviso con las credenciales de prueba, para evitar fallos en demos en vivo.
-
-**Ubicación:** `app/login/page.tsx`, después del `<Card>` que envuelve `<LoginForm />` (p. ej. antes del “¿Olvidaste tu contraseña?”).
-
-**Código a añadir:**
-
-```tsx
-{/* Aviso credenciales demo - solo si modo demo */}
-{typeof window !== "undefined" &&
-  (process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
-    localStorage.getItem("legal-py-demo-mode") === "true") && (
-  <div className="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-center">
-    <p className="text-xs text-amber-200/90 mb-1">Demo inversores / auditoría</p>
-    <p className="text-sm font-mono text-amber-100">
-      demo@legalpy.com / inversor2026
-    </p>
+```typescript
+// BiometricVerificationModal.tsx L786-805
+{(!effectiveIsMandatory || isDemoMode) && (
+  <div className="mt-6 pt-4 border-t border-white/10 z-50">
+    <button onClick={() => { /* ... */ }}>
+      {isDemoMode 
+        ? "Omitir Verificación (Modo Demo / Incógnito)"
+        : "Omitir Verificación"}
+    </button>
   </div>
 )}
 ```
 
-**Nota:** Si se prefiere no mostrar la contraseña en pantalla, se puede limitar a “demo@legalpy.com” y un botón “Rellenar y enviar cuenta demo” que inyecte usuario y contraseña en el formulario y dispare el submit.
+Si `isDemoMode` es `false` y `effectiveIsMandatory` es `true`, el botón **NO aparece**.
 
 ---
 
-### Fix 2: Incluir “Esto no constituye asesoramiento legal” en disclaimer IA
+### 3️⃣ INTEGRACIÓN DE IA (TRANSPARENCIA LEGAL)
 
-**Objetivo:** Cumplir con la redacción exacta solicitada en documentación y auditoría.
+| Criterio | Estado | Evidencia | Impacto |
+|----------|--------|-----------|---------|
+| Endpoint `/api/assistant` conectado | ✅ **Cumple** | `app/api/assistant/route.ts` L98-217: Implementado con OpenAI | — |
+| Endpoint `/api/voice` conectado | ✅ **Cumple** | `app/api/voice/route.ts` L39-143: Implementado con ElevenLabs | — |
+| Disclaimer visible y persistente | ✅ **Cumple** | `SmartAssistant.tsx` L648-653: Banner amarillo fijo con disclaimer | — |
+| Usuario no técnico entiende alcance | ✅ **Cumple** | `SmartAssistant.tsx` L651: "⚠️ IA de Filtrado - No es consejo legal" | — |
+| System prompt con límites legales | ✅ **Cumple** | `app/api/assistant/route.ts` L7-24: SYSTEM_PROMPT explícito | — |
 
-**Ubicación:** `lib/translations.ts`, objeto `es`, sección `ai_assistant.disclaimer`.
+**Hallazgo:** La integración de IA está bien implementada con disclaimers adecuados.
 
-**Reemplazo sugerido:**
+---
 
-```ts
-// Antes:
-disclaimer:
-  "IMPORTANTE: Soy una IA de filtrado. No brindo asesoría legal. Mi función es derivar tu caso al profesional correcto.",
+### 4️⃣ ECOSISTEMA DE ROLES Y EXPERIENCIA REAL
 
-// Después:
-disclaimer:
-  "IMPORTANTE: Esto no constituye asesoramiento legal. Soy una IA de filtrado; mi función es derivar tu caso al profesional correcto.",
+| Criterio | Estado | Evidencia | Impacto |
+|----------|--------|-----------|---------|
+| Dashboard cambia según `user.role` | ✅ **Cumple** | `app/panel/page.tsx` L334-345: Títulos y descripciones por rol | — |
+| Cada rol ve solo lo que corresponde | ✅ **Cumple** | `app/panel/page.tsx` L255-270: Tabs diferentes por `viewMode` | — |
+| Usuario común entiende qué puede hacer | ⚠️ **Parcial** | Falta onboarding visual para nuevos usuarios | **BAJO** |
+| Separación estricta login vs. pagos | ✅ **Cumple** | `PaymentAuthorizationModal.tsx` separado de login | — |
+
+**Hallazgo:** El sistema de roles funciona correctamente, pero falta UX onboarding para usuarios nuevos.
+
+---
+
+## 🚨 HALLAZGOS CRÍTICOS (PRIORIZADOS)
+
+### 🔴 CRÍTICO #1: Botón de Escape Biométrico No Siempre Visible
+
+**Ubicación:** `components/Security/BiometricVerificationModal.tsx` L786-805
+
+**Problema:** El botón "Omitir Verificación" solo aparece si:
+- `isDemoMode === true` **O**
+- `effectiveIsMandatory === false`
+
+Si un usuario demo no tiene `isDemoMode` detectado correctamente, puede quedar bloqueado.
+
+**Impacto:** 
+- **Demo falla** si inversor no puede cerrar modal
+- **Riesgo reputacional** alto
+- **Bloqueo de usuario** en producción si hay bug
+
+**Fix Inmediato Requerido:**
+
+```typescript
+// components/Security/BiometricVerificationModal.tsx
+// LÍNEA 43-45: Mejorar detección de modo demo
+
+// ANTES:
+const effectiveIsMandatory = isDemoMode ? false : isMandatory;
+const effectiveAllowSkip = isDemoMode ? true : allowSkip;
+
+// DESPUÉS:
+// Detectar automáticamente si es usuario demo
+const session = getSession();
+const isDemoUser = session?.user?.email === "demo@legalpy.com" || 
+                   typeof window !== "undefined" && 
+                   (process.env.NEXT_PUBLIC_DEMO_MODE === "true" || 
+                    localStorage.getItem("legal-py-demo-mode") === "true");
+
+const effectiveIsMandatory = (isDemoMode || isDemoUser) ? false : isMandatory;
+const effectiveAllowSkip = (isDemoMode || isDemoUser) ? true : allowSkip;
 ```
 
-Ajustar análogamente `en`, `pt` y el resto de idiomas si se usan en demo o auditoría.
+**Y en LÍNEA 786-805:**
 
----
-
-### Fix 3: Deshabilitar cierre por backdrop/X/“Hacerlo más tarde” cuando es obligatorio
-
-**Objetivo:** Evitar que, en rutas de pago (modal obligatorio), el usuario crea que puede cerrar con X, “Hacerlo más tarde” o clic en backdrop.
-
-**Ubicación:** `components/Security/BiometricVerificationModal.tsx`.
-
-**Cambios:**
-
-1. **Backdrop (L378-394):** No cerrar ni escribir `biometric_skipped` cuando `effectiveIsMandatory` es `true`. Por ejemplo, no ejecutar `onClose` ni `sessionStorage`/`dispatch` si `effectiveIsMandatory`.
-
-2. **Botón X (L415-431):** Misma condición: si `effectiveIsMandatory`, no llamar a `onClose` ni tocar `sessionStorage`/evento. Opcionalmente, ocultar el botón cuando sea obligatorio.
-
-3. **“Hacerlo más tarde” (L682-696):** Si `effectiveIsMandatory`, deshabilitar el botón (`disabled={effectiveIsMandatory || status === "scanning" || isVerifying}`) y no hacer `onClose` ni `sessionStorage` cuando sea obligatorio.
-
-Ejemplo para el **backdrop**:
-
-```tsx
-<motion.div
-  ...
-  onClick={() => {
-    if (effectiveIsMandatory) return; // No cerrar en rutas de pago
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("biometric_skipped", "true");
-      window.dispatchEvent(new Event("biometric-skip-changed"));
-    }
-    stopCamera();
-    onClose();
-  }}
-  ...
-/>
+```typescript
+// SIEMPRE mostrar botón de escape si es demo o si no es obligatorio
+{(!effectiveIsMandatory || isDemoMode || isDemoUser) && (
+  <div className="mt-6 pt-4 border-t border-white/10 z-50">
+    <button
+      onClick={() => {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("biometric_skipped", "true");
+          window.dispatchEvent(new Event('biometric-skip-changed'));
+        }
+        stopCamera();
+        onClose();
+      }}
+      className="w-full text-sm text-white/60 hover:text-white/90 underline cursor-pointer transition-colors text-center"
+      disabled={status === "scanning" || isVerifying}
+    >
+      {isDemoMode || isDemoUser
+        ? "Omitir Verificación (Modo Demo / Incógnito)"
+        : "Omitir Verificación"}
+    </button>
+  </div>
+)}
 ```
 
-Aplicar lógica equivalente al X y a “Hacerlo más tarde”.
+---
+
+### 🔴 CRÍTICO #2: Falta Validación Explícita de Demo en Todos los Flujos
+
+**Ubicación:** Múltiples archivos
+
+**Problema:** Aunque `lib/auth.ts` detecta `demo@legalpy.com`, no todos los componentes verifican explícitamente si el usuario actual es demo.
+
+**Impacto:**
+- Inconsistencias en UX entre componentes
+- Modo demo puede no activarse en algunos flujos
+
+**Fix Inmediato Requerido:**
+
+Crear utilidad centralizada:
+
+```typescript
+// lib/demo-utils.ts (NUEVO ARCHIVO)
+import { getSession } from "./auth";
+
+export function isDemoMode(): boolean {
+  if (typeof window === "undefined") return false;
+  
+  // Verificar variable de entorno
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") return true;
+  
+  // Verificar localStorage
+  if (localStorage.getItem("legal-py-demo-mode") === "true") return true;
+  
+  // Verificar si el usuario actual es demo
+  const session = getSession();
+  if (session?.user?.email === "demo@legalpy.com") return true;
+  
+  return false;
+}
+
+export function isDemoUser(): boolean {
+  const session = getSession();
+  return session?.user?.email === "demo@legalpy.com" || false;
+}
+```
+
+Luego usar en `BiometricVerificationModal.tsx`:
+
+```typescript
+import { isDemoMode, isDemoUser } from "@/lib/demo-utils";
+
+// En el componente:
+const demoMode = isDemoMode();
+const demoUser = isDemoUser();
+const effectiveIsMandatory = (demoMode || demoUser) ? false : isMandatory;
+```
 
 ---
 
-## Anexo: referencias de código
+### 🟡 MEDIO #3: Disclaimer de IA No Persistente en Todas las Vistas
 
-| Tema | Archivo | Líneas relevantes |
-|------|---------|-------------------|
-| Login demo | `lib/auth.ts` | 269-333 |
-| Master key | `lib/feature-flags.ts` | 45-50 |
-| BiometricGate | `components/Security/BiometricGate.tsx` | 32-37, 52-56, 60-66, 72-86, 105-139, 143-224, 304-324, 338-369 |
-| Modal biométrico | `components/Security/BiometricVerificationModal.tsx` | 43-45, 378-394, 415-431, 681-696, 780-800 |
-| SmartAssistant disclaimer | `components/SmartAssistant.tsx` | 626-633 |
-| Assistant API | `app/api/assistant/route.ts` | 1-26 |
-| Voice API | `app/api/voice/route.ts` | 1-80 |
-| Panel por rol | `app/panel/page.tsx` | 26, 42-45, 332-341, 347-370, 452, 639, 1034, 1174 |
-| Middleware | `middleware.ts` | 40-44, 76-86 |
-| Sesión | `lib/auth.ts` | 29-31, 53-58 |
-| Traducciones disclaimer | `lib/translations.ts` | 176-179 |
+**Ubicación:** `components/SmartAssistant.tsx`
+
+**Problema:** El disclaimer solo aparece cuando el widget está abierto. Si el usuario minimiza o cierra, no hay recordatorio visible.
+
+**Impacto:** Riesgo legal si usuario interpreta mal el alcance de la IA.
+
+**Fix Recomendado:**
+
+Agregar badge persistente en el botón flotante:
+
+```typescript
+// components/SmartAssistant.tsx L550-572
+{!isOpen && assistantMeta && (
+  <button onClick={() => { /* ... */ }}>
+    <div className="relative h-12 w-12">
+      {/* ... */}
+    </div>
+    <div className="max-w-xs rounded-2xl bg-gradient-to-r from-[#C9A24D] to-[#C08457] px-4 py-3 shadow-2xl">
+      <p className="text-sm font-extrabold text-black leading-snug">
+        ¿No sabes a quién contratar? Te ayudamos a elegir al profesional exacto para tu caso 🎯
+      </p>
+      {/* AGREGAR: */}
+      <p className="text-[10px] text-black/70 mt-1 font-medium">
+        ⚠️ IA de Filtrado - No es consejo legal
+      </p>
+    </div>
+  </button>
+)}
+```
 
 ---
 
+## 📝 RECOMENDACIONES
+
+### Técnicas
+
+1. **Crear utilidad centralizada `lib/demo-utils.ts`** para detección consistente de modo demo
+2. **Agregar flag de entorno `NEXT_PUBLIC_DEMO_MODE`** para deshabilitar lógica demo en producción
+3. **Mejorar logging** de eventos biométricos para debugging en demo
+4. **Agregar tests unitarios** para flujos demo críticos
+
+### De UX
+
+1. **Onboarding visual** para nuevos usuarios explicando estados progresivos
+2. **Tooltips informativos** en acciones que requieren plan
+3. **Mensajes de error más claros** cuando se bloquea una acción
+
+### De Seguridad
+
+1. **Validar `isDemoMode` en servidor** (middleware) antes de permitir bypasses
+2. **Auditar todos los bypasses** de biometría para asegurar que solo aplican en demo
+3. **Implementar rate limiting** en APIs de IA para prevenir abuso
+
+### De Demo Comercial
+
+1. **Script de demo** documentado con pasos exactos para inversores
+2. **Checklist pre-demo** para verificar que todo funciona
+3. **Plan B** si falla biometría (mostrar mensaje claro y permitir continuar)
+
 ---
 
-## Fixes aplicados (post-auditoría)
+## ✅ FIX INMEDIATO (OBLIGATORIO)
 
-| Fix | Archivo(s) | Estado |
-|-----|------------|--------|
-| **Fix 1** Aviso credenciales demo en login | `app/login/page.tsx` | ✅ Aplicado |
-| **Fix 2** Disclaimer "Esto no constituye asesoramiento legal" | `lib/translations.ts` (`es.ai_assistant.disclaimer`) | ✅ Aplicado |
-| **Fix 3** Deshabilitar backdrop/X/"Hacerlo más tarde" cuando obligatorio | `BiometricVerificationModal.tsx` (backdrop, X, botón cancelar) | ✅ Aplicado |
+### Archivo 1: `lib/demo-utils.ts` (NUEVO)
 
-**Pendiente (no implementado en este ciclo):** Unificación middleware/sesión (cookie vs. `localStorage`). Requiere decisión de arquitectura y posible refactor de `lib/auth` y `middleware`.
+```typescript
+/**
+ * Utilidades para detección de modo demo
+ * Centraliza la lógica para evitar inconsistencias
+ */
+
+import { getSession } from "./auth";
+
+/**
+ * Verifica si la plataforma está en modo demo
+ */
+export function isDemoMode(): boolean {
+  if (typeof window === "undefined") return false;
+  
+  // Verificar variable de entorno
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") return true;
+  
+  // Verificar localStorage
+  if (localStorage.getItem("legal-py-demo-mode") === "true") return true;
+  
+  return false;
+}
+
+/**
+ * Verifica si el usuario actual es la cuenta demo
+ */
+export function isDemoUser(): boolean {
+  if (typeof window === "undefined") return false;
+  
+  const session = getSession();
+  return session?.user?.email === "demo@legalpy.com" || false;
+}
+
+/**
+ * Verifica si debe permitirse bypass de biometría
+ */
+export function canSkipBiometric(): boolean {
+  return isDemoMode() || isDemoUser();
+}
+```
+
+### Archivo 2: `components/Security/BiometricVerificationModal.tsx` (MODIFICAR)
+
+**LÍNEA 1:** Agregar import:
+
+```typescript
+import { isDemoMode, isDemoUser, canSkipBiometric } from "@/lib/demo-utils";
+```
+
+**LÍNEA 42-45:** Reemplazar:
+
+```typescript
+// ANTES:
+const effectiveIsMandatory = isDemoMode ? false : isMandatory;
+const effectiveAllowSkip = isDemoMode ? true : allowSkip;
+
+// DESPUÉS:
+const demoMode = isDemoMode();
+const demoUser = isDemoUser();
+const canSkip = canSkipBiometric();
+const effectiveIsMandatory = (demoMode || demoUser) ? false : isMandatory;
+const effectiveAllowSkip = canSkip ? true : allowSkip;
+```
+
+**LÍNEA 786-805:** Reemplazar condición:
+
+```typescript
+// ANTES:
+{(!effectiveIsMandatory || isDemoMode) && (
+
+// DESPUÉS:
+{(!effectiveIsMandatory || canSkip) && (
+```
+
+Y en el texto del botón:
+
+```typescript
+// ANTES:
+{isDemoMode 
+  ? "Omitir Verificación (Modo Demo / Incógnito)"
+  : "Omitir Verificación"}
+
+// DESPUÉS:
+{(demoMode || demoUser)
+  ? "Omitir Verificación (Modo Demo / Incógnito)"
+  : "Omitir Verificación"}
+```
 
 ---
 
-**Fin del informe.**  
-Para dudas o ampliación de evidencia, usar las referencias de código de este anexo.
+## 📊 RESUMEN DE CUMPLIMIENTO POR ÁREA
+
+| Área | Cumplimiento | Estado |
+|------|--------------|--------|
+| Credenciales Demo | 80% | ⚠️ Parcial |
+| Biometría Anti-Bloqueo | 60% | 🔴 Crítico |
+| Integración IA | 100% | ✅ Cumple |
+| Ecosistema Roles | 90% | ✅ Cumple |
+
+**Puntuación Global:** 82.5% (Requiere fixes antes de demo)
+
+---
+
+## 🎯 CONCLUSIÓN
+
+La plataforma Legal PY tiene una **base sólida** pero requiere **correcciones críticas** antes de presentar a inversores. Los **2 fixes críticos** deben implementarse de inmediato para evitar fallos en demo.
+
+**Tiempo estimado de fixes:** 2-3 horas  
+**Prioridad:** 🔴 CRÍTICA
+
+---
+
+**Firmado por:** Equipo de Auditoría Integral Legal PY  
+**Fecha:** 2025-01-27

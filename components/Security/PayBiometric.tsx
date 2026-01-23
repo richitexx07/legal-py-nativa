@@ -27,6 +27,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getSession } from "@/lib/auth";
+import { checkDemoMode } from "@/lib/demo-utils";
 import { 
   checkWebAuthnCompatibility, 
   checkPWAConditions,
@@ -122,8 +124,11 @@ export default function PayBiometric({
   onError,
   disabled = false,
   size = "lg",
-  isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true",
+  isDemoMode: propIsDemoMode,
 }: PayBiometricProps) {
+  // Detección centralizada de modo demo
+  const detectedDemoMode = checkDemoMode();
+  const isDemoMode = propIsDemoMode !== undefined ? propIsDemoMode : detectedDemoMode;
   const [state, setState] = useState<PayBiometricState>("idle");
   const [isAvailable, setIsAvailable] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -143,6 +148,19 @@ export default function PayBiometric({
       });
     }
   }, [paymentContext]);
+
+  // Verificar sesión autenticada (REQUERIDO para pagos)
+  useEffect(() => {
+    const session = getSession();
+    if (!session) {
+      const error = "Debes iniciar sesión para autorizar pagos";
+      setErrorMessage(error);
+      setState("error");
+      if (onError) {
+        onError(error);
+      }
+    }
+  }, [onError]);
 
   // Verificar compatibilidad completa (PWA/Mobile) al montar
   useEffect(() => {
@@ -250,10 +268,19 @@ export default function PayBiometric({
         // ========================================================================
         // MODO PRODUCCIÓN: Obtener challenge del backend PAYMENT
         // El backend liga el challenge al contexto
+        // REQUIERE: Sesión autenticada (JWT)
         // ========================================================================
+        const session = getSession();
+        if (!session || !session.token) {
+          throw new Error("Sesión no encontrada. Debes iniciar sesión primero.");
+        }
+
         const optionsResponse = await fetch("/api/webauthn/payment/options", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.token}` // ✅ REQUERIDO para pagos
+          },
           body: JSON.stringify({
             userId: paymentContext.userId,
             amount: paymentContext.amount,
@@ -313,10 +340,19 @@ export default function PayBiometric({
         // ========================================================================
         // MODO PRODUCCIÓN: Enviar al backend PAYMENT para verificación
         // Backend valida: firma + contexto (context binding)
+        // REQUIERE: Sesión autenticada (JWT)
         // ========================================================================
+        const session = getSession();
+        if (!session || !session.token) {
+          throw new Error("Sesión no encontrada. Debes iniciar sesión primero.");
+        }
+
         const verifyResponse = await fetch("/api/webauthn/payment/verify", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.token}` // ✅ REQUERIDO para pagos
+          },
           body: JSON.stringify({
             id: assertion.id,
             rawId: arrayBufferToBase64(assertion.rawId),

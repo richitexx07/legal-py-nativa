@@ -16,6 +16,7 @@ import { X } from "lucide-react";
 import PayBiometric from "@/components/Security/PayBiometric";
 import { getSession } from "@/lib/auth";
 import { isWebAuthnAvailable } from "@/lib/security/webauthn";
+import { checkDemoMode } from "@/lib/demo-utils";
 
 export interface PaymentAuthorizationModalProps {
   /** Si el modal está abierto */
@@ -47,6 +48,7 @@ export default function PaymentAuthorizationModal({
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState<string | null>(null);
+  const isDemoMode = checkDemoMode();
 
   // Verificar disponibilidad de WebAuthn y obtener userId
   useEffect(() => {
@@ -150,6 +152,17 @@ export default function PaymentAuthorizationModal({
             {/* Biometric Auth - PayBiometric (solo para pagos) */}
             {supportsWebAuthn && userId && transactionId ? (
               <div className="py-6">
+                {/* Mensaje explicativo en modo demo */}
+                {isDemoMode && (
+                  <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                    <p className="text-sm text-amber-200/90 mb-1">
+                      🎯 <strong>Modo Demo:</strong> Esta es una demostración del sistema de autorización biométrica para pagos.
+                    </p>
+                    <p className="text-xs text-amber-200/70">
+                      Puedes probar la funcionalidad o cerrar el modal en cualquier momento.
+                    </p>
+                  </div>
+                )}
                 <PayBiometric
                   paymentContext={{
                     userId,
@@ -158,6 +171,7 @@ export default function PaymentAuthorizationModal({
                     transactionId,
                   }}
                   size="lg"
+                  isDemoMode={isDemoMode}
                   onSuccess={handleBiometricSuccess}
                   onError={(error) => {
                     console.error("Error de autorización biométrica:", error);

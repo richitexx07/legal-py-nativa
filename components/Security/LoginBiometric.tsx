@@ -26,6 +26,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSession } from "@/lib/auth";
+import { checkDemoMode } from "@/lib/demo-utils";
 import { 
   checkWebAuthnCompatibility, 
   checkPWAConditions,
@@ -108,8 +109,11 @@ export default function LoginBiometric({
   onError,
   disabled = false,
   size = "lg",
-  isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true",
+  isDemoMode: propIsDemoMode,
 }: LoginBiometricProps) {
+  // Detección centralizada de modo demo
+  const detectedDemoMode = checkDemoMode();
+  const isDemoMode = propIsDemoMode !== undefined ? propIsDemoMode : detectedDemoMode;
   const [state, setState] = useState<LoginBiometricState>("idle");
   const [isAvailable, setIsAvailable] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -378,7 +382,7 @@ export default function LoginBiometric({
 
   const labels = {
     idle: isDemoMode ? "🎯 Demo: Iniciar sesión con huella" : "Iniciar sesión con huella",
-    active: "Verificando...",
+    active: isDemoMode ? "🎯 Demo: Verificando..." : "Verificando...",
     success: "✓ Autenticado",
     error: errorMessage || "Error al autenticar",
   };

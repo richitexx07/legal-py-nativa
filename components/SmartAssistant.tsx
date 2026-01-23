@@ -567,6 +567,10 @@ export default function SmartAssistant() {
             <p className="text-sm font-extrabold text-black leading-snug">
               ¿No sabes a quién contratar? Te ayudamos a elegir al profesional exacto para tu caso 🎯
             </p>
+            {/* AUDIT FIX: Disclaimer persistente visible siempre */}
+            <p className="text-[10px] text-black/70 mt-1 font-medium">
+              ⚠️ IA de Filtrado - No es consejo legal
+            </p>
           </div>
         </button>
       )}

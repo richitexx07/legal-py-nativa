@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LoginData, AuthMethod } from "@/lib/types";
 import { login, getSession } from "@/lib/auth";
 import { isWebAuthnAvailable } from "@/lib/security/webauthn";
+import { checkDemoMode } from "@/lib/demo-utils";
 import Button from "@/components/Button";
 import FormField from "@/components/FormField";
 import TwoFactorForm from "./TwoFactorForm";
@@ -222,9 +223,21 @@ export default function LoginForm({ onSuccess, onError, redirectPath }: LoginFor
               </span>
             </div>
           </div>
+          {/* Mensaje explicativo en modo demo */}
+          {checkDemoMode() && (
+            <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <p className="text-sm text-amber-200/90 mb-1">
+                🎯 <strong>Modo Demo:</strong> Esta es una demostración del sistema de autenticación biométrica.
+              </p>
+              <p className="text-xs text-amber-200/70">
+                Puedes probar la funcionalidad o usar contraseña normalmente.
+              </p>
+            </div>
+          )}
           <LoginBiometric
             email={email}
             size="lg"
+            isDemoMode={checkDemoMode()}
             onSuccess={async (session) => {
               // En producción, session viene del backend después de verificar la firma
               // En demo, puede venir de getSession() o ser undefined
