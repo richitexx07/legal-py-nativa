@@ -352,10 +352,10 @@ export const mockGestores: Gestor[] = [
   },
 ];
 
-export const mockUjieres: Ujier[] = [
+export const mockOficialesJusticia: OficialJusticia[] = [
   {
     id: "1",
-    nombre: "Ujiería Legal Express",
+    nombre: "Oficialía Legal Express",
     ciudad: "Asunción",
     rating: 4.8,
     servicios: ["Notificaciones", "Diligencias", "Constancias"],
@@ -369,7 +369,26 @@ export const mockUjieres: Ujier[] = [
     servicios: ["Notificaciones", "Embargos", "Medidas Cautelares"],
     precio: "desde Gs. 90.000",
   },
+  {
+    id: "3",
+    nombre: "Oficialía Central",
+    ciudad: "San Lorenzo",
+    rating: 4.6,
+    servicios: ["Notificaciones", "Diligencias", "Constancias", "Embargos"],
+    precio: "desde Gs. 85.000",
+  },
+  {
+    id: "4",
+    nombre: "Servicios Judiciales del Este",
+    ciudad: "Ciudad del Este",
+    rating: 4.9,
+    servicios: ["Notificaciones", "Medidas Cautelares", "Embargos"],
+    precio: "desde Gs. 95.000",
+  },
 ];
+
+// Mantener compatibilidad con código antiguo (deprecated)
+export const mockUjieres = mockOficialesJusticia;
 
 export const mockCasos: Caso[] = [
   {
